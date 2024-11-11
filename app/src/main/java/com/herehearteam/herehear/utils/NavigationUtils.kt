@@ -5,8 +5,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.herehearteam.herehear.navigation.Screen
 
-object NavigationUtil {
-    private val restrictedScreens = listOf(
+@Composable
+fun shouldShowBottomBar(navController: NavHostController): Boolean {
+    val restrictedScreens = listOf(
         Screen.Splash.route,
 //        Screen.Login.route,
 //        Screen.Register.route,
@@ -14,9 +15,7 @@ object NavigationUtil {
 //        Screen.Notifications.route
     )
 
-    @Composable
-    fun shouldShowBottomBar(navController: NavHostController, splashFinished: Boolean = false): Boolean {
-        val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
-        return !restrictedScreens.contains(currentRoute) && splashFinished
-    }
+    return !restrictedScreens.contains(
+        navController.currentBackStackEntryAsState().value?.destination?.route
+    )
 }

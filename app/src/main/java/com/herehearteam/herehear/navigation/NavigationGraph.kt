@@ -1,6 +1,9 @@
 package com.herehearteam.herehear.navigation
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -13,8 +16,7 @@ import com.herehearteam.herehear.ui.screens.splash.SplashScreen
 
 @Composable
 fun NavigationGraph(
-    navController: NavHostController,
-    onSplashFinished: () -> Unit = {}
+    navController: NavHostController
 ){
     NavHost(
         navController = navController,
@@ -26,7 +28,6 @@ fun NavigationGraph(
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
-                    onSplashFinished()
                 }
             )
         }

@@ -38,7 +38,9 @@ import com.herehearteam.herehear.navigation.Screen
 import com.herehearteam.herehear.ui.theme.ColorPrimary
 
 @Composable
-fun BottomNavigationBar(navController: NavHostController) {
+fun BottomNavigationBar(
+    navController: NavHostController,
+) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
