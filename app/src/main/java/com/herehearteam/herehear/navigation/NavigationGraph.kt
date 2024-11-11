@@ -12,7 +12,10 @@ import com.herehearteam.herehear.ui.screens.journal.JournalScreen
 import com.herehearteam.herehear.ui.screens.splash.SplashScreen
 
 @Composable
-fun NavigationGraph(navController: NavHostController){
+fun NavigationGraph(
+    navController: NavHostController,
+    onSplashFinished: () -> Unit = {}
+){
     NavHost(
         navController = navController,
         startDestination = Screen.Splash.route
@@ -23,6 +26,7 @@ fun NavigationGraph(navController: NavHostController){
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
+                    onSplashFinished()
                 }
             )
         }
