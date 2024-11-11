@@ -6,4 +6,5 @@ sealed class Screen(val route: String) {
     data object Journal : Screen("journal")
     data object Archive : Screen("archive")
     data object Profile : Screen("profile")
+    data object Splash : Screen("splash")
 }
