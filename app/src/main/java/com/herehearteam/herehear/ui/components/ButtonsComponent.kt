@@ -14,6 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -24,11 +27,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.herehearteam.herehear.R
@@ -38,14 +43,15 @@ import com.herehearteam.herehear.ui.theme.ColorPrimary
 fun CustomButtonFilled(
     onClick: () -> Unit,
     text: String,
-    icon: Painter? = null,
+    icon: Any? = null,
     iconColor: Color = Color.Unspecified,
     textColor: Color = Color.White,
     backgroundColor: Color = ColorPrimary,
     isEnabled: Boolean = true,
     cornerRadius: Dp = 8.dp,
     height: Dp = 48.dp,
-    contentPadding: Dp = 16.dp
+    letterSpacing: TextUnit = 1.sp,
+    fontSize: TextUnit = 16.sp
 ){
     Button(
         onClick = onClick,
@@ -58,7 +64,6 @@ fun CustomButtonFilled(
         ),
         enabled = isEnabled,
         shape = RoundedCornerShape(cornerRadius),
-        contentPadding = PaddingValues(contentPadding)
     ){
         Box(
             modifier = Modifier
@@ -71,12 +76,24 @@ fun CustomButtonFilled(
                 horizontalArrangement = Arrangement.Start
             ) {
                 if (icon != null) {
-                    Icon(
-                        painter = icon,
-                        contentDescription = null,
-                        tint = iconColor,
-                        modifier = Modifier.size(24.dp)
-                    )
+                    when (icon) {
+                        is ImageVector -> {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                tint = iconColor,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        is Painter -> {
+                            Icon(
+                                painter = icon,
+                                contentDescription = null,
+                                tint = iconColor,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
                 }
             }
 
@@ -85,7 +102,8 @@ fun CustomButtonFilled(
                 style = TextStyle(
                     color = textColor,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
+                    fontSize = fontSize,
+                    letterSpacing = letterSpacing
                 ),
                 modifier = Modifier.align(Alignment.Center)
             )
@@ -97,7 +115,7 @@ fun CustomButtonFilled(
 fun CustomButtonOutlined(
     onClick: () -> Unit,
     text: String,
-    icon: Painter? = null,
+    icon: Any? = null,
     iconColor: Color = Color.Unspecified,
     outlineColor: Color = ColorPrimary,
     textColor: Color = Color.Black,
@@ -105,7 +123,8 @@ fun CustomButtonOutlined(
     cornerRadius: Dp = 8.dp,
     height: Dp = 48.dp,
     border: Dp = 1.dp,
-    contentPadding: Dp = 16.dp
+    letterSpacing: TextUnit = 1.sp,
+    fontSize: TextUnit = 16.sp
 ){
     OutlinedButton(
         onClick = onClick,
@@ -118,7 +137,6 @@ fun CustomButtonOutlined(
         border = BorderStroke(border, outlineColor),
         enabled = isEnabled,
         shape = RoundedCornerShape(cornerRadius),
-        contentPadding = PaddingValues(contentPadding)
     ) {
         Box(
             modifier = Modifier
@@ -131,13 +149,24 @@ fun CustomButtonOutlined(
                 horizontalArrangement = Arrangement.Start
             ) {
                 if (icon != null) {
-                    Icon(
-                        painter = icon,
-                        contentDescription = null,
-                        tint = iconColor,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    when (icon) {
+                        is ImageVector -> {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                tint = iconColor,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        is Painter -> {
+                            Icon(
+                                painter = icon,
+                                contentDescription = null,
+                                tint = iconColor,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
                 }
             }
 
@@ -146,7 +175,8 @@ fun CustomButtonOutlined(
                 style = TextStyle(
                     color = textColor,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
+                    fontSize = fontSize,
+                    letterSpacing = letterSpacing
                 ),
                 modifier = Modifier.align(Alignment.Center)
             )
@@ -164,11 +194,11 @@ fun ButtonPreview(){
         contentAlignment = Alignment.Center
     ) {
         Column {
-            CustomButtonFilled(onClick = {}, text = "LANJUT", icon = painterResource(R.drawable.logo), backgroundColor = Color.Cyan)
+            CustomButtonFilled(onClick = {}, text = "LANJUT", icon = Icons.Default.Phone, backgroundColor = Color.Cyan)
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            CustomButtonOutlined(onClick = {}, text = "LANJUT", icon = painterResource(R.drawable.logo), outlineColor = Color.Cyan)
+            CustomButtonOutlined(onClick = {}, text = "LANJUT", painterResource(R.drawable.logo), outlineColor = Color.Cyan)
         }
     }
 }

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">HereHear</string>
+    <string name="masuk">Masuk</string>
+    <string name="daftar">Daftar</string>
 </resources>
