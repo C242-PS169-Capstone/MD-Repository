@@ -44,7 +44,7 @@ fun NavigationGraph(
             ArchiveScreen()
         }
         composable(Screen.Profile.route) {
-            ProfileScreen()
+            ProfileScreen(navController = navController)
         }
     }
 }
