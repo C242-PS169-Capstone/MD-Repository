@@ -48,7 +48,7 @@ fun WelcomeScreen(){
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
+@Preview(showBackground = true)
 @Composable
 fun WelcomePreview(){
     WelcomeScreen()

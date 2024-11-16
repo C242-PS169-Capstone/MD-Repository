@@ -35,7 +35,7 @@ fun RegisterScreen(){
         Box (
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 8.dp),
+                .padding(horizontal = 16.dp),
             contentAlignment = Alignment.TopCenter
         ) {
             CustomTopAppBar(

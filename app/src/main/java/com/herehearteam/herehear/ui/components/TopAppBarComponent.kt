@@ -75,8 +75,8 @@ fun CustomTopAppBar(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .weight(1f)
-                    .padding(start = 16.dp),
+                    .weight(1f),
+//                    .padding(start = 16.dp),
                 contentAlignment = Alignment.CenterStart,
             ) {
                 when (icon) {
@@ -108,8 +108,8 @@ fun CustomTopAppBar(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .weight(1f)
-                    .padding(end = 8.dp),
+                    .weight(1f),
+//                    .padding(end = 8.dp),
                 contentAlignment = Alignment.CenterEnd
             ) {
                 Row(
