@@ -18,18 +18,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.ExitToApp
 import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Star
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -38,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -50,7 +41,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.herehearteam.herehear.ui.components.BottomNavigationBar
 import com.herehearteam.herehear.ui.components.CustomTopAppBar
-import com.herehearteam.herehear.ui.components.LabelScreen
 import com.herehearteam.herehear.ui.theme.ColorPrimary
 import com.herehearteam.herehear.ui.theme.HereHearTheme
 import coil.compose.rememberAsyncImagePainter
@@ -223,12 +213,10 @@ fun ListOfOption(){
 fun ProfileScreen(navController: NavHostController) {
     Scaffold(
         topBar = {
-            Box(modifier = Modifier.padding(top = 37.dp)){
                 CustomTopAppBar(
                     pageTitle = "Profil",
                     icon = Icons.Filled.ArrowBack,
                 )
-            }
         },
         bottomBar = {
             BottomNavigationBar(navController = navController)
@@ -271,7 +259,7 @@ fun ProfileScreen(navController: NavHostController) {
 
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
-fun HomeScreenPreview(){
+fun ProfileScreenPreview(){
     val navController = rememberNavController()
     HereHearTheme {
         ProfileScreen(navController = navController)
