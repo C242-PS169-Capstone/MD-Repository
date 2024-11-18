@@ -27,7 +27,8 @@ import com.herehearteam.herehear.ui.theme.ColorPrimary
 @Composable
 fun RegisterScreen(
     onRegisterWithGmail: () -> Unit,
-    onRegisterWithPhone: () -> Unit
+    onRegisterWithPhone: () -> Unit,
+    onNavigateBack: () -> Unit
 ){
     Box(
         modifier = Modifier
@@ -43,7 +44,8 @@ fun RegisterScreen(
         ) {
             CustomTopAppBar(
                 pageTitle = "",
-                icon = Icons.Default.ArrowBack
+                icon = Icons.Default.ArrowBack,
+                onIconClick = onNavigateBack
             )
         }
         Canvas(
@@ -138,6 +140,7 @@ fun RegisterScreen(
 fun RegisterPreview(){
     RegisterScreen(
         onRegisterWithGmail = { },
-        onRegisterWithPhone = { }
+        onRegisterWithPhone = { },
+        onNavigateBack = { }
     )
 }

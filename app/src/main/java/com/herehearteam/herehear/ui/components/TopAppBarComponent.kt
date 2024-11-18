@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -44,13 +45,14 @@ import com.herehearteam.herehear.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomTopAppBar(
-    pageTitle: String,
+    pageTitle: String? = null,
     icon: Any? = null,
     backgroundColor: Color = Color.White,
     contentColor: Color = Color.Black,
     actions: @Composable RowScope.() -> Unit = {},
     height: Dp = 56.dp,
-    scrollable: Boolean = false
+    scrollable: Boolean = false,
+    onIconClick: (() -> Unit)? = null,
 ) {
     val scrollBehavior = if (scrollable) {
         TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -80,20 +82,23 @@ fun CustomTopAppBar(
                 modifier = Modifier
                     .fillMaxSize()
                     .weight(1f),
-//                    .padding(start = 16.dp),
                 contentAlignment = Alignment.CenterStart,
             ) {
                 when (icon) {
                     is Painter -> Image(
                         painter = icon,
                         contentDescription = null,
-                        modifier = Modifier.size(24.dp),
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable { onIconClick?.invoke() },
                     )
                     is ImageVector -> Icon(
                         imageVector = icon,
                         contentDescription = null,
                         tint = contentColor,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable { onIconClick?.invoke() }
                     )
                 }
             }
@@ -101,13 +106,15 @@ fun CustomTopAppBar(
                 modifier = Modifier.weight(2f),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = pageTitle,
-                    style = TextStyle(
-                        fontWeight = FontWeight.Medium,
-                        color = contentColor
+                if (pageTitle != null) {
+                    Text(
+                        text = pageTitle,
+                        style = TextStyle(
+                            fontWeight = FontWeight.Medium,
+                            color = contentColor
+                        )
                     )
-                )
+                }
             }
             Box(
                 modifier = Modifier

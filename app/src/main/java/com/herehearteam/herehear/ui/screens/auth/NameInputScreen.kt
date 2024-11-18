@@ -20,7 +20,11 @@ import com.herehearteam.herehear.ui.theme.ColorPrimary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NameInputScreen() {
+fun NameInputScreen(
+    onNavigateToHome: () -> Unit,
+    onNavigateToTermsAndConditions: () -> Unit,
+    onNavigateBack: () -> Unit
+) {
     var name by remember { mutableStateOf("") }
     var isTermsChecked by remember { mutableStateOf(false) }
 
@@ -31,7 +35,8 @@ fun NameInputScreen() {
     ) {
         CustomTopAppBar(
             pageTitle = "Nama",
-            icon = Icons.Default.ArrowBack
+            icon = Icons.Default.ArrowBack,
+            onIconClick = onNavigateBack
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -81,13 +86,16 @@ fun NameInputScreen() {
                 color = ColorPrimary,
                 modifier = Modifier.clickable {
 //                    navController.navigate("terms_and_conditions")
+                    onNavigateToTermsAndConditions()
                 }
             )
         }
 
         CustomButtonFilled(
-            onClick = { },
+            onClick = { onNavigateToHome() },
             text = "Lanjut",
+            backgroundColor = if (isTermsChecked) ColorPrimary else Color.Gray,
+            isEnabled = isTermsChecked
         )
 
         Text(
@@ -104,5 +112,9 @@ fun NameInputScreen() {
 @Preview(showBackground = true)
 @Composable
 fun NameInputScreenPreview() {
-    NameInputScreen()
+    NameInputScreen(
+        onNavigateToHome = {},
+        onNavigateToTermsAndConditions = {},
+        onNavigateBack = {}
+    )
 }

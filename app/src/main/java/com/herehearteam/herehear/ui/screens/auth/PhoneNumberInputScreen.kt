@@ -28,7 +28,11 @@ import com.herehearteam.herehear.ui.theme.ColorPrimary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InputNumberScreen(){
+fun InputNumberScreen(
+    onNavigateToOtpWhatsApp: (phoneNumber: String) -> Unit,
+    onNavigateToOtpSms: (phoneNumber: String) -> Unit,
+    onNavigateBack: () -> Unit
+){
     var phoneNumber by remember { mutableStateOf("") }
 
     Column(
@@ -38,7 +42,8 @@ fun InputNumberScreen(){
     ) {
         CustomTopAppBar(
             pageTitle = "Nomor Telepon",
-            icon = Icons.Default.ArrowBack
+            icon = Icons.Default.ArrowBack,
+            onIconClick = onNavigateBack
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -117,7 +122,7 @@ fun InputNumberScreen(){
                 Spacer(modifier = Modifier.height(16.dp))
 
                 CustomButtonFilled(
-                    onClick = { },
+                    onClick = { onNavigateToOtpWhatsApp(phoneNumber) },
                     text = "WhatsApp",
                     backgroundColor = Color(0xFF25D366),
                     icon = painterResource(R.drawable.ic_whatsapp),
@@ -127,7 +132,7 @@ fun InputNumberScreen(){
                 Spacer(modifier = Modifier.height(16.dp))
 
                 CustomButtonFilled(
-                    onClick = {  },
+                    onClick = { onNavigateToOtpSms(phoneNumber)  },
                     text = "SMS",
                     backgroundColor = ColorPrimary,
                     icon = Icons.Default.MailOutline,
@@ -141,5 +146,9 @@ fun InputNumberScreen(){
 @Preview(showBackground = true)
 @Composable
 fun InputNumberPreview(){
-    InputNumberScreen()
+    InputNumberScreen(
+        onNavigateToOtpWhatsApp = { },
+        onNavigateToOtpSms = { },
+        onNavigateBack = { }
+    )
 }

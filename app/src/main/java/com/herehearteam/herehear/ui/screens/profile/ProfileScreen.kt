@@ -43,7 +43,7 @@ import com.herehearteam.herehear.ui.components.BottomNavigationBar
 import com.herehearteam.herehear.ui.components.CustomTopAppBar
 import com.herehearteam.herehear.ui.theme.ColorPrimary
 import com.herehearteam.herehear.ui.theme.HereHearTheme
-import coil.compose.rememberAsyncImagePainter
+//import coil.compose.rememberAsyncImagePainter
 import com.herehearteam.herehear.R
 import com.herehearteam.herehear.ui.components.CustomButtonFilled
 import com.herehearteam.herehear.ui.components.CustomButtonOutlined
@@ -74,7 +74,8 @@ fun Container(
                 // Konten pertama
                 Image(
                     painter = if (photoProfile != null) {
-                        rememberAsyncImagePainter(model = photoProfile)
+//                        rememberAsyncImagePainter(model = photoProfile)
+                        painterResource(id = R.drawable.avatar)
                     } else {
                         painterResource(id = R.drawable.avatar)
                     },
@@ -147,7 +148,7 @@ fun Container(
                             backgroundColor = Color.White,
                             textColor = Color.Black,
                             height = Dp(33.49f),
-                            contentPadding = 8.dp,
+//                            contentPadding = 8.dp,
                         )
                     }
                 }
@@ -218,9 +219,9 @@ fun ProfileScreen(navController: NavHostController) {
                     icon = Icons.Filled.ArrowBack,
                 )
         },
-        bottomBar = {
-            BottomNavigationBar(navController = navController)
-        }
+//        bottomBar = {
+//            BottomNavigationBar(navController = navController)
+//        }
     ) { innerPadding ->
         // Konten Halaman Profil
         Box(modifier = Modifier.padding(innerPadding)) {
@@ -247,8 +248,7 @@ fun ProfileScreen(navController: NavHostController) {
                         textColor = Color.Black,
                         iconColor = Color.Red,
                         outlineColor = Color.Red,
-                        contentPadding = 14.dp
-
+//                        contentPadding = 14.dp
                         )
                 }
 

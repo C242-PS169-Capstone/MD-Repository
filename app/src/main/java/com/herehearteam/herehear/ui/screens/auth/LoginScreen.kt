@@ -34,7 +34,8 @@ import com.herehearteam.herehear.ui.theme.ColorPrimary
 @Composable
 fun LoginScreen(
     onLoginWithGmail: () -> Unit,
-    onLoginWithPhone: () -> Unit
+    onLoginWithPhone: () -> Unit,
+    onNavigateBack: () -> Unit
 ){
     Box(
         modifier = Modifier
@@ -50,7 +51,8 @@ fun LoginScreen(
         ) {
             CustomTopAppBar(
                 pageTitle = "",
-                icon = Icons.Default.ArrowBack
+                icon = Icons.Default.ArrowBack,
+                onIconClick = onNavigateBack
             )
         }
         Canvas(
@@ -145,6 +147,7 @@ fun LoginScreen(
 fun LoginPreview(){
     LoginScreen(
         onLoginWithGmail = { },
-        onLoginWithPhone = { }
+        onLoginWithPhone = { },
+        onNavigateBack = { }
     )
 }

@@ -56,7 +56,9 @@ val termsList = listOf(
 
 
 @Composable
-fun TermsAndConditionsScreen(navController: NavController) {
+fun TermsAndConditionsScreen(
+    onNavigateBack: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -66,7 +68,7 @@ fun TermsAndConditionsScreen(navController: NavController) {
         CustomTopAppBar(
             pageTitle = "Syarat dan Ketentuan",
             icon = Icons.Default.ArrowBack,
-//            onBackPressed = { navController.popBackStack() }
+            onIconClick = onNavigateBack
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -98,5 +100,7 @@ fun TermsAndConditionsScreen(navController: NavController) {
 @Preview(showBackground = true)
 @Composable
 fun TermsAndConditionsScreenPreview() {
-    TermsAndConditionsScreen(navController = rememberNavController())
+    TermsAndConditionsScreen(
+        onNavigateBack = {}
+    )
 }
