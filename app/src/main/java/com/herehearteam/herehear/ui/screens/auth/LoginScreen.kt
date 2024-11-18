@@ -32,7 +32,10 @@ import com.herehearteam.herehear.ui.components.CustomTopAppBar
 import com.herehearteam.herehear.ui.theme.ColorPrimary
 
 @Composable
-fun LoginScreen(){
+fun LoginScreen(
+    onLoginWithGmail: () -> Unit,
+    onLoginWithPhone: () -> Unit
+){
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -94,7 +97,7 @@ fun LoginScreen(){
                 textColor = Color.Black,
                 fontSize = 14.sp,
                 icon = painterResource(R.drawable.ic_logo_google),
-                onClick = { }
+                onClick = onLoginWithGmail
             )
 
             Spacer(Modifier.height(12.dp))
@@ -131,7 +134,7 @@ fun LoginScreen(){
                 textColor = Color.Black,
                 fontSize = 14.sp,
                 iconColor = Color.Black,
-                onClick = { },
+                onClick = onLoginWithPhone,
             )
         }
     }
@@ -140,5 +143,8 @@ fun LoginScreen(){
 @Preview
 @Composable
 fun LoginPreview(){
-    LoginScreen()
+    LoginScreen(
+        onLoginWithGmail = { },
+        onLoginWithPhone = { }
+    )
 }

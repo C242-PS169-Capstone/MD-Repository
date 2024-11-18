@@ -25,7 +25,10 @@ import com.herehearteam.herehear.ui.theme.ColorPrimary
 
 
 @Composable
-fun RegisterScreen(){
+fun RegisterScreen(
+    onRegisterWithGmail: () -> Unit,
+    onRegisterWithPhone: () -> Unit
+){
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -87,7 +90,7 @@ fun RegisterScreen(){
                 textColor = Color.Black,
                 fontSize = 14.sp,
                 icon = painterResource(R.drawable.ic_logo_google),
-                onClick = { }
+                onClick = onRegisterWithGmail
             )
 
             Spacer(Modifier.height(12.dp))
@@ -124,7 +127,7 @@ fun RegisterScreen(){
                 textColor = Color.Black,
                 fontSize = 14.sp,
                 iconColor = Color.Black,
-                onClick = { },
+                onClick = onRegisterWithPhone,
             )
         }
     }
@@ -133,5 +136,8 @@ fun RegisterScreen(){
 @Preview
 @Composable
 fun RegisterPreview(){
-    RegisterScreen()
+    RegisterScreen(
+        onRegisterWithGmail = { },
+        onRegisterWithPhone = { }
+    )
 }

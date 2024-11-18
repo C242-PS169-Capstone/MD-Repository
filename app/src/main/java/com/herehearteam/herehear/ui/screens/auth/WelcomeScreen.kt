@@ -19,7 +19,10 @@ import com.herehearteam.herehear.ui.components.CustomButtonFilled
 import com.herehearteam.herehear.ui.components.CustomButtonOutlined
 
 @Composable
-fun WelcomeScreen(){
+fun WelcomeScreen(
+    navigateToLogin: () -> Unit,
+    navigateToRegister: () -> Unit
+){
     Box(
         modifier = Modifier
             .fillMaxSize(),
@@ -32,7 +35,7 @@ fun WelcomeScreen(){
 
         ) {
             CustomButtonFilled(
-                onClick = { },
+                onClick = navigateToLogin,
                 text = stringResource(R.string.masuk),
                 letterSpacing = 2.sp
             )
@@ -40,7 +43,7 @@ fun WelcomeScreen(){
             Spacer(Modifier.height(16.dp))
 
             CustomButtonOutlined(
-                onClick = { },
+                onClick = navigateToRegister,
                 text = stringResource(R.string.daftar),
                 letterSpacing = 2.sp
             )
@@ -51,5 +54,8 @@ fun WelcomeScreen(){
 @Preview(showBackground = true)
 @Composable
 fun WelcomePreview(){
-    WelcomeScreen()
+    WelcomeScreen(
+        navigateToLogin = {},
+        navigateToRegister = {}
+    )
 }

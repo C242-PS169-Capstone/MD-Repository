@@ -9,8 +9,10 @@ import com.herehearteam.herehear.navigation.Screen
 fun shouldShowBottomBar(navController: NavHostController): Boolean {
     val restrictedScreens = listOf(
         Screen.Splash.route,
-//        Screen.Login.route,
-//        Screen.Register.route,
+        Screen.Welcome.route,
+        Screen.Login.route,
+        Screen.Register.route,
+        Screen.InputNumber.route,
 //        Screen.Settings.route,
 //        Screen.Notifications.route
     )

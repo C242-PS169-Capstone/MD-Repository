@@ -35,7 +35,7 @@ private val MochiyPopOne = FontFamily(
 @Composable
 fun SplashScreen(
     modifier: Modifier = Modifier,
-    navigateToHome: () -> Unit
+    navigateToWelcome: () -> Unit
 ) {
     var isRotating by remember { mutableStateOf(false) }
     var showWhiteCircle by remember { mutableStateOf(false) }
@@ -85,7 +85,7 @@ fun SplashScreen(
         delay(500)
         showText = true
         delay(1000)
-        navigateToHome()
+        navigateToWelcome()
     }
 
     Box(
