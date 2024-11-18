@@ -33,7 +33,11 @@ import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OtpRegisterScreen(phoneNumber: String){
+fun OtpRegisterScreen(
+    phoneNumber: String,
+    onNavigateToNameInput: () -> Unit,
+    onNavigateBack: () -> Unit
+){
     var otp by remember { mutableStateOf(Array(6) { "" }) }
     var countdown by remember { mutableStateOf(120) }
     val minutes = countdown / 60
@@ -53,7 +57,8 @@ fun OtpRegisterScreen(phoneNumber: String){
     ) {
         CustomTopAppBar(
             pageTitle = "OTP",
-            icon = Icons.AutoMirrored.Filled.ArrowBack
+            icon = Icons.AutoMirrored.Filled.ArrowBack,
+            onIconClick = onNavigateBack
         )
 
         Text(
@@ -102,7 +107,7 @@ fun OtpRegisterScreen(phoneNumber: String){
         }
 
         CustomButtonFilled(
-            onClick = { },
+            onClick = { onNavigateToNameInput() },
             text = "Lanjut",
             backgroundColor = ColorPrimary
         )
@@ -133,5 +138,9 @@ fun OtpRegisterScreen(phoneNumber: String){
 @Preview(showBackground = true)
 @Composable
 fun OtpRegisterPreview(){
-    OtpRegisterScreen(phoneNumber = "88225342861")
+    OtpRegisterScreen(
+        phoneNumber = "88225342861",
+        onNavigateToNameInput = { },
+        onNavigateBack = {}
+    )
 }

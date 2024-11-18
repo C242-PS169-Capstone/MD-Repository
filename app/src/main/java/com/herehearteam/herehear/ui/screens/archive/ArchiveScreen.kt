@@ -293,9 +293,9 @@ fun ArchiveScreen(navController: NavHostController, viewModel: JournalViewModel 
             }
             }
         },
-        bottomBar = {
-            BottomNavigationBar(navController = navController)
-        }
+//        bottomBar = {
+//            BottomNavigationBar(navController = navController)
+//        }
     ){ innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)){
             Column{

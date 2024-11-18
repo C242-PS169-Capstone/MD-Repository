@@ -13,8 +13,10 @@ fun shouldShowBottomBar(navController: NavHostController): Boolean {
         Screen.Login.route,
         Screen.Register.route,
         Screen.InputNumber.route,
-//        Screen.Settings.route,
-//        Screen.Notifications.route
+        Screen.OtpRegister.route,
+        Screen.OtpLogin.route,
+        Screen.InputName.route,
+        Screen.Term.route,
     )
 
     return !restrictedScreens.contains(
