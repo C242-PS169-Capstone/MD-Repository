@@ -38,10 +38,10 @@ fun NavigationGraph(
             ArticleScreen()
         }
         composable(Screen.Journal.route) {
-            JournalScreen(navController = navController)
+            JournalScreen(navController)
         }
         composable(Screen.Archive.route) {
-            ArchiveScreen()
+            ArchiveScreen(navController= navController)
         }
         composable(Screen.Profile.route) {
             ProfileScreen(navController = navController)
