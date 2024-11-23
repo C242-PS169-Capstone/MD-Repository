@@ -25,7 +25,6 @@ class HomeViewModel : ViewModel() {
 
     private fun loadInitialData() {
         viewModelScope.launch {
-            // dummy data
             _uiState.value = HomeUiState(
                 userName = "Arjadikrama",
                 dailyQuestion = "Sebutkan isi pikiranmu akhir-akhir ini",

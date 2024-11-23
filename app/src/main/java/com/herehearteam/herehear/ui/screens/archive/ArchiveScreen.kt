@@ -137,7 +137,7 @@ object DummyJournals {
 }
 
 // JournalViewModel.kt
-class JournalViewModel : ViewModel() {
+class ArchiveViewModel : ViewModel() {
     private val _journals = MutableStateFlow<List<Journal>>(emptyList())
     val journals: StateFlow<List<Journal>> = _journals.asStateFlow()
 
@@ -250,7 +250,7 @@ data class Journal(
 )
 
 @Composable
-fun ArchiveScreen(navController: NavHostController, viewModel: JournalViewModel = viewModel())
+fun ArchiveScreen(navController: NavHostController, viewModel: ArchiveViewModel = viewModel())
 {
     val journals = viewModel.journals.collectAsState().value
     var selectedMonth by remember { mutableStateOf(10) }
