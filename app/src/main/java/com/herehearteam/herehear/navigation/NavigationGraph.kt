@@ -1,6 +1,7 @@
 package com.herehearteam.herehear.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -18,12 +19,14 @@ import com.herehearteam.herehear.ui.screens.auth.TermsAndConditionsScreen
 import com.herehearteam.herehear.ui.screens.auth.WelcomeScreen
 import com.herehearteam.herehear.ui.screens.home.HomeScreen
 import com.herehearteam.herehear.ui.screens.journal.JournalScreen
+import com.herehearteam.herehear.ui.screens.journal.JournalViewModel
 import com.herehearteam.herehear.ui.screens.profile.ProfileScreen
 import com.herehearteam.herehear.ui.screens.splash.SplashScreen
 
 @Composable
 fun NavigationGraph(
-    navController: NavHostController
+    navController: NavHostController,
+    viewModel: JournalViewModel = viewModel()
 ){
     NavHost(
         navController = navController,
@@ -48,7 +51,10 @@ fun NavigationGraph(
         }
 
         composable(Screen.Journal.route) {
-            JournalScreen(navController)
+            JournalScreen(
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
 
         composable(Screen.Archive.route) {
