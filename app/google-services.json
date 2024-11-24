@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "888141986596",
+    "project_id": "herehearsignin-b12bf",
+    "storage_bucket": "herehearsignin-b12bf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:888141986596:android:a343fd116d07f0de9f11b1",
+        "android_client_info": {
+          "package_name": "com.herehearteam.herehear"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "888141986596-2hp1l7m4fgbvtrsi0n8khmu8otckrgli.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZHaSdXAejPLBeGboFqNmqtrqj3uwqM7M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "888141986596-2hp1l7m4fgbvtrsi0n8khmu8otckrgli.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

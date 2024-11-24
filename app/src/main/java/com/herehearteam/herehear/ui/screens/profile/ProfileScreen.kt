@@ -1,6 +1,7 @@
 package com.herehearteam.herehear.ui.screens.profile
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -26,10 +27,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -37,6 +42,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.herehearteam.herehear.ui.components.BottomNavigationBar
@@ -45,9 +51,12 @@ import com.herehearteam.herehear.ui.theme.ColorPrimary
 import com.herehearteam.herehear.ui.theme.HereHearTheme
 //import coil.compose.rememberAsyncImagePainter
 import com.herehearteam.herehear.R
+import com.herehearteam.herehear.navigation.Screen
 import com.herehearteam.herehear.ui.components.CustomButtonFilled
 import com.herehearteam.herehear.ui.components.CustomButtonOutlined
+import com.herehearteam.herehear.ui.components.LocalGoogleAuthUiClient
 import com.herehearteam.herehear.ui.components.ProfileOptionComponent
+import kotlinx.coroutines.launch
 
 @Composable
 fun Container(
@@ -211,7 +220,16 @@ fun ListOfOption(){
 }
 
 @Composable
-fun ProfileScreen(navController: NavHostController) {
+fun ProfileScreen(
+    navController: NavHostController,
+    viewModel: ProfileViewModel = viewModel(
+        factory = ProfileViewModelFactory(LocalGoogleAuthUiClient.current)
+    )
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+
     Scaffold(
         topBar = {
                 CustomTopAppBar(
@@ -242,7 +260,19 @@ fun ProfileScreen(navController: NavHostController) {
                         .padding(horizontal = 16.dp)
                 ){
                     CustomButtonOutlined(
-                        onClick = {},
+                        onClick = {
+                            scope.launch {
+                                viewModel.signOut()
+                                Toast.makeText(
+                                    context,
+                                    "Berhasil logout",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                navController.navigate(Screen.Welcome.route) {
+                                    popUpTo(Screen.Home.route) { inclusive = true }
+                                }
+                            }
+                        },
                         text = "Logout",
                         icon = painterResource(R.drawable.ic_logout),
                         textColor = Color.Black,

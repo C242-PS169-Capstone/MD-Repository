@@ -44,6 +44,7 @@ import com.herehearteam.herehear.ui.components.ArticleCard
 import com.herehearteam.herehear.ui.components.CustomTopAppBar
 import com.herehearteam.herehear.ui.components.DailyQuestionCard
 import com.herehearteam.herehear.ui.components.FeatureCardComponent
+import com.herehearteam.herehear.ui.components.LocalGoogleAuthUiClient
 import com.herehearteam.herehear.ui.components.UserGreetingCard
 import com.herehearteam.herehear.ui.components.WeeklyMoodCard
 import com.herehearteam.herehear.ui.screens.article.ArticleViewModel
@@ -53,7 +54,9 @@ import com.herehearteam.herehear.ui.theme.HereHearTheme
 @Composable
 fun HomeScreen(
     navController: NavHostController,
-    viewModel: HomeViewModel = viewModel(),
+    viewModel: HomeViewModel = viewModel(
+        factory = HomeViewModelFactory(LocalGoogleAuthUiClient.current)
+    ),
     articleViewModel: ArticleViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -106,7 +109,7 @@ fun HomeScreen(
                     .offset(y = (-40).dp)
             ) {
                 UserGreetingCard(
-                    userName = uiState.userName
+                    userName = uiState.userName,
                 )
             }
         }

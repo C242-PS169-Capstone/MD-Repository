@@ -1,20 +1,32 @@
 package com.herehearteam.herehear.navigation
 
+import android.app.Activity.RESULT_OK
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.herehearteam.herehear.data.remote.GoogleAuthUiClient
 import com.herehearteam.herehear.ui.screens.archive.ArchiveScreen
 import com.herehearteam.herehear.ui.screens.article.ArticleScreen
 import com.herehearteam.herehear.ui.screens.auth.InputNumberScreen
 import com.herehearteam.herehear.ui.screens.auth.LoginScreen
+import com.herehearteam.herehear.ui.screens.auth.LoginViewModel
 import com.herehearteam.herehear.ui.screens.auth.NameInputScreen
 import com.herehearteam.herehear.ui.screens.auth.OtpLoginScreen
 import com.herehearteam.herehear.ui.screens.auth.OtpRegisterScreen
 import com.herehearteam.herehear.ui.screens.auth.RegisterScreen
+import com.herehearteam.herehear.ui.screens.auth.RegisterViewModel
 import com.herehearteam.herehear.ui.screens.auth.TermsAndConditionsScreen
 import com.herehearteam.herehear.ui.screens.auth.WelcomeScreen
 import com.herehearteam.herehear.ui.screens.home.HomeScreen
@@ -22,12 +34,34 @@ import com.herehearteam.herehear.ui.screens.journal.JournalScreen
 import com.herehearteam.herehear.ui.screens.journal.JournalViewModel
 import com.herehearteam.herehear.ui.screens.profile.ProfileScreen
 import com.herehearteam.herehear.ui.screens.splash.SplashScreen
+import kotlinx.coroutines.launch
 
 @Composable
 fun NavigationGraph(
     navController: NavHostController,
+    googleAuthUiClient: GoogleAuthUiClient,
     viewModel: JournalViewModel = viewModel()
 ){
+    val loginViewModel: LoginViewModel = viewModel()
+    val registerViewModel: RegisterViewModel = viewModel()
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult(),
+        onResult = { result ->
+            if (result.resultCode == RESULT_OK) {
+                scope.launch {
+                    val signInResult = googleAuthUiClient.signInWithIntent(
+                        intent = result.data ?: return@launch
+                    )
+                    loginViewModel.onSignInResult(signInResult)
+                    registerViewModel.onSignInResult(signInResult)
+                }
+            }
+        }
+    )
+
     NavHost(
         navController = navController,
         startDestination = Screen.Splash.route
@@ -73,10 +107,26 @@ fun NavigationGraph(
         }
 
         composable(Screen.Register.route) {
-            RegisterScreen(
-                onRegisterWithGmail = {
+            val state by registerViewModel.state.collectAsState()
+
+            LaunchedEffect(key1 = state.isSignInSuccessful) {
+                if (state.isSignInSuccessful) {
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Register.route) { inclusive = true }
+                    }
+                    registerViewModel.resetState()
+                }
+            }
+
+            RegisterScreen(
+                onRegisterWithGmail = {
+                    scope.launch {
+                        val signInIntentSender = googleAuthUiClient.signIn()
+                        launcher.launch(
+                            IntentSenderRequest.Builder(
+                                signInIntentSender ?: return@launch
+                            ).build()
+                        )
                     }
                 },
                 onRegisterWithPhone = {
@@ -89,10 +139,26 @@ fun NavigationGraph(
         }
 
         composable(Screen.Login.route) {
-            LoginScreen(
-                onLoginWithGmail = {
+            val state by loginViewModel.state.collectAsState()
+
+            LaunchedEffect(key1 = state.isSignInSuccessful) {
+                if (state.isSignInSuccessful) {
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                    loginViewModel.resetState()
+                }
+            }
+
+            LoginScreen(
+                onLoginWithGmail = {
+                    scope.launch {
+                        val signInIntentSender = googleAuthUiClient.signIn()
+                        launcher.launch(
+                            IntentSenderRequest.Builder(
+                                signInIntentSender ?: return@launch
+                            ).build()
+                        )
                     }
                 },
                 onLoginWithPhone = {
