@@ -30,16 +30,19 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.herehearteam.herehear.R
 import com.herehearteam.herehear.navigation.Screen
+import com.herehearteam.herehear.ui.screens.journal.JournalViewModel
 import com.herehearteam.herehear.ui.theme.ColorPrimary
 
 @Composable
 fun BottomNavigationBar(
     navController: NavHostController,
+    viewModel: JournalViewModel = viewModel()
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -121,7 +124,9 @@ fun BottomNavigationBar(
 
         // Floating Action Button
         FloatingActionButton(
-            onClick = { navController.navigate(Screen.Journal.route) },
+            onClick = {
+                viewModel.showBottomSheet()
+            },
             modifier = Modifier
                 .offset(y = (-40).dp)
                 .size(56.dp),
