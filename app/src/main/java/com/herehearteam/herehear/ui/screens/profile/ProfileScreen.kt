@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -23,12 +24,16 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,11 +50,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.herehearteam.herehear.ui.components.BottomNavigationBar
 import com.herehearteam.herehear.ui.components.CustomTopAppBar
 import com.herehearteam.herehear.ui.theme.ColorPrimary
 import com.herehearteam.herehear.ui.theme.HereHearTheme
-//import coil.compose.rememberAsyncImagePainter
 import com.herehearteam.herehear.R
 import com.herehearteam.herehear.navigation.Screen
 import com.herehearteam.herehear.ui.components.CustomButtonFilled
@@ -57,6 +60,8 @@ import com.herehearteam.herehear.ui.components.CustomButtonOutlined
 import com.herehearteam.herehear.ui.components.LocalGoogleAuthUiClient
 import com.herehearteam.herehear.ui.components.ProfileOptionComponent
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 @Composable
 fun Container(
@@ -83,7 +88,6 @@ fun Container(
                 // Konten pertama
                 Image(
                     painter = if (photoProfile != null) {
-//                        rememberAsyncImagePainter(model = photoProfile)
                         painterResource(id = R.drawable.avatar)
                     } else {
                         painterResource(id = R.drawable.avatar)
@@ -157,11 +161,45 @@ fun Container(
                             backgroundColor = Color.White,
                             textColor = Color.Black,
                             height = Dp(33.49f),
-//                            contentPadding = 8.dp,
                         )
                     }
                 }
             }
+        }
+    }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PopUp(
+    isOpen: Boolean,
+    onDismiss: () -> Unit,
+    title: String? = null,
+    content: @Composable (ColumnScope.() -> Unit)? = null
+) {
+    val sheetState = rememberModalBottomSheetState()
+
+    ModalBottomSheet(
+        onDismissRequest = { onDismiss() },
+        sheetState = sheetState,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            title?.let {
+                Text(
+                    text = it,
+                    style = TextStyle(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    ),
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            }
+
+            content?.invoke(this)
         }
     }
 }
@@ -174,6 +212,9 @@ fun ListOfOption(){
             .padding(bottom = 36.dp),
         verticalArrangement = Arrangement.Top
     ){
+        var isSheetEmergencyContactOpen by remember { mutableStateOf(false) }
+        var isSheetDeleteAccountOpen by remember { mutableStateOf(false) }
+
         Box(modifier = Modifier
             .padding(horizontal = 16.dp)){
             Text(
@@ -190,8 +231,18 @@ fun ListOfOption(){
         ProfileOptionComponent(
             icon = Icons.Outlined.Person,
             title = "Kontak Darurat",
-            onClick = { }
+            onClick = { isSheetEmergencyContactOpen = true}
         )
+
+        if (isSheetEmergencyContactOpen) {
+           PopUp(
+               isOpen = isSheetEmergencyContactOpen,
+               onDismiss = { isSheetEmergencyContactOpen = false },
+               title = "Kontak Darurat"
+           ){
+               // isi pop up
+           }
+        }
 
         Spacer(Modifier.height(10.dp))
 
@@ -214,8 +265,18 @@ fun ListOfOption(){
         ProfileOptionComponent(
             icon = Icons.Outlined.Delete,
             title = "Hapus Akun",
-            onClick = { }
+            onClick = { isSheetDeleteAccountOpen = true }
         )
+
+        if (isSheetDeleteAccountOpen) {
+            PopUp(
+                isOpen = isSheetDeleteAccountOpen,
+                onDismiss = { isSheetDeleteAccountOpen = false },
+                title = "Hapus Akun"
+            ){
+                // isi pop up
+            }
+        }
     }
 }
 
@@ -237,9 +298,6 @@ fun ProfileScreen(
                     icon = Icons.Filled.ArrowBack,
                 )
         },
-//        bottomBar = {
-//            BottomNavigationBar(navController = navController)
-//        }
     ) { innerPadding ->
         // Konten Halaman Profil
         Box(modifier = Modifier.padding(innerPadding)) {
@@ -278,7 +336,6 @@ fun ProfileScreen(
                         textColor = Color.Black,
                         iconColor = Color.Red,
                         outlineColor = Color.Red,
-//                        contentPadding = 14.dp
                         )
                 }
 
