@@ -1,6 +1,5 @@
 package com.herehearteam.herehear.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -26,8 +25,7 @@ fun ProfileOptionComponent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
-            .background(Color.White),
+            .clickable { onClick() },
         verticalArrangement = Arrangement.Center
     ) {
         Row(
