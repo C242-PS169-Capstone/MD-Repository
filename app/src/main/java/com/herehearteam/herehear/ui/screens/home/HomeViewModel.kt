@@ -1,20 +1,18 @@
 package com.herehearteam.herehear.ui.screens.home
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.herehearteam.herehear.data.remote.GoogleAuthUiClient
 import com.herehearteam.herehear.domain.model.DayMood
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 data class HomeUiState(
     val userName: String = "",
     val dailyQuestion: String = "",
-    val weeklyMoods: List<DayMood> = emptyList()
+    val weeklyMoods: List<DayMood> = emptyList(),
 )
 
 class HomeViewModel(

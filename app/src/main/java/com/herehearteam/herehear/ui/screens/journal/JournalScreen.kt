@@ -1,53 +1,86 @@
 package com.herehearteam.herehear.ui.screens.journal
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.herehearteam.herehear.ui.components.CustomMemoEditor
-import com.herehearteam.herehear.ui.theme.HereHearTheme
+import com.herehearteam.herehear.ui.components.CustomTopAppBar
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JournalScreen(
     viewModel: JournalViewModel,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToHome: () -> Unit
 ) {
+    val isSaveSuccessful by viewModel.isSaveSuccessful.collectAsState()
     val selectedQuestion by viewModel.selectedQuestion.collectAsState()
     val memoText by viewModel.memoText.collectAsState()
     val isFabExpanded by viewModel.isFabExpanded.collectAsState()
+    val shouldShowBackPressedDialog by viewModel.shouldShowBackPressedDialog.collectAsState()
+    val shouldShowResetConfirmationDialog by viewModel.shouldShowResetConfirmationDialog.collectAsState()
+    val navigationEvent by viewModel.navigationEvent.collectAsState()
+
+    BackHandler {
+        viewModel.onBackPressed()
+    }
+
+    LaunchedEffect(navigationEvent) {
+        when (navigationEvent) {
+            is NavigationEvent.NavigateBack -> {
+                onNavigateBack()
+                viewModel.clearNavigationEvent()
+            }
+            is NavigationEvent.NavigateToHome -> {
+                onNavigateToHome()
+                viewModel.clearNavigationEvent()
+            }
+            null -> {}
+        }
+    }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -58,15 +91,13 @@ fun JournalScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+            CustomTopAppBar(
+                pageTitle = "Tulis Jurnal",
+                icon = Icons.AutoMirrored.Filled.ArrowBack,
+                onIconClick = {
+                    viewModel.onBackPressed()
                 }
-            }
+            )
 
             if (selectedQuestion != null) {
                 Card(
@@ -96,24 +127,41 @@ fun JournalScreen(
             )
         }
 
-        // Floating Action Buttons
         Column(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.End
         ) {
             AnimatedVisibility(
                 visible = isFabExpanded,
-                enter = slideInVertically() + fadeIn(),
-                exit = slideOutVertically() + fadeOut()
+                enter = expandVertically(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMedium
+                    )
+                ) + fadeIn(),
+                exit = shrinkVertically(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMedium
+                    )
+                ) + fadeOut()
             ) {
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalAlignment = Alignment.End
                 ) {
                     FloatingActionButton(
-                        onClick = { /* TODO */ },
-                        containerColor = MaterialTheme.colorScheme.secondary
+                        onClick = { viewModel.saveJournal() },
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        shape = CircleShape,
+                        elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
+                        modifier = Modifier
+                            .size(40.dp)
+                            .offset(x = (-8).dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Done,
@@ -122,12 +170,17 @@ fun JournalScreen(
                         )
                     }
                     FloatingActionButton(
-                        onClick = { /* TODO */ },
-                        containerColor = MaterialTheme.colorScheme.error
+                        onClick = { viewModel.showResetConfirmationDialog() },
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        shape = CircleShape,
+                        elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
+                        modifier = Modifier
+                            .size(40.dp)
+                            .offset(x = (-8).dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
-                            contentDescription = "Hapus",
+                            contentDescription = "Reset",
                             tint = Color.White
                         )
                     }
@@ -136,25 +189,74 @@ fun JournalScreen(
 
             FloatingActionButton(
                 onClick = { viewModel.toggleFabExpanded() },
-                containerColor = MaterialTheme.colorScheme.primary
+                containerColor = MaterialTheme.colorScheme.primary,
+                shape = CircleShape,
+                modifier = Modifier.size(56.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "More Actions",
-                    tint = Color.White
-                )
+                Crossfade(
+                    targetState = isFabExpanded,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMedium
+                    )
+                ) { expanded ->
+                    Icon(
+                        imageVector = if (expanded) Icons.Default.Close else Icons.Default.Add,
+                        contentDescription = "More Actions",
+                        tint = Color.White
+                    )
+                }
             }
+        }
+
+        if (shouldShowBackPressedDialog) {
+            AlertDialog(
+                onDismissRequest = { viewModel.onBackPressedCancel() },
+                title = { Text("Keluar Tanpa Menyimpan") },
+                text = { Text("Perubahan Anda belum disimpan. Apakah Anda yakin ingin keluar?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        viewModel.onBackPressedConfirm()
+                        onNavigateBack()
+                    }) {
+                        Text("Ya")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { viewModel.onBackPressedCancel() }) {
+                        Text("Batal")
+                    }
+                }
+            )
+        }
+
+        if (shouldShowResetConfirmationDialog) {
+            AlertDialog(
+                onDismissRequest = { viewModel.cancelResetConfirmation() },
+                title = { Text("Reset Memo") },
+                text = { Text("Apakah kamu yakin ingin mereset memo yang sedang kamu tulis?") },
+                confirmButton = {
+                    TextButton(onClick = { viewModel.confirmReset() }) {
+                        Text("Ya")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { viewModel.cancelResetConfirmation() }) {
+                        Text("Batal")
+                    }
+                }
+            )
         }
     }
 }
 
-@Preview(showSystemUi = true, showBackground = true)
-@Composable
-fun JournalScreenPreview(){
-    HereHearTheme {
-        JournalScreen(
-            viewModel = JournalViewModel(),
-            onNavigateBack = {}
-        )
-    }
-}
+//@Preview(showSystemUi = true, showBackground = true)
+//@Composable
+//fun JournalScreenPreview(){
+//    HereHearTheme {
+//        JournalScreen(
+//            viewModel = JournalViewModel(),
+//            onNavigateBack = {}
+//        )
+//    }
+//}

@@ -115,7 +115,7 @@ fun LoginScreen(
 
         ) {
             CustomButtonFilled(
-                text = "Masuk Dengan Gmail",
+                text = "Masuk Dengan Google",
                 backgroundColor = Color.White,
                 textColor = Color.Black,
                 fontSize = 14.sp,
