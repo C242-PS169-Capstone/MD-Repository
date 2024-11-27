@@ -106,7 +106,7 @@ fun RegisterScreen(
 
         ) {
             CustomButtonFilled(
-                text = "Daftar Dengan Gmail",
+                text = "Daftar Dengan Google",
                 backgroundColor = Color.White,
                 textColor = Color.Black,
                 fontSize = 14.sp,
