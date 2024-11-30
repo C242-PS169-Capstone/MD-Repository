@@ -1,5 +1,6 @@
 package com.herehearteam.herehear.ui.screens.archive
 
+import android.R
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -64,6 +65,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.saveable.rememberSaveable
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -157,31 +160,18 @@ object DummyJournals {
     )
 }
 
-// JournalViewModel.kt
-class JournalViewModel : ViewModel() {
-    private val _journals = MutableStateFlow<List<Journal>>(emptyList())
-    val journals: StateFlow<List<Journal>> = _journals.asStateFlow()
-
-    init {
-        // Load dummy data saat ViewModel diinisialisasi
-        loadDummyData()
-    }
-
-    private fun loadDummyData() {
-        _journals.value = DummyJournals.journalList
-    }
-}
-
 @Composable
 fun JournalArchiveContent(
     modifier: Modifier = Modifier,
     journals: List<Journal> = emptyList(),
     selectedMonth: Int,
-    onMonthSelected: (Int) -> Unit
+    onMonthSelected: (Int) -> Unit,
+    selectedDate: LocalDate?,
+    onDateSelected: (LocalDate?) -> Unit,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
-    var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
-    var searchQuery by remember { mutableStateOf("") }
 
     val colors = listOf(Color(0xFFBCF1F3), Color(0xFFFFEEBF), Color(0xFFDECDFD), Color(0xFFF3E5DF))
     val months = listOf("Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -214,19 +204,6 @@ fun JournalArchiveContent(
         }
     }
 
-    // Date Picker Dialog
-    if (showDatePicker) {
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            onDateSelected = { date ->
-                selectedDate = date
-                // Update selected month to match selected date
-                onMonthSelected(date.monthValue - 1)
-                showDatePicker = false
-            }
-        )
-    }
-
     LazyColumn(
         modifier = modifier.fillMaxSize()
     ) {
@@ -242,8 +219,9 @@ fun JournalArchiveContent(
                     .padding(horizontal = 16.dp)
                     .offset(y = 50.dp)){
                     CustomSearchBar(
+                        value = searchQuery,
                         onValueChange = { newQuery ->
-                            searchQuery = newQuery
+                            onSearchQueryChange(newQuery)
                         },
                         placeholder = "Cari Jurnalmu",
                         iconColor = ColorPrimary,
@@ -269,12 +247,12 @@ fun JournalArchiveContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
-                        .padding(top = 16.dp, bottom = 8.dp),
-                    horizontalArrangement = Arrangement.Center
+                        .padding(top = 40.dp, bottom = 8.dp),
+                    horizontalArrangement = Arrangement.Start
                 ) {
                     Surface(
                         shape = RoundedCornerShape(30.dp),
-                        color = Color(0xFFBCF1F3),
+                        color = Color(0xFFF3E5DF),
                         modifier = Modifier
                             .padding(4.dp)
                             .height(32.dp)
@@ -287,17 +265,28 @@ fun JournalArchiveContent(
                                 text = selectedDate?.format(
                                     DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale("id"))
                                 ) ?: "",
-                                color = ColorPrimary
+                                style = TextStyle(
+                                    color = if (isSystemInDarkTheme()) {
+                                        Color.White
+                                    } else {
+                                        Color.Black
+                                    },
+                                    fontSize = 14.sp
+                                )
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "Clear date",
-                                tint = ColorPrimary,
+                                tint = if (isSystemInDarkTheme()) {
+                                    Color.White
+                                } else {
+                                    Color.Black
+                                },
                                 modifier = Modifier
                                     .size(16.dp)
                                     .clickable {
-                                        selectedDate = null
+                                        onDateSelected(null)
                                     }
                             )
                         }
@@ -378,6 +367,19 @@ fun JournalArchiveContent(
             }
         }
     }
+
+    // Date Picker Dialog
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            onDateSelected = { date ->
+                onDateSelected(date)
+                // Update selected month to match selected date
+                onMonthSelected(date.monthValue - 1)
+                showDatePicker = false
+            }
+        )
+    }
 }
 
 @Composable
@@ -422,10 +424,11 @@ data class Journal(
 )
 
 @Composable
-fun ArchiveScreen(navController: NavHostController, viewModel: JournalViewModel = viewModel()) {
-    val journals = viewModel.journals.collectAsState().value
-    var selectedMonth by remember { mutableStateOf(5) }
-    //LocalDateTime.now().monthValue - 1
+fun ArchiveScreen(
+    navController: NavHostController,
+    viewModel: ArchiveViewModel) {
+
+    val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -449,10 +452,18 @@ fun ArchiveScreen(navController: NavHostController, viewModel: JournalViewModel 
                 .padding(top = innerPadding.calculateTopPadding())
         ) {
             JournalArchiveContent(
-                journals = journals,
-                selectedMonth = selectedMonth,
-                onMonthSelected = { index ->
-                    selectedMonth = index
+                journals = uiState.journals,
+                selectedMonth = uiState.selectedMonth,
+                onMonthSelected = { month ->
+                    viewModel.updateSelectedMonth(month)
+                },
+                selectedDate = uiState.selectedDate,
+                onDateSelected = { date ->
+                    viewModel.updateSelectedDate(date)
+                },
+                searchQuery = uiState.searchQuery,
+                onSearchQueryChange = { query ->
+                    viewModel.updateSearchQuery(query)
                 }
             )
         }
@@ -463,7 +474,10 @@ fun ArchiveScreen(navController: NavHostController, viewModel: JournalViewModel 
 @Composable
 fun ArchiveScreenPreview(){
     val navController = rememberNavController()
+    val viewModel = ArchiveViewModel()
     HereHearTheme {
-        ArchiveScreen(navController = navController)
+        ArchiveScreen(
+            navController = navController,
+            viewModel = viewModel)
     }
 }
