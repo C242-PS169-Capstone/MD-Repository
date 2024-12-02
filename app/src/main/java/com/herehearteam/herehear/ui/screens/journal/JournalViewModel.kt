@@ -1,12 +1,26 @@
 package com.herehearteam.herehear.ui.screens.journal
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import com.herehearteam.herehear.data.local.entity.JournalEntity
+import com.herehearteam.herehear.data.local.helper.JournalHelper
+import com.herehearteam.herehear.data.local.repository.JournalRepository
 import com.herehearteam.herehear.domain.model.JournalQuestion
 import com.herehearteam.herehear.domain.model.JournalQuestions
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class JournalViewModel : ViewModel() {
+class JournalViewModel(application: Application) : AndroidViewModel(application){
+    private val mJournalRepository: JournalRepository = JournalRepository(application)
+
+    private val viewModelJob = SupervisorJob()
+    private val viewModelScope = CoroutineScope(Dispatchers.Main + viewModelJob)
+
     private val _isBottomSheetVisible = MutableStateFlow(false)
     val isBottomSheetVisible = _isBottomSheetVisible.asStateFlow()
 
@@ -22,8 +36,88 @@ class JournalViewModel : ViewModel() {
     private val _isFabExpanded = MutableStateFlow(false)
     val isFabExpanded = _isFabExpanded.asStateFlow()
 
+    private val _shouldShowBackPressedDialog = MutableStateFlow(false)
+    val shouldShowBackPressedDialog = _shouldShowBackPressedDialog.asStateFlow()
+
+    private val _shouldShowResetConfirmationDialog = MutableStateFlow(false)
+    val shouldShowResetConfirmationDialog = _shouldShowResetConfirmationDialog.asStateFlow()
+
+    private val _isSaveSuccessful = MutableStateFlow(false)
+    val isSaveSuccessful = _isSaveSuccessful.asStateFlow()
+
+    private val _navigationEvent = MutableStateFlow<NavigationEvent?>(null)
+    val navigationEvent = _navigationEvent.asStateFlow()
+
     init {
         refreshAllQuestions()
+    }
+
+    fun saveJournal() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val question = _selectedQuestion.value?.text ?: ""
+            val content = _memoText.value.takeIf { it.isNotBlank() }
+
+            if (content != null) {
+                val journalToSave = JournalEntity(
+                    createdDate = JournalHelper.getCurrentDate(),
+                    content = content,
+                    question = question
+                )
+                mJournalRepository.insertJournal(journalToSave)
+
+                withContext(Dispatchers.Main) {
+                    _isSaveSuccessful.value = true
+                    _navigationEvent.value = NavigationEvent.NavigateToHome
+                    clearSelectedQuestion()
+                    _isFabExpanded.value = false
+                }
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        viewModelJob.cancel()
+    }
+
+    fun onBackPressed() {
+        if (_memoText.value.isNotBlank()) {
+            _shouldShowBackPressedDialog.value = true
+        } else {
+            _navigationEvent.value = NavigationEvent.NavigateBack
+        }
+    }
+
+    fun onBackPressedConfirm() {
+        _navigationEvent.value = NavigationEvent.NavigateBack
+        clearSelectedQuestion()
+        _shouldShowBackPressedDialog.value = false
+    }
+
+    fun onBackPressedCancel() {
+        _shouldShowBackPressedDialog.value = false
+    }
+
+    fun clearNavigationEvent() {
+        _navigationEvent.value = null
+    }
+
+    fun showResetConfirmationDialog() {
+        _shouldShowResetConfirmationDialog.value = true
+    }
+
+    fun cancelResetConfirmation() {
+        _shouldShowResetConfirmationDialog.value = false
+    }
+
+    fun confirmReset() {
+        _memoText.value = ""
+        _shouldShowResetConfirmationDialog.value = false
+        _isFabExpanded.value = false
+    }
+
+    fun resetSaveSuccessful() {
+        _isSaveSuccessful.value = false
     }
 
     fun refreshSingleQuestion(index: Int) {
@@ -67,4 +161,9 @@ class JournalViewModel : ViewModel() {
     fun toggleFabExpanded() {
         _isFabExpanded.value = !_isFabExpanded.value
     }
+}
+
+sealed class NavigationEvent {
+    data object NavigateBack : NavigationEvent()
+    data object NavigateToHome : NavigationEvent()
 }

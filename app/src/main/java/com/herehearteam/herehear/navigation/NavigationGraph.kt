@@ -1,6 +1,7 @@
 package com.herehearteam.herehear.navigation
 
 import android.app.Activity.RESULT_OK
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -8,7 +9,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -31,6 +35,8 @@ import com.herehearteam.herehear.ui.screens.auth.RegisterViewModel
 import com.herehearteam.herehear.ui.screens.auth.TermsAndConditionsScreen
 import com.herehearteam.herehear.ui.screens.auth.WelcomeScreen
 import com.herehearteam.herehear.ui.screens.home.HomeScreen
+import com.herehearteam.herehear.ui.screens.home.HomeViewModel
+import com.herehearteam.herehear.ui.screens.home.HomeViewModelFactory
 import com.herehearteam.herehear.ui.screens.journal.JournalScreen
 import com.herehearteam.herehear.ui.screens.journal.JournalViewModel
 import com.herehearteam.herehear.ui.screens.profile.ProfileScreen
@@ -47,6 +53,7 @@ fun NavigationGraph(
     val registerViewModel: RegisterViewModel = viewModel()
     val archiveViewModel: ArchiveViewModel = viewModel()
     val context = LocalContext.current
+
     val scope = rememberCoroutineScope()
 
     val launcher = rememberLauncherForActivityResult(
@@ -87,9 +94,29 @@ fun NavigationGraph(
         }
 
         composable(Screen.Journal.route) {
+            val homeViewModel: HomeViewModel = viewModel(
+                factory = HomeViewModelFactory(googleAuthUiClient)
+            )
+            val context = LocalContext.current
+            var showToast by remember { mutableStateOf(false) }
+
+            LaunchedEffect(showToast) {
+                if (showToast) {
+                    Toast.makeText(context, "Jurnal berhasil disimpan!", Toast.LENGTH_SHORT).show()
+                    showToast = false
+                }
+            }
+
             JournalScreen(
                 viewModel = viewModel,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToHome = {
+                    navController.popBackStack()
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
+                    }
+                    showToast = true
+                }
             )
         }
 
