@@ -12,6 +12,9 @@ class ProfileViewModel(
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState = _uiState.asStateFlow()
 
+    private val _isEmergencyBottomSheetVisible = MutableStateFlow(false)
+    val isEmergencyBottomSheetVisible = _isEmergencyBottomSheetVisible.asStateFlow()
+
     init {
         loadUserData()
     }
@@ -27,6 +30,26 @@ class ProfileViewModel(
         }
     }
 
+    fun saveEmergencyContact(contact: EmergencyContact) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                emergencyContact = contact
+            )
+        }
+    }
+
+    fun showEmergencyBottomSheet() {
+        if (!_isEmergencyBottomSheetVisible.value) {
+            _isEmergencyBottomSheetVisible.value = true
+        }
+    }
+
+    fun hideEmergencyBottomSheet() {
+        if (_isEmergencyBottomSheetVisible.value) {
+            _isEmergencyBottomSheetVisible.value = false
+        }
+    }
+
     suspend fun signOut() {
         googleAuthUiClient.signOut()
     }
@@ -35,5 +58,12 @@ class ProfileViewModel(
 data class ProfileUiState(
     val userName: String = "",
     val photoUrl: String? = null,
-    val userId: String? = null
+    val userId: String? = null,
+    val emergencyContact: EmergencyContact? = null
+)
+
+data class EmergencyContact(
+    var emergency_name: String,
+    var emergency_number: String,
+    var relationship: String
 )

@@ -22,6 +22,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.herehearteam.herehear.data.remote.GoogleAuthUiClient
 import com.herehearteam.herehear.ui.screens.archive.ArchiveScreen
+import com.herehearteam.herehear.ui.screens.archive.ArchiveViewModel
 import com.herehearteam.herehear.ui.screens.article.ArticleScreen
 import com.herehearteam.herehear.ui.screens.auth.InputNumberScreen
 import com.herehearteam.herehear.ui.screens.auth.LoginScreen
@@ -50,6 +51,9 @@ fun NavigationGraph(
 ){
     val loginViewModel: LoginViewModel = viewModel()
     val registerViewModel: RegisterViewModel = viewModel()
+    val archiveViewModel: ArchiveViewModel = viewModel()
+    val context = LocalContext.current
+
     val scope = rememberCoroutineScope()
 
     val launcher = rememberLauncherForActivityResult(
@@ -117,7 +121,9 @@ fun NavigationGraph(
         }
 
         composable(Screen.Archive.route) {
-            ArchiveScreen(navController= navController)
+            ArchiveScreen(
+                navController= navController,
+                viewModel = archiveViewModel)
         }
 
         composable(Screen.Profile.route) {

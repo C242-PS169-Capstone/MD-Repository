@@ -30,6 +30,7 @@ import androidx.compose.material3.LocalContentColor
 
 @Composable
 fun CustomSearchBar(
+    value: String,
     onValueChange: (String) -> Unit,
     placeholder: String = "Search",
     iconColor: Color = Color.DarkGray,
@@ -44,14 +45,9 @@ fun CustomSearchBar(
     textColor: Color = Color.Black,
     placeholderColor: Color = Color.Gray,
 ){
-    var searchQuery by remember { mutableStateOf("") }
-
     TextField(
-        value = searchQuery,
-        onValueChange = { newValue ->
-            searchQuery = newValue
-            onValueChange(newValue)
-        },
+        value = value,
+        onValueChange = onValueChange,
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
@@ -94,6 +90,7 @@ fun SearchBarPreview(){
         contentAlignment = Alignment.Center
     ){
         CustomSearchBar(
+            value = "",
             iconColor = ColorPrimary,
             onValueChange = {},
             trailingIcon = {

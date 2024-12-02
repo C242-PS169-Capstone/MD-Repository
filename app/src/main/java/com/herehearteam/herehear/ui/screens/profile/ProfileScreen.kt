@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -15,22 +16,30 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -45,11 +54,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.herehearteam.herehear.ui.components.BottomNavigationBar
 import com.herehearteam.herehear.ui.components.CustomTopAppBar
 import com.herehearteam.herehear.ui.theme.ColorPrimary
 import com.herehearteam.herehear.ui.theme.HereHearTheme
-//import coil.compose.rememberAsyncImagePainter
 import com.herehearteam.herehear.R
 import com.herehearteam.herehear.navigation.Screen
 import com.herehearteam.herehear.ui.components.CustomButtonFilled
@@ -57,6 +64,11 @@ import com.herehearteam.herehear.ui.components.CustomButtonOutlined
 import com.herehearteam.herehear.ui.components.LocalGoogleAuthUiClient
 import com.herehearteam.herehear.ui.components.ProfileOptionComponent
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun Container(
@@ -83,7 +95,6 @@ fun Container(
                 // Konten pertama
                 Image(
                     painter = if (photoProfile != null) {
-//                        rememberAsyncImagePainter(model = photoProfile)
                         painterResource(id = R.drawable.avatar)
                     } else {
                         painterResource(id = R.drawable.avatar)
@@ -120,7 +131,7 @@ fun Container(
                                 style = TextStyle(
                                     fontWeight = FontWeight.Medium,
                                     color = Color.White,
-                                    fontSize = 14.sp
+                                    fontSize = 16.sp
                                 )
                             )
                             if (isComplete) {
@@ -128,7 +139,7 @@ fun Container(
                                     text = "Edit Profilmu Di sini",
                                     style = TextStyle(
                                         color = Color.White,
-                                        fontSize = 14.sp
+                                        fontSize = 16.sp
                                     )
                                 )
                             } else {
@@ -157,7 +168,6 @@ fun Container(
                             backgroundColor = Color.White,
                             textColor = Color.Black,
                             height = Dp(33.49f),
-//                            contentPadding = 8.dp,
                         )
                     }
                 }
@@ -166,8 +176,112 @@ fun Container(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ListOfOption(){
+fun PopUpEmergencyContact(
+    onDismiss: () -> Unit,
+    initialContact: ProfileUiState?,
+    onSaveContact: (ProfileUiState) -> Unit,
+    onShowToast: (String) -> Unit
+){
+    var name by remember { mutableStateOf(initialContact?.emergencyContact?.emergency_name ?: "") }
+    var number by remember { mutableStateOf(initialContact?.emergencyContact?.emergency_number ?: "") }
+    var relationship by remember { mutableStateOf(initialContact?.emergencyContact?.relationship ?: "") }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Kontak Darurat",
+                style = TextStyle(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                ),
+                modifier = Modifier.padding(bottom = 16.dp),
+                textAlign = TextAlign.Center
+            )
+            Spacer(Modifier.height(8.dp))
+            TextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Nama Kontak") },
+                colors = TextFieldDefaults.textFieldColors(
+                    containerColor = Color(0xFFF5F5F5),
+                    focusedIndicatorColor = ColorPrimary,
+                    unfocusedIndicatorColor = Color.Gray
+                ),
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+            )
+            Spacer(Modifier.height(8.dp))
+            TextField(
+                value = number,
+                onValueChange = { number = it },
+                label = { Text("Nomor Telepon") },
+                colors = TextFieldDefaults.textFieldColors(
+                    containerColor = Color(0xFFF5F5F5),
+                    focusedIndicatorColor = ColorPrimary,
+                    unfocusedIndicatorColor = Color.Gray
+                ),
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+            )
+            Spacer(Modifier.height(8.dp))
+            TextField(
+                value = relationship,
+                onValueChange = { relationship = it },
+                label = { Text("Hubungan") },
+                colors = TextFieldDefaults.textFieldColors(
+                    containerColor = Color(0xFFF5F5F5),
+                    focusedIndicatorColor = ColorPrimary,
+                    unfocusedIndicatorColor = Color.Gray
+                ),
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+            )
+            Spacer(Modifier.height(16.dp))
+            CustomButtonFilled(
+                onClick = {
+                    val contact = EmergencyContact(
+                        emergency_name = name,
+                        emergency_number = number,
+                        relationship = relationship,
+                    )
+                    val updatedProfileState = initialContact?.copy(emergencyContact = contact)
+                    if (updatedProfileState != null) {
+                        onSaveContact(updatedProfileState) // Kirim seluruh ProfileUiState
+                    }
+                    onShowToast("Kontak darurat berhasil disimpan.")
+                    onDismiss()
+                },
+                text = "Simpan",
+                backgroundColor = ColorPrimary
+            )
+        }
+    }
+}
+
+@Composable
+fun ListOfOption(viewModel: ProfileViewModel){
+    val uiState by viewModel.uiState.collectAsState()
+    val isEmergencyBottomSheetVisible by viewModel.isEmergencyBottomSheetVisible.collectAsState()
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
     Column(
         modifier = Modifier
             .padding(top = 18.dp)
@@ -190,8 +304,22 @@ fun ListOfOption(){
         ProfileOptionComponent(
             icon = Icons.Outlined.Person,
             title = "Kontak Darurat",
-            onClick = { }
+            onClick = { viewModel.showEmergencyBottomSheet() }
         )
+
+        if (isEmergencyBottomSheetVisible) {
+            PopUpEmergencyContact(
+                onDismiss = { viewModel.hideEmergencyBottomSheet() },
+                initialContact = uiState,
+                onSaveContact = { updatedState ->
+                    viewModel.saveEmergencyContact(updatedState.emergencyContact!!)
+                    viewModel.hideEmergencyBottomSheet()
+                },
+                onShowToast = { message ->
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+            )
+        }
 
         Spacer(Modifier.height(10.dp))
 
@@ -237,22 +365,22 @@ fun ProfileScreen(
                     icon = Icons.Filled.ArrowBack,
                 )
         },
-//        bottomBar = {
-//            BottomNavigationBar(navController = navController)
-//        }
     ) { innerPadding ->
         // Konten Halaman Profil
-        Box(modifier = Modifier.padding(innerPadding)) {
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally) {
                 // First content: Container
                 Container(
-                    photoProfile = null,
-                    userName = "Minjiaa",
+                    photoProfile = uiState.photoUrl?.let { Uri.parse(it) },
+                    userName = uiState.userName ?: "User",
                     isComplete = false
                 )
 
                 // Second content: ListOfOption
-                ListOfOption()
+                ListOfOption(viewModel)
 
                 // Third content: LogoutButton
                 Box(
@@ -278,12 +406,10 @@ fun ProfileScreen(
                         textColor = Color.Black,
                         iconColor = Color.Red,
                         outlineColor = Color.Red,
-//                        contentPadding = 14.dp
                         )
                 }
 
             }
-        }
     }
 }
 
