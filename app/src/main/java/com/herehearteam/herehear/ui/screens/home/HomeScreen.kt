@@ -151,20 +151,6 @@ fun HomeScreen(
                         .padding(horizontal = 16.dp)
                         .padding(top = 24.dp)
                 ) {
-                    WeeklyMoodCard(
-                        moodData = uiState.weeklyMoods,
-                        onMoodClick = viewModel::onMoodClick
-                    )
-                }
-            }
-
-            item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .padding(top = 24.dp)
-                ) {
                     Text(
                         text = "Artikel Terbaru",
                         style = MaterialTheme.typography.titleMedium,

@@ -20,11 +20,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.herehearteam.herehear.R
+import com.herehearteam.herehear.di.AppDependencies
 import com.herehearteam.herehear.ui.theme.ColorPrimary
 import kotlinx.coroutines.delay
 
@@ -35,7 +38,13 @@ private val MochiyPopOne = FontFamily(
 @Composable
 fun SplashScreen(
     modifier: Modifier = Modifier,
-    navigateToWelcome: () -> Unit
+    navigateToWelcome: () -> Unit,
+    navigateToHome: () -> Unit,
+    viewModel: SplashViewModel = viewModel(
+        factory = SplashViewModelFactory(
+            AppDependencies.getInstance(LocalContext.current).userRepository
+        )
+    )
 ) {
     var isRotating by remember { mutableStateOf(false) }
     var showWhiteCircle by remember { mutableStateOf(false) }
@@ -77,15 +86,26 @@ fun SplashScreen(
         )
     )
 
-    LaunchedEffect(key1 = true) {
-        delay(100)
-        isRotating = true
-        delay(1000)
-        showWhiteCircle = true
-        delay(500)
-        showText = true
-        delay(1000)
-        navigateToWelcome()
+    val loginState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(loginState) {
+        when (loginState) {
+            is SplashUiState.Authenticated -> {
+                navigateToHome()
+            }
+            is SplashUiState.Unauthenticated -> {
+                delay(100)
+                isRotating = true
+                delay(1000)
+                showWhiteCircle = true
+                delay(500)
+                showText = true
+                delay(1000)
+                navigateToWelcome()
+            }
+            SplashUiState.Loading -> {
+            }
+        }
     }
 
     Box(

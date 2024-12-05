@@ -1,13 +1,15 @@
 package com.herehearteam.herehear.ui.screens.profile
 
 import androidx.lifecycle.ViewModel
+import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
 import com.herehearteam.herehear.data.remote.GoogleAuthUiClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class ProfileViewModel(
-    private val googleAuthUiClient: GoogleAuthUiClient
+    private val googleAuthUiClient: GoogleAuthUiClient,
+    private val userPreferencesDataStore: UserPreferencesDataStore
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState = _uiState.asStateFlow()
@@ -23,9 +25,9 @@ class ProfileViewModel(
         val userData = googleAuthUiClient.getSignedInUser()
         _uiState.update { currentState ->
             currentState.copy(
-                userName = userData?.username ?: "User",
-                photoUrl = userData?.profilePictureUrl,
-                userId = userData?.userId
+                userName = userData?.displayName ?: "User",  // Set the user name
+//                email = userData?.email ?: "",               // Set the email
+//                userId = userData?.userId ?: ""              // Set the user ID
             )
         }
     }
@@ -52,6 +54,7 @@ class ProfileViewModel(
 
     suspend fun signOut() {
         googleAuthUiClient.signOut()
+        userPreferencesDataStore.clearUser()
     }
 }
 
