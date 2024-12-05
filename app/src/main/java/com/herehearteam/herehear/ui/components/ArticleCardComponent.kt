@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun ArticleCard(
     title: String,
-    tags: List<String>,
+    tag: String,
     date: String,
     imagePainter: Painter = painterResource(id = R.drawable.placeholder_image_article),
     modifier: Modifier = Modifier
@@ -65,9 +65,7 @@ fun ArticleCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.padding(vertical = 4.dp)
             ) {
-                tags.take(3).forEach { tag ->
-                    TagArticle(text = tag)
-                }
+                TagArticle(text = tag)
             }
 
             Spacer(modifier = Modifier.height(6.dp))
@@ -128,7 +126,7 @@ fun ArticleCardPreview(){
     ) {
         ArticleCard(
             title = "9 Cara Mengatasi Anxiety Attack agar Kembali Tenang dan Lorem Ipsum",
-            tags = listOf("Anxiety", "ADHD"),
+            tag = "Anxiety",
             date = "21 Agu 2024",
             imagePainter = painterResource(id = R.drawable.placeholder_image_article),
         )
@@ -137,7 +135,7 @@ fun ArticleCardPreview(){
 
         ArticleCard(
             title = "9 Cara Mengatasi Anxiety Attack agar Kembali Tenang",
-            tags = listOf("Anxiety", "ADHD"),
+            tag = "Anxiety",
             date = "21 Agu 2024",
             imagePainter = painterResource(id = R.drawable.placeholder_image_article),
         )

@@ -116,7 +116,9 @@ fun NavigationGraph(
         }
 
         composable(Screen.Article.route) {
-            ArticleScreen()
+            ArticleScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
 
         composable(Screen.Journal.route) {

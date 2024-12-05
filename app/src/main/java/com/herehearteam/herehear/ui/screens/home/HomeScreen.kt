@@ -16,13 +16,19 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
@@ -34,9 +40,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.herehearteam.herehear.R
+import com.herehearteam.herehear.domain.model.Article
 import com.herehearteam.herehear.ui.components.ArticleCard
 import com.herehearteam.herehear.ui.components.CustomTopAppBar
 import com.herehearteam.herehear.ui.components.DailyQuestionCard
+import com.herehearteam.herehear.ui.components.ExpandedArticleCard
 import com.herehearteam.herehear.ui.components.FeatureCardComponent
 import com.herehearteam.herehear.ui.components.LocalGoogleAuthUiClient
 import com.herehearteam.herehear.ui.components.UserGreetingCard
@@ -45,6 +53,7 @@ import com.herehearteam.herehear.ui.screens.article.ArticleViewModel
 import com.herehearteam.herehear.ui.theme.ColorPrimary
 import com.herehearteam.herehear.ui.theme.HereHearTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     navController: NavHostController,
@@ -56,6 +65,8 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     val articles by articleViewModel.articles.collectAsState()
     val context = LocalContext.current
+    var showBottomSheet by remember { mutableStateOf(false) }
+    var selectedArticle by remember { mutableStateOf<Article?>(null) }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -160,14 +171,14 @@ fun HomeScreen(
                     articles.take(5).forEach { article ->
                         ArticleCard(
                             title = article.title,
-                            tags = article.tags,
+                            tag = article.tag,
                             date = article.date,
                             imagePainter = painterResource(id = article.imageRes),
                             modifier = Modifier
                                 .padding(vertical = 8.dp)
                                 .clickable {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(article.url))
-                                    context.startActivity(intent)
+                                    selectedArticle = article
+                                    showBottomSheet = true
                                 }
                         )
                     }
@@ -176,6 +187,37 @@ fun HomeScreen(
 
             item {
                 Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+        if (showBottomSheet && selectedArticle != null) {
+            ModalBottomSheet(
+                onDismissRequest = {
+                    showBottomSheet = false
+                    selectedArticle = null
+                },
+                sheetState = rememberModalBottomSheetState(),
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    ExpandedArticleCard(
+                        title = selectedArticle!!.title,
+                        tag = selectedArticle!!.tag,
+                        date = selectedArticle!!.date,
+                        description = selectedArticle!!.description,
+                        source = selectedArticle!!.source,
+                        imagePainter = painterResource(id = selectedArticle!!.imageRes),
+                        onButtonClick = {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(selectedArticle!!.url))
+                            context.startActivity(intent)
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
         }
     }
