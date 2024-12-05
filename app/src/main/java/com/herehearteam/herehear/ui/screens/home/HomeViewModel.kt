@@ -3,6 +3,7 @@ package com.herehearteam.herehear.ui.screens.home
 import androidx.lifecycle.ViewModel
 import com.herehearteam.herehear.data.remote.GoogleAuthUiClient
 import com.herehearteam.herehear.domain.model.DayMood
+import com.herehearteam.herehear.domain.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,31 +30,25 @@ class HomeViewModel(
         val userData = googleAuthUiClient.getSignedInUser()
         _uiState.update { currentState ->
             currentState.copy(
-                userName = userData?.username ?: "User",
+                userName = userData?.displayName ?: "User",  // Set the user name
+//                email = userData?.email ?: "",               // Set the email
+//                userId = userData?.userId ?: ""              // Set the user ID
             )
         }
     }
 
-    private fun createInitialWeeklyMoods(): List<DayMood> {
-        val today = LocalDate.now()
-        return listOf("M", "S", "S", "R", "K", "J", "S").mapIndexed { index, day ->
-            DayMood(
-                day = day,
-                mood = null,
-                date = today.plusDays(index.toLong())
-            )
-        }
-    }
 
-    fun onFeatureClick(featureId: String) {
+//    private fun loadUserData() {
+//        val userData = googleAuthUiClient.getSignedInUser()
+//        _uiState.update { currentState ->
+//            currentState.copy(
+//                userName = User?.username ?: "User",
+//            )
+//        }
+//    }
 
-    }
 
     fun onDailyQuestionClick() {
-
-    }
-
-    fun onMoodClick(dayMood: DayMood) {
 
     }
 

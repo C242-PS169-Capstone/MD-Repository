@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -89,17 +90,20 @@ fun CustomTopAppBar(
                         painter = icon,
                         contentDescription = null,
                         modifier = Modifier
-                            .size(24.dp)
+                            .size(28.dp)
                             .clickable { onIconClick?.invoke() },
                     )
-                    is ImageVector -> Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = contentColor,
+                    is ImageVector -> IconButton(
+                        onClick = { onIconClick?.invoke() },
                         modifier = Modifier
-                            .size(24.dp)
-                            .clickable { onIconClick?.invoke() }
-                    )
+                            .offset(x = (-10).dp)
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = contentColor,
+                        )
+                    }
                 }
             }
             Box(
