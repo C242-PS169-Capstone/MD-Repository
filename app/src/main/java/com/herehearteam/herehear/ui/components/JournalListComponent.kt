@@ -30,7 +30,9 @@ import java.util.Locale
 @Composable
 fun JournalBox(
     text: String,
-    color: Color
+    color: Color,
+    journalId: Int,
+    onClick: (Int) -> Unit
 ){
     Card(
         colors = CardDefaults.cardColors(containerColor = color),
@@ -141,7 +143,9 @@ fun JournalListPreview(){
             .fillMaxWidth()){
             JournalBox(
                 text = sampleText,
-                color = sampleColor
+                color = sampleColor,
+                journalId = 0,
+                onClick = {}
             )
         }
     }

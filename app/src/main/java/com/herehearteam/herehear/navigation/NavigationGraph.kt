@@ -1,6 +1,7 @@
 package com.herehearteam.herehear.navigation
 
 import android.app.Activity.RESULT_OK
+import android.app.Application
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
@@ -51,7 +52,6 @@ fun NavigationGraph(
 ){
     val loginViewModel: LoginViewModel = viewModel()
     val registerViewModel: RegisterViewModel = viewModel()
-    val archiveViewModel: ArchiveViewModel = viewModel()
     val context = LocalContext.current
 
     val scope = rememberCoroutineScope()
@@ -123,7 +123,7 @@ fun NavigationGraph(
         composable(Screen.Archive.route) {
             ArchiveScreen(
                 navController= navController,
-                viewModel = archiveViewModel)
+                application = LocalContext.current.applicationContext as Application)
         }
 
         composable(Screen.Profile.route) {

@@ -67,8 +67,14 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.saveable.rememberSaveable
+import com.herehearteam.herehear.data.local.repository.JournalRepository
 import java.time.format.DateTimeFormatter
 import java.util.*
+import com.herehearteam.herehear.domain.model.Journal
+import androidx.activity.viewModels
+import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavController
+import com.herehearteam.herehear.navigation.Screen
 
 @Composable
 fun MonthSelector(
@@ -124,41 +130,41 @@ fun MonthSelector(
 }
 
 // DummyData.kt
-object DummyJournals {
-    val journalList = listOf(
-        Journal(
-            id = "1",
-            content = "Hari ini saya belajar Jetpack Compose. Sangat menyenangkan bisa membuat UI dengan mudah menggunakan Kotlin.",
-            dateTime = LocalDateTime.now(),
-            question = "apa kegiatan yang paling kamu ingat di hari ini?"
-        ),
-        Journal(
-            id = "2",
-            content = "Menikmati Mie ayam sambil melihat pemandangan gunung ditemani gerimis yang membasahi wajah.",
-            dateTime = LocalDateTime.now(),
-            question = "ingat-ingat kebelakang apa hal yang bisa kamu syukuri tapi terlewat oleh mu"
-
-        ),
-        Journal(
-            id = "3",
-            content = "Mempelajari tentang StateFlow dan SharedFlow di Kotlin Coroutines. Konsepnya cukup menarik!",
-            dateTime = LocalDateTime.now().minusDays(2),
-            question = null
-        ),
-        Journal(
-            id = "4",
-            content = "Hari ini fokus debugging aplikasi dan memperbaiki beberapa UI yang masih belum sempurna.",
-            dateTime = LocalDateTime.now().minusDays(3),
-            question = "Siapa yang paling memengaruhiku belakangan ini, dan bagaimana aku merasakannya?"
-        ),
-        Journal(
-            id = "5",
-            content = "Hari ini begadang sampai mampus jantung aku bahagia hidup bersamaku",
-            dateTime = LocalDateTime.now().minusDays(3),
-            question = null
-        )
-    )
-}
+//object DummyJournals {
+//    val journalList = listOf(
+//        Journal(
+//            id = "1",
+//            content = "Hari ini saya belajar Jetpack Compose. Sangat menyenangkan bisa membuat UI dengan mudah menggunakan Kotlin.",
+//            dateTime = LocalDateTime.now(),
+//            question = "apa kegiatan yang paling kamu ingat di hari ini?"
+//        ),
+//        Journal(
+//            id = "2",
+//            content = "Menikmati Mie ayam sambil melihat pemandangan gunung ditemani gerimis yang membasahi wajah.",
+//            dateTime = LocalDateTime.now(),
+//            question = "ingat-ingat kebelakang apa hal yang bisa kamu syukuri tapi terlewat oleh mu"
+//
+//        ),
+//        Journal(
+//            id = "3",
+//            content = "Mempelajari tentang StateFlow dan SharedFlow di Kotlin Coroutines. Konsepnya cukup menarik!",
+//            dateTime = LocalDateTime.now().minusDays(2),
+//            question = null
+//        ),
+//        Journal(
+//            id = "4",
+//            content = "Hari ini fokus debugging aplikasi dan memperbaiki beberapa UI yang masih belum sempurna.",
+//            dateTime = LocalDateTime.now().minusDays(3),
+//            question = "Siapa yang paling memengaruhiku belakangan ini, dan bagaimana aku merasakannya?"
+//        ),
+//        Journal(
+//            id = "5",
+//            content = "Hari ini begadang sampai mampus jantung aku bahagia hidup bersamaku",
+//            dateTime = LocalDateTime.now().minusDays(3),
+//            question = null
+//        )
+//    )
+//}
 
 @Composable
 fun JournalArchiveContent(
@@ -169,7 +175,8 @@ fun JournalArchiveContent(
     selectedDate: LocalDate?,
     onDateSelected: (LocalDate?) -> Unit,
     searchQuery: String,
-    onSearchQueryChange: (String) -> Unit
+    onSearchQueryChange: (String) -> Unit,
+    navController: NavController
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
 
@@ -359,7 +366,11 @@ fun JournalArchiveContent(
                         ) {
                             JournalBox(
                                 text = journal.content,
-                                color = journalColors[journal.id] ?: colors[0]
+                                color = journalColors[journal.id] ?: colors[0],
+                                journalId = journal.id,
+                                onClick = { id ->
+                                    navController.navigate(Screen.Journal.route)
+                                }
                             )
                         }
                     }
@@ -415,19 +426,14 @@ fun DatePickerDialog(
     }
 }
 
-// Data class untuk journal
-data class Journal(
-    val id: String,
-    val content: String,
-    val dateTime: LocalDateTime,
-    val question: String?,
-)
-
 @Composable
 fun ArchiveScreen(
     navController: NavHostController,
-    viewModel: ArchiveViewModel) {
-
+    application: android.app.Application) {
+    val context = LocalContext.current
+    val viewModel: ArchiveViewModel = viewModel(
+        factory = ArchiveViewModelFactory.getInstance(context)
+    )
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
@@ -464,20 +470,21 @@ fun ArchiveScreen(
                 searchQuery = uiState.searchQuery,
                 onSearchQueryChange = { query ->
                     viewModel.updateSearchQuery(query)
-                }
+                },
+                navController = navController
             )
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun ArchiveScreenPreview(){
-    val navController = rememberNavController()
-    val viewModel = ArchiveViewModel()
-    HereHearTheme {
-        ArchiveScreen(
-            navController = navController,
-            viewModel = viewModel)
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun ArchiveScreenPreview(){
+//    val navController = rememberNavController()
+//    val viewModel = ArchiveViewModel()
+//    HereHearTheme {
+//        ArchiveScreen(
+//            navController = navController,
+//            viewModel = viewModel)
+//    }
+//}

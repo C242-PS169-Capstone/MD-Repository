@@ -5,12 +5,14 @@ import androidx.lifecycle.LiveData
 import com.herehearteam.herehear.data.local.dao.JournalDao
 import com.herehearteam.herehear.data.local.database.JournalRoomDatabase
 import com.herehearteam.herehear.data.local.entity.JournalEntity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class JournalRepository(application: Application) {
     private val mJournalDao: JournalDao
-    private val executorService: ExecutorService = Executors.newSingleThreadExecutor()
 
     init {
         val db = JournalRoomDatabase.getDatabase(application)
@@ -22,16 +24,26 @@ class JournalRepository(application: Application) {
     }
 
     fun updateJournal(journal: JournalEntity) {
-        executorService.execute {
             mJournalDao.updateJournal(journal)
-        }
     }
 
     fun deleteJournal(journal: JournalEntity) {
-        executorService.execute {
             mJournalDao.deleteJournal(journal)
+    }
+
+    fun getAllJournals(): Flow<List<JournalEntity>> {
+      return mJournalDao.getAllJournalsFlow().flowOn(Dispatchers.IO)
+    }
+
+    companion object{
+        @Volatile
+        private var instance: JournalRepository? = null
+
+        fun getInstance(application: Application): JournalRepository {
+            return instance ?: synchronized(this) {
+                instance ?: JournalRepository(application).also { instance = it }
+            }
         }
     }
 
-    fun getAllJournals(): LiveData<List<JournalEntity>> = mJournalDao.getAllJournals()
 }
