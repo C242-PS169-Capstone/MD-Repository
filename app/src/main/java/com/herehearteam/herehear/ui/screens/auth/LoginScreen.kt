@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.herehearteam.herehear.R
+import com.herehearteam.herehear.di.AppDependencies
 import com.herehearteam.herehear.ui.components.CustomButtonFilled
 import com.herehearteam.herehear.ui.components.CustomTopAppBar
 import com.herehearteam.herehear.ui.theme.ColorPrimary
@@ -43,7 +44,12 @@ fun LoginScreen(
     onLoginWithGmail: () -> Unit,
     onLoginWithPhone: () -> Unit,
     onNavigateBack: () -> Unit,
-    viewModel: LoginViewModel = viewModel()
+    viewModel: LoginViewModel = viewModel(
+        factory = LoginViewModelFactory(
+            AppDependencies.getInstance(LocalContext.current).userRepository,
+            AppDependencies.getInstance(LocalContext.current).googleAuthUiClient
+        )
+    )
 ){
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current

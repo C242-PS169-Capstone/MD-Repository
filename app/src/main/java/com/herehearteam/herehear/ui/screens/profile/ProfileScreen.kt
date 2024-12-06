@@ -69,6 +69,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
 
 @Composable
 fun Container(
@@ -351,7 +352,10 @@ fun ListOfOption(viewModel: ProfileViewModel){
 fun ProfileScreen(
     navController: NavHostController,
     viewModel: ProfileViewModel = viewModel(
-        factory = ProfileViewModelFactory(LocalGoogleAuthUiClient.current)
+        factory = ProfileViewModelFactory(
+            LocalGoogleAuthUiClient.current,
+            userPreferencesDataStore = UserPreferencesDataStore.getInstance(context = LocalContext.current)
+        )
     )
 ) {
     val uiState by viewModel.uiState.collectAsState()

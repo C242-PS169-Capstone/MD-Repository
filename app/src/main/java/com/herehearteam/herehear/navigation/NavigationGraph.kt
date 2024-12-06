@@ -22,12 +22,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.herehearteam.herehear.data.remote.GoogleAuthUiClient
+import com.herehearteam.herehear.di.AppDependencies
 import com.herehearteam.herehear.ui.screens.archive.ArchiveScreen
 import com.herehearteam.herehear.ui.screens.archive.ArchiveViewModel
 import com.herehearteam.herehear.ui.screens.article.ArticleScreen
 import com.herehearteam.herehear.ui.screens.auth.InputNumberScreen
 import com.herehearteam.herehear.ui.screens.auth.LoginScreen
 import com.herehearteam.herehear.ui.screens.auth.LoginViewModel
+import com.herehearteam.herehear.ui.screens.auth.LoginViewModelFactory
 import com.herehearteam.herehear.ui.screens.auth.NameInputScreen
 import com.herehearteam.herehear.ui.screens.auth.OtpLoginScreen
 import com.herehearteam.herehear.ui.screens.auth.OtpRegisterScreen
@@ -45,18 +47,28 @@ import com.herehearteam.herehear.ui.screens.profile.ProfileScreen
 import com.herehearteam.herehear.ui.screens.splash.SplashScreen
 import kotlinx.coroutines.launch
 
+
 @Composable
 fun NavigationGraph(
     navController: NavHostController,
     googleAuthUiClient: GoogleAuthUiClient
 ){
+  
     val application = LocalContext.current.applicationContext as Application
     val viewModel: JournalViewModel = viewModel(
         factory = JournalViewModelFactory.getInstance(application = application)
     )
-    val loginViewModel: LoginViewModel = viewModel()
-    val registerViewModel: RegisterViewModel = viewModel()
     val context = LocalContext.current
+    val appDependencies = AppDependencies.getInstance(context)
+
+    val loginViewModel: LoginViewModel = viewModel(
+        factory = LoginViewModelFactory(
+            appDependencies.userRepository,
+            googleAuthUiClient
+        )
+    )
+    val registerViewModel: RegisterViewModel = viewModel()
+    val archiveViewModel: ArchiveViewModel = viewModel()
 
     val scope = rememberCoroutineScope()
 
@@ -79,22 +91,39 @@ fun NavigationGraph(
         navController = navController,
         startDestination = Screen.Splash.route
     ) {
+
         composable(Screen.Splash.route) {
             SplashScreen(
                 navigateToWelcome = {
                     navController.navigate(Screen.Welcome.route) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
+                },
+                navigateToHome = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
                 }
             )
         }
+//        composable(Screen.Splash.route) {
+//            SplashScreen(
+//                navigateToWelcome = {
+//                    navController.navigate(Screen.Welcome.route) {
+//                        popUpTo(Screen.Splash.route) { inclusive = true }
+//                    }
+//                }
+//            )
+//        }
 
         composable(Screen.Home.route) {
             HomeScreen(navController)
         }
 
         composable(Screen.Article.route) {
-            ArticleScreen()
+            ArticleScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
 
         composable(Screen.Journal.route,
@@ -156,7 +185,7 @@ fun NavigationGraph(
             LaunchedEffect(key1 = state.isSignInSuccessful) {
                 if (state.isSignInSuccessful) {
                     navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Register.route) { inclusive = true }
+                        popUpTo(Screen.Welcome.route) { inclusive = true }
                     }
                     registerViewModel.resetState()
                 }
@@ -188,9 +217,8 @@ fun NavigationGraph(
             LaunchedEffect(key1 = state.isSignInSuccessful) {
                 if (state.isSignInSuccessful) {
                     navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
+                        popUpTo(Screen.Welcome.route) { inclusive = true }
                     }
-                    loginViewModel.resetState()
                 }
             }
 
