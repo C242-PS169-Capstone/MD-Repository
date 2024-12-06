@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import com.herehearteam.herehear.data.local.entity.JournalEntity
 import com.herehearteam.herehear.data.local.helper.JournalHelper
 import com.herehearteam.herehear.data.local.repository.JournalRepository
+import com.herehearteam.herehear.domain.model.Journal
 import com.herehearteam.herehear.domain.model.JournalQuestion
 import com.herehearteam.herehear.domain.model.JournalQuestions
 import kotlinx.coroutines.CoroutineScope
@@ -15,7 +16,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class JournalViewModel(application: Application) : AndroidViewModel(application){
+class JournalViewModel(
+    application: Application,
+    private val journalRepository: JournalRepository
+    ) : AndroidViewModel(application){
     private val mJournalRepository: JournalRepository = JournalRepository(application)
 
     private val viewModelJob = SupervisorJob()
@@ -150,7 +154,13 @@ class JournalViewModel(application: Application) : AndroidViewModel(application)
         _isBottomSheetVisible.value = false
     }
 
-    fun selectQuestion(question: JournalQuestion) {
+    fun selectQuestion(questionObject: JournalQuestion?, questionText: String?) {
+        val question: JournalQuestion?
+        if(questionText != null){
+            question = JournalQuestions.getQuestion(questionText)
+        } else {
+            question = questionObject
+        }
         _selectedQuestion.value = question
     }
 
@@ -160,6 +170,23 @@ class JournalViewModel(application: Application) : AndroidViewModel(application)
 
     fun toggleFabExpanded() {
         _isFabExpanded.value = !_isFabExpanded.value
+    }
+
+    fun getJournalById(id:Int?, onResult: (Journal?) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val entity = id?.let { journalRepository.getJournalById(it) }
+            val journal = entity?.let {
+                Journal(
+                    id = it.journalId,
+                    content = it.content,
+                    dateTime = it.createdDate,
+                    question = it.question
+                )
+            }
+            withContext(Dispatchers.Main) {
+                onResult(journal)
+            }
+        }
     }
 }
 

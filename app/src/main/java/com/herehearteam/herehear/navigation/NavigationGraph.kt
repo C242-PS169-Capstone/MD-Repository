@@ -40,6 +40,7 @@ import com.herehearteam.herehear.ui.screens.home.HomeViewModel
 import com.herehearteam.herehear.ui.screens.home.HomeViewModelFactory
 import com.herehearteam.herehear.ui.screens.journal.JournalScreen
 import com.herehearteam.herehear.ui.screens.journal.JournalViewModel
+import com.herehearteam.herehear.ui.screens.journal.JournalViewModelFactory
 import com.herehearteam.herehear.ui.screens.profile.ProfileScreen
 import com.herehearteam.herehear.ui.screens.splash.SplashScreen
 import kotlinx.coroutines.launch
@@ -47,9 +48,12 @@ import kotlinx.coroutines.launch
 @Composable
 fun NavigationGraph(
     navController: NavHostController,
-    googleAuthUiClient: GoogleAuthUiClient,
-    viewModel: JournalViewModel = viewModel()
+    googleAuthUiClient: GoogleAuthUiClient
 ){
+    val application = LocalContext.current.applicationContext as Application
+    val viewModel: JournalViewModel = viewModel(
+        factory = JournalViewModelFactory.getInstance(application = application)
+    )
     val loginViewModel: LoginViewModel = viewModel()
     val registerViewModel: RegisterViewModel = viewModel()
     val context = LocalContext.current
@@ -93,7 +97,14 @@ fun NavigationGraph(
             ArticleScreen()
         }
 
-        composable(Screen.Journal.route) {
+        composable(Screen.Journal.route,
+            arguments = listOf(
+                navArgument("journalId") {
+                    type = NavType.IntType
+                    defaultValue = 0
+                }
+            )) { backStackEntry ->
+            val journalId = backStackEntry.arguments?.getInt("journalId") ?: 0
             val homeViewModel: HomeViewModel = viewModel(
                 factory = HomeViewModelFactory(googleAuthUiClient)
             )
@@ -109,6 +120,7 @@ fun NavigationGraph(
 
             JournalScreen(
                 viewModel = viewModel,
+                journalId = journalId,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToHome = {
                     navController.popBackStack()
@@ -116,7 +128,8 @@ fun NavigationGraph(
                         popUpTo(Screen.Home.route) { inclusive = true }
                     }
                     showToast = true
-                }
+                },
+
             )
         }
 

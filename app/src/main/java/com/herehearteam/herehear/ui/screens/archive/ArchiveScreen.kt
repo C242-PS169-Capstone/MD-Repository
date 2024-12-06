@@ -368,9 +368,7 @@ fun JournalArchiveContent(
                                 text = journal.content,
                                 color = journalColors[journal.id] ?: colors[0],
                                 journalId = journal.id,
-                                onClick = { id ->
-                                    navController.navigate(Screen.Journal.route)
-                                }
+                                onClick = { navController.navigate(Screen.Journal.createRoute(journalId = journal.id)) }
                             )
                         }
                     }

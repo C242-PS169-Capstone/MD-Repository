@@ -42,7 +42,7 @@ fun BottomSheetJournal(
                 onClick = {
                     viewModel.clearSelectedQuestion()
                     onDismiss()
-                    navController.navigate(Screen.Journal.route)
+                    navController.navigate(Screen.Journal.createRoute())
                 },
                 text = "Jurnal Baru"
             )

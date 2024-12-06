@@ -1,5 +1,6 @@
 package com.herehearteam.herehear
 
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,6 +15,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.auth.api.identity.Identity
@@ -26,6 +28,9 @@ import com.herehearteam.herehear.ui.theme.HereHearTheme
 import com.herehearteam.herehear.utils.shouldShowBottomBar
 import com.herehearteam.herehear.data.remote.GoogleAuthUiClient
 import com.herehearteam.herehear.ui.components.LocalGoogleAuthUiClient
+import com.herehearteam.herehear.ui.screens.archive.ArchiveViewModel
+import com.herehearteam.herehear.ui.screens.archive.ArchiveViewModelFactory
+import com.herehearteam.herehear.ui.screens.journal.JournalViewModelFactory
 
 class MainActivity : ComponentActivity() {
     private val googleAuthUiClient by lazy {
@@ -55,22 +60,23 @@ fun AppContent(
     googleAuthUiClient: GoogleAuthUiClient
 ){
     val navController = rememberNavController()
-    val viewModel: JournalViewModel = viewModel()
+    val application = LocalContext.current.applicationContext as Application
+    val viewModel: JournalViewModel = viewModel(
+        factory = JournalViewModelFactory.getInstance(application = application)
+    )
     val isBottomSheetVisible by viewModel.isBottomSheetVisible.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize()) {
         NavigationGraph(
             navController = navController,
             googleAuthUiClient = googleAuthUiClient,
-            viewModel = viewModel
         )
 
         if (shouldShowBottomBar(navController)) {
             Scaffold(
                 bottomBar = {
                     BottomNavigationBar(
-                        navController = navController,
-                        viewModel = viewModel
+                        navController = navController
                     )
                 }
             ) { paddingValues ->
@@ -78,7 +84,6 @@ fun AppContent(
                     NavigationGraph(
                         navController = navController,
                         googleAuthUiClient = googleAuthUiClient,
-                        viewModel = viewModel
                     )
                 }
             }
@@ -89,7 +94,7 @@ fun AppContent(
                 onDismiss = { viewModel.hideBottomSheet() },
                 navController = navController,
                 onSelectQuestion = { question ->
-                    viewModel.selectQuestion(question)
+                    viewModel.selectQuestion(question, null)
                     viewModel.hideBottomSheet()
                     navController.navigate(Screen.Journal.route)
                 },

@@ -35,6 +35,10 @@ class JournalRepository(application: Application) {
       return mJournalDao.getAllJournalsFlow().flowOn(Dispatchers.IO)
     }
 
+    fun getJournalById(id: Int): JournalEntity? {
+       return mJournalDao.getJournalByJournalId(id)
+    }
+
     companion object{
         @Volatile
         private var instance: JournalRepository? = null

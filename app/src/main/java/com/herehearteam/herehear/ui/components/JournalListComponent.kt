@@ -1,5 +1,6 @@
 package com.herehearteam.herehear.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,7 +33,7 @@ fun JournalBox(
     text: String,
     color: Color,
     journalId: Int,
-    onClick: (Int) -> Unit
+    onClick: () -> Unit
 ){
     Card(
         colors = CardDefaults.cardColors(containerColor = color),
@@ -46,7 +47,8 @@ fun JournalBox(
             .fillMaxWidth()
             .height(102.dp)
             .padding(start = 7.dp)
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .clickable { onClick() },
     ) {
         Column(
             modifier = Modifier

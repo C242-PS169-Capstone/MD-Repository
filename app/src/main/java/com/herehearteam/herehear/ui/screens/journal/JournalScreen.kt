@@ -40,6 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -54,7 +55,8 @@ import com.herehearteam.herehear.ui.components.CustomTopAppBar
 fun JournalScreen(
     viewModel: JournalViewModel,
     onNavigateBack: () -> Unit,
-    onNavigateToHome: () -> Unit
+    onNavigateToHome: () -> Unit,
+    journalId: Int?
 ) {
     val isSaveSuccessful by viewModel.isSaveSuccessful.collectAsState()
     val selectedQuestion by viewModel.selectedQuestion.collectAsState()
@@ -63,6 +65,17 @@ fun JournalScreen(
     val shouldShowBackPressedDialog by viewModel.shouldShowBackPressedDialog.collectAsState()
     val shouldShowResetConfirmationDialog by viewModel.shouldShowResetConfirmationDialog.collectAsState()
     val navigationEvent by viewModel.navigationEvent.collectAsState()
+
+    LaunchedEffect(journalId) {
+        if (journalId != 0) {
+            viewModel.getJournalById(journalId) { journal ->
+                journal?.let {
+                    viewModel.updateMemoText(it.content) // Set memo text
+                    viewModel.selectQuestion(questionObject = null, questionText = it.question) // Set selected question
+                }
+            }
+        }
+    }
 
     BackHandler {
         viewModel.onBackPressed()
