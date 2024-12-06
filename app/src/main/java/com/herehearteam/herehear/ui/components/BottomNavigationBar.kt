@@ -1,5 +1,6 @@
 package com.herehearteam.herehear.ui.components
 
+import android.app.Application
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -27,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -37,13 +39,17 @@ import androidx.navigation.compose.rememberNavController
 import com.herehearteam.herehear.R
 import com.herehearteam.herehear.navigation.Screen
 import com.herehearteam.herehear.ui.screens.journal.JournalViewModel
+import com.herehearteam.herehear.ui.screens.journal.JournalViewModelFactory
 import com.herehearteam.herehear.ui.theme.ColorPrimary
 
 @Composable
 fun BottomNavigationBar(
-    navController: NavHostController,
-    viewModel: JournalViewModel = viewModel()
+    navController: NavHostController
 ) {
+    val application = LocalContext.current.applicationContext as Application
+    val viewModel: JournalViewModel = viewModel(
+        factory = JournalViewModelFactory.getInstance(application = application)
+    )
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 

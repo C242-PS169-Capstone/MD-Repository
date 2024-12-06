@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import com.herehearteam.herehear.data.local.entity.JournalEntity
 import com.herehearteam.herehear.data.local.helper.JournalHelper
 import com.herehearteam.herehear.data.local.repository.JournalRepository
+import com.herehearteam.herehear.domain.model.Journal
 import com.herehearteam.herehear.domain.model.JournalQuestion
 import com.herehearteam.herehear.domain.model.JournalQuestions
 import kotlinx.coroutines.CoroutineScope
@@ -15,11 +16,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class JournalViewModel(application: Application) : AndroidViewModel(application){
+class JournalViewModel(
+    application: Application,
+    private val journalRepository: JournalRepository
+    ) : AndroidViewModel(application){
     private val mJournalRepository: JournalRepository = JournalRepository(application)
 
     private val viewModelJob = SupervisorJob()
     private val viewModelScope = CoroutineScope(Dispatchers.Main + viewModelJob)
+    private var currentJournalId: Int? = null
+    private var originalJournalContent: String? = ""
 
     private val _isBottomSheetVisible = MutableStateFlow(false)
     val isBottomSheetVisible = _isBottomSheetVisible.asStateFlow()
@@ -39,8 +45,8 @@ class JournalViewModel(application: Application) : AndroidViewModel(application)
     private val _shouldShowBackPressedDialog = MutableStateFlow(false)
     val shouldShowBackPressedDialog = _shouldShowBackPressedDialog.asStateFlow()
 
-    private val _shouldShowResetConfirmationDialog = MutableStateFlow(false)
-    val shouldShowResetConfirmationDialog = _shouldShowResetConfirmationDialog.asStateFlow()
+    private val _shouldShowDeleteConfirmationDialog = MutableStateFlow(false)
+    val shouldShowDeleteConfirmationDialog = _shouldShowDeleteConfirmationDialog.asStateFlow()
 
     private val _isSaveSuccessful = MutableStateFlow(false)
     val isSaveSuccessful = _isSaveSuccessful.asStateFlow()
@@ -58,12 +64,20 @@ class JournalViewModel(application: Application) : AndroidViewModel(application)
             val content = _memoText.value.takeIf { it.isNotBlank() }
 
             if (content != null) {
-                val journalToSave = JournalEntity(
-                    createdDate = JournalHelper.getCurrentDate(),
-                    content = content,
-                    question = question
-                )
-                mJournalRepository.insertJournal(journalToSave)
+                if (currentJournalId != null) {
+                    mJournalRepository.updateJournalById(currentJournalId!!, content)
+                    currentJournalId = null
+                    originalJournalContent = ""
+                } else {
+                    val journalToSave = JournalEntity(
+                        createdDate = JournalHelper.getCurrentDate(),
+                        content = content,
+                        question = question
+                    )
+                    mJournalRepository.insertJournal(journalToSave)
+                    currentJournalId = null
+                    originalJournalContent = ""
+                }
 
                 withContext(Dispatchers.Main) {
                     _isSaveSuccessful.value = true
@@ -81,14 +95,22 @@ class JournalViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun onBackPressed() {
-        if (_memoText.value.isNotBlank()) {
+        val currentMemoText = _memoText.value.trim()
+        val hasContentChanged = currentMemoText != originalJournalContent?.trim()
+
+        if (hasContentChanged) {
             _shouldShowBackPressedDialog.value = true
         } else {
             _navigationEvent.value = NavigationEvent.NavigateBack
+            clearSelectedQuestion()
+            originalJournalContent = ""
+            currentJournalId = null
         }
     }
 
     fun onBackPressedConfirm() {
+        originalJournalContent = ""
+        currentJournalId = null
         _navigationEvent.value = NavigationEvent.NavigateBack
         clearSelectedQuestion()
         _shouldShowBackPressedDialog.value = false
@@ -102,17 +124,18 @@ class JournalViewModel(application: Application) : AndroidViewModel(application)
         _navigationEvent.value = null
     }
 
-    fun showResetConfirmationDialog() {
-        _shouldShowResetConfirmationDialog.value = true
+    fun showDeleteConfirmationDialog() {
+        _shouldShowDeleteConfirmationDialog.value = true
     }
 
-    fun cancelResetConfirmation() {
-        _shouldShowResetConfirmationDialog.value = false
+    fun cancelDeleteConfirmation() {
+        _shouldShowDeleteConfirmationDialog.value = false
+        _isFabExpanded.value = false
     }
 
-    fun confirmReset() {
-        _memoText.value = ""
-        _shouldShowResetConfirmationDialog.value = false
+    fun confirmDelete() {
+        deleteJournal()
+        _shouldShowDeleteConfirmationDialog.value = false
         _isFabExpanded.value = false
     }
 
@@ -150,7 +173,13 @@ class JournalViewModel(application: Application) : AndroidViewModel(application)
         _isBottomSheetVisible.value = false
     }
 
-    fun selectQuestion(question: JournalQuestion) {
+    fun selectQuestion(questionObject: JournalQuestion?, questionText: String?) {
+        val question: JournalQuestion?
+        if(questionText != null){
+            question = JournalQuestions.getQuestion(questionText)
+        } else {
+            question = questionObject
+        }
         _selectedQuestion.value = question
     }
 
@@ -160,6 +189,41 @@ class JournalViewModel(application: Application) : AndroidViewModel(application)
 
     fun toggleFabExpanded() {
         _isFabExpanded.value = !_isFabExpanded.value
+    }
+
+    fun deleteJournal() {
+        currentJournalId?.let { id ->
+            viewModelScope.launch(Dispatchers.IO) {
+                journalRepository.deleteJournalById(id)
+                currentJournalId = null
+                originalJournalContent = ""
+
+                withContext(Dispatchers.Main) {
+                    _navigationEvent.value = NavigationEvent.NavigateBack
+                    clearSelectedQuestion()
+                    _isFabExpanded.value = false
+                }
+            }
+        }
+    }
+
+    fun getJournalById(id:Int?, onResult: (Journal?) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val entity = id?.let { journalRepository.getJournalById(it) }
+            val journal = entity?.let {
+                currentJournalId = it.journalId
+                originalJournalContent = it.content
+                Journal(
+                    id = it.journalId,
+                    content = it.content,
+                    dateTime = it.createdDate,
+                    question = it.question
+                )
+            }
+            withContext(Dispatchers.Main) {
+                onResult(journal)
+            }
+        }
     }
 }
 

@@ -6,8 +6,12 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.herehearteam.herehear.data.local.dao.JournalDao
 import com.herehearteam.herehear.data.local.entity.JournalEntity
+import androidx.room.TypeConverters
+import com.herehearteam.herehear.data.local.helper.Converters
+
 
 @Database(entities = [JournalEntity::class], version = 1)
+@TypeConverters(Converters::class)
 abstract class JournalRoomDatabase : RoomDatabase() {
     abstract fun journalDao() : JournalDao
 

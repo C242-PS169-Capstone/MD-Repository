@@ -1,13 +1,13 @@
 package com.herehearteam.herehear.data.local.helper
 
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
 import java.util.Date
 import java.util.Locale
 
 object JournalHelper {
-    fun getCurrentDate(): String {
-        val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
-        val date = Date()
-        return dateFormat.format(date)
+    fun getCurrentDate(): LocalDateTime {
+        return LocalDateTime.now()
     }
+
 }

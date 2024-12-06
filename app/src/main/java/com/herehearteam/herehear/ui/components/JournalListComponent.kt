@@ -1,5 +1,6 @@
 package com.herehearteam.herehear.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,7 +31,9 @@ import java.util.Locale
 @Composable
 fun JournalBox(
     text: String,
-    color: Color
+    color: Color,
+    journalId: Int,
+    onClick: () -> Unit
 ){
     Card(
         colors = CardDefaults.cardColors(containerColor = color),
@@ -44,7 +47,8 @@ fun JournalBox(
             .fillMaxWidth()
             .height(102.dp)
             .padding(start = 7.dp)
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .clickable { onClick() },
     ) {
         Column(
             modifier = Modifier
@@ -141,7 +145,9 @@ fun JournalListPreview(){
             .fillMaxWidth()){
             JournalBox(
                 text = sampleText,
-                color = sampleColor
+                color = sampleColor,
+                journalId = 0,
+                onClick = {}
             )
         }
     }

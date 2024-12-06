@@ -27,4 +27,8 @@ object JournalQuestions {
     fun getRandomQuestions(count: Int = 3): List<JournalQuestion> {
         return questions.shuffled().take(count)
     }
+
+    fun getQuestion(text: String): JournalQuestion? {
+        return questions.firstOrNull { it.text == text }
+    }
 }

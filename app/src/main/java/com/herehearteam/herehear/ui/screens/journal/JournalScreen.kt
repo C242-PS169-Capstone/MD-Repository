@@ -40,6 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -54,15 +55,27 @@ import com.herehearteam.herehear.ui.components.CustomTopAppBar
 fun JournalScreen(
     viewModel: JournalViewModel,
     onNavigateBack: () -> Unit,
-    onNavigateToHome: () -> Unit
+    onNavigateToHome: () -> Unit,
+    journalId: Int?
 ) {
     val isSaveSuccessful by viewModel.isSaveSuccessful.collectAsState()
     val selectedQuestion by viewModel.selectedQuestion.collectAsState()
     val memoText by viewModel.memoText.collectAsState()
     val isFabExpanded by viewModel.isFabExpanded.collectAsState()
     val shouldShowBackPressedDialog by viewModel.shouldShowBackPressedDialog.collectAsState()
-    val shouldShowResetConfirmationDialog by viewModel.shouldShowResetConfirmationDialog.collectAsState()
+    val shouldShowDeleteConfirmationDialog by viewModel.shouldShowDeleteConfirmationDialog.collectAsState()
     val navigationEvent by viewModel.navigationEvent.collectAsState()
+
+    LaunchedEffect(journalId) {
+        if (journalId != 0) {
+            viewModel.getJournalById(journalId) { journal ->
+                journal?.let {
+                    viewModel.updateMemoText(it.content) // Set memo text
+                    viewModel.selectQuestion(questionObject = null, questionText = it.question) // Set selected question
+                }
+            }
+        }
+    }
 
     BackHandler {
         viewModel.onBackPressed()
@@ -170,7 +183,7 @@ fun JournalScreen(
                         )
                     }
                     FloatingActionButton(
-                        onClick = { viewModel.showResetConfirmationDialog() },
+                        onClick = { viewModel.showDeleteConfirmationDialog() },
                         containerColor = MaterialTheme.colorScheme.secondary,
                         shape = CircleShape,
                         elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
@@ -230,18 +243,18 @@ fun JournalScreen(
             )
         }
 
-        if (shouldShowResetConfirmationDialog) {
+        if (shouldShowDeleteConfirmationDialog) {
             AlertDialog(
-                onDismissRequest = { viewModel.cancelResetConfirmation() },
-                title = { Text("Reset Memo") },
-                text = { Text("Apakah kamu yakin ingin mereset memo yang sedang kamu tulis?") },
+                onDismissRequest = { viewModel.cancelDeleteConfirmation() },
+                title = { Text("Hapus Journal") },
+                text = { Text("Apakah kamu yakin ingin menghapus journal ini?") },
                 confirmButton = {
-                    TextButton(onClick = { viewModel.confirmReset() }) {
+                    TextButton(onClick = { viewModel.confirmDelete() }) {
                         Text("Ya")
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { viewModel.cancelResetConfirmation() }) {
+                    TextButton(onClick = { viewModel.cancelDeleteConfirmation() }) {
                         Text("Batal")
                     }
                 }

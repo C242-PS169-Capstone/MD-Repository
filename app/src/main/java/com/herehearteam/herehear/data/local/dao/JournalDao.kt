@@ -8,6 +8,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.herehearteam.herehear.data.local.entity.JournalEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface JournalDao {
@@ -21,8 +22,14 @@ interface JournalDao {
     fun deleteJournal(journal: JournalEntity)
 
     @Query("SELECT * FROM journaling")
-    fun getAllJournals(): LiveData<List<JournalEntity>>
+    fun getAllJournalsFlow(): Flow<List<JournalEntity>>
 
-//    @Query("SELECT * FROM journaling WHERE journalId = :journalId")
-//    fun getJournalByJournalId(journalId: String): JournalEntity?
+    @Query("SELECT * FROM journaling WHERE journalId = :journalId")
+    fun getJournalByJournalId(journalId: Int): JournalEntity?
+
+    @Query("DELETE FROM journaling WHERE journalId = :journalId")
+    fun deleteJournalById(journalId: Int)
+
+    @Query("UPDATE journaling SET content = :content WHERE journalId = :journalId")
+    fun updateJournalContentById(journalId: Int, content: String)
 }

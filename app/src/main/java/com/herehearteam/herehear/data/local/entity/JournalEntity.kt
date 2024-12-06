@@ -5,6 +5,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
+import java.time.LocalDateTime
 
 @Entity(tableName = "journaling")
 @Parcelize
@@ -14,10 +15,10 @@ data class JournalEntity(
     val journalId: Int = 0,
 
     @ColumnInfo(name = "createdDate")
-    val createdDate: String? = null,
+    val createdDate: LocalDateTime,
 
     @ColumnInfo(name = "content")
-    val content: String? = null,
+    val content: String,
 
 //    @ColumnInfo(name = "userId")
 //    val userId: String,

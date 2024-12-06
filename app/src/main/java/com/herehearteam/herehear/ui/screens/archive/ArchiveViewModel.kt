@@ -1,7 +1,10 @@
 package com.herehearteam.herehear.ui.screens.archive
 
+import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.herehearteam.herehear.data.local.repository.JournalRepository
+import com.herehearteam.herehear.domain.model.Journal
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -9,6 +12,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.asLiveData
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 data class JournalArchiveState(
     val journals: List<Journal> = emptyList(),
@@ -17,17 +25,37 @@ data class JournalArchiveState(
     val searchQuery: String = ""
 )
 
-class ArchiveViewModel : ViewModel() {
+class ArchiveViewModel(
+    private val journalRepository: JournalRepository
+) : ViewModel() {
     private val _uiState = MutableStateFlow(JournalArchiveState())
     val uiState: StateFlow<JournalArchiveState> = _uiState.asStateFlow()
 
+    constructor(application: Application) : this(
+        JournalRepository(application)
+    )
+
     init {
-        loadDummyData()
+        fetchData()
     }
 
-    private fun loadDummyData() {
-        _uiState.update { currentState ->
-            currentState.copy(journals = DummyJournals.journalList)
+    private fun fetchData() {
+        viewModelScope.launch {
+            journalRepository.getAllJournals().asLiveData().observeForever { journalEntities ->
+                // Convert JournalEntity to Journal
+                val journals = journalEntities.map { entity ->
+                    Journal(
+                        id = entity.journalId,
+                        content = entity.content,
+                        dateTime = entity.createdDate,
+                        question = entity.question
+                    )
+                }
+
+                _uiState.update { currentState ->
+                    currentState.copy(journals = journals)
+                }
+            }
         }
     }
 
