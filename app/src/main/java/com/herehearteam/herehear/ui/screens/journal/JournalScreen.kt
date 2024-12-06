@@ -63,7 +63,7 @@ fun JournalScreen(
     val memoText by viewModel.memoText.collectAsState()
     val isFabExpanded by viewModel.isFabExpanded.collectAsState()
     val shouldShowBackPressedDialog by viewModel.shouldShowBackPressedDialog.collectAsState()
-    val shouldShowResetConfirmationDialog by viewModel.shouldShowResetConfirmationDialog.collectAsState()
+    val shouldShowDeleteConfirmationDialog by viewModel.shouldShowDeleteConfirmationDialog.collectAsState()
     val navigationEvent by viewModel.navigationEvent.collectAsState()
 
     LaunchedEffect(journalId) {
@@ -183,7 +183,7 @@ fun JournalScreen(
                         )
                     }
                     FloatingActionButton(
-                        onClick = { viewModel.showResetConfirmationDialog() },
+                        onClick = { viewModel.showDeleteConfirmationDialog() },
                         containerColor = MaterialTheme.colorScheme.secondary,
                         shape = CircleShape,
                         elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
@@ -243,18 +243,18 @@ fun JournalScreen(
             )
         }
 
-        if (shouldShowResetConfirmationDialog) {
+        if (shouldShowDeleteConfirmationDialog) {
             AlertDialog(
-                onDismissRequest = { viewModel.cancelResetConfirmation() },
-                title = { Text("Reset Memo") },
-                text = { Text("Apakah kamu yakin ingin mereset memo yang sedang kamu tulis?") },
+                onDismissRequest = { viewModel.cancelDeleteConfirmation() },
+                title = { Text("Hapus Journal") },
+                text = { Text("Apakah kamu yakin ingin menghapus journal ini?") },
                 confirmButton = {
-                    TextButton(onClick = { viewModel.confirmReset() }) {
+                    TextButton(onClick = { viewModel.confirmDelete() }) {
                         Text("Ya")
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { viewModel.cancelResetConfirmation() }) {
+                    TextButton(onClick = { viewModel.cancelDeleteConfirmation() }) {
                         Text("Batal")
                     }
                 }

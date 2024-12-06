@@ -26,4 +26,10 @@ interface JournalDao {
 
     @Query("SELECT * FROM journaling WHERE journalId = :journalId")
     fun getJournalByJournalId(journalId: Int): JournalEntity?
+
+    @Query("DELETE FROM journaling WHERE journalId = :journalId")
+    fun deleteJournalById(journalId: Int)
+
+    @Query("UPDATE journaling SET content = :content WHERE journalId = :journalId")
+    fun updateJournalContentById(journalId: Int, content: String)
 }

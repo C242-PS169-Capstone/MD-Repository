@@ -31,12 +31,20 @@ class JournalRepository(application: Application) {
             mJournalDao.deleteJournal(journal)
     }
 
+    fun deleteJournalById(id: Int) {
+        mJournalDao.deleteJournalById(id)
+    }
+
     fun getAllJournals(): Flow<List<JournalEntity>> {
       return mJournalDao.getAllJournalsFlow().flowOn(Dispatchers.IO)
     }
 
     fun getJournalById(id: Int): JournalEntity? {
        return mJournalDao.getJournalByJournalId(id)
+    }
+
+    fun updateJournalById(id: Int, content: String) {
+        mJournalDao.updateJournalContentById(id, content)
     }
 
     companion object{
