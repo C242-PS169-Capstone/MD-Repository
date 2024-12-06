@@ -68,8 +68,6 @@ fun NavigationGraph(
         )
     )
     val registerViewModel: RegisterViewModel = viewModel()
-    val archiveViewModel: ArchiveViewModel = viewModel()
-
     val scope = rememberCoroutineScope()
 
     val launcher = rememberLauncherForActivityResult(
