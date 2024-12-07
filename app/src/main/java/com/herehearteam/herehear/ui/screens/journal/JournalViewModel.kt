@@ -1,7 +1,10 @@
 package com.herehearteam.herehear.ui.screens.journal
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
 import com.herehearteam.herehear.data.local.entity.JournalEntity
 import com.herehearteam.herehear.data.local.helper.JournalHelper
 import com.herehearteam.herehear.data.local.repository.JournalRepository
@@ -26,6 +29,8 @@ class JournalViewModel(
     private val viewModelScope = CoroutineScope(Dispatchers.Main + viewModelJob)
     private var currentJournalId: Int? = null
     private var originalJournalContent: String? = ""
+    private val currentUser = FirebaseAuth.getInstance().currentUser
+    private val userId = currentUser?.uid
 
     private val _isBottomSheetVisible = MutableStateFlow(false)
     val isBottomSheetVisible = _isBottomSheetVisible.asStateFlow()
@@ -60,24 +65,35 @@ class JournalViewModel(
 
     fun saveJournal() {
         viewModelScope.launch(Dispatchers.IO) {
+            if (userId == null) {
+                withContext(Dispatchers.Main) {
+                    _isSaveSuccessful.value = false
+                }
+                return@launch
+            }
+
             val question = _selectedQuestion.value?.text ?: ""
             val content = _memoText.value.takeIf { it.isNotBlank() }
 
             if (content != null) {
                 if (currentJournalId != null) {
-                    mJournalRepository.updateJournalById(currentJournalId!!, content)
-                    currentJournalId = null
-                    originalJournalContent = ""
+                    journalRepository.updateJournalById(
+                        id = currentJournalId!!,
+                        content = content,
+                        userId = userId
+                    )
                 } else {
                     val journalToSave = JournalEntity(
                         createdDate = JournalHelper.getCurrentDate(),
                         content = content,
-                        question = question
+                        question = question,
+                        userId = userId
                     )
-                    mJournalRepository.insertJournal(journalToSave)
-                    currentJournalId = null
-                    originalJournalContent = ""
+                    journalRepository.insertJournal(journalToSave)
                 }
+
+                currentJournalId = null
+                originalJournalContent = ""
 
                 withContext(Dispatchers.Main) {
                     _isSaveSuccessful.value = true
@@ -85,9 +101,55 @@ class JournalViewModel(
                     clearSelectedQuestion()
                     _isFabExpanded.value = false
                 }
+            } else {
+
             }
         }
     }
+
+//    fun saveJournal() {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            val question = _selectedQuestion.value?.text ?: ""
+//            val content = _memoText.value.takeIf { it.isNotBlank() }
+//
+//            if (content != null) {
+//                val userPreferences = UserPreferencesDataStore.userPreferencesFlow.firstOrNull()
+//                val userId = userPreferences?.userId
+//
+//                if (userId != null) {
+//                    if (currentJournalId != null) {
+//                        mJournalRepository.updateJournalById(currentJournalId!!, content)
+//                        currentJournalId = null
+//                        originalJournalContent = ""
+//                    } else {
+//                        val journalToSave = JournalEntity(
+//                            createdDate = JournalHelper.getCurrentDate(),
+//                            content = content,
+//                            question = question,
+//                            userId = userId // Use userId from DataStore
+//                        )
+//                        mJournalRepository.insertJournal(journalToSave)
+//                        currentJournalId = null
+//                        originalJournalContent = ""
+//                    }
+//
+//                    withContext(Dispatchers.Main) {
+//                        _isSaveSuccessful.value = true
+//                        _navigationEvent.value = NavigationEvent.NavigateToHome
+//                        clearSelectedQuestion()
+//                        _isFabExpanded.value = false
+//                    }
+//                } else {
+//                    // Handle case where user is not logged in
+//                    // For example, show an error message or redirect to login screen
+//                    withContext(Dispatchers.Main) {
+//                        _isSaveSuccessful.value = false
+//                        // Handle user not logged in error
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     override fun onCleared() {
         super.onCleared()
@@ -192,24 +254,38 @@ class JournalViewModel(
     }
 
     fun deleteJournal() {
-        currentJournalId?.let { id ->
-            viewModelScope.launch(Dispatchers.IO) {
-                journalRepository.deleteJournalById(id)
-                currentJournalId = null
-                originalJournalContent = ""
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val userId = currentUser?.uid
 
-                withContext(Dispatchers.Main) {
-                    _navigationEvent.value = NavigationEvent.NavigateBack
-                    clearSelectedQuestion()
-                    _isFabExpanded.value = false
+        currentJournalId?.let { id ->
+            if (userId != null) {
+                viewModelScope.launch(Dispatchers.IO) {
+                    journalRepository.deleteJournalById(id, userId)
+                    currentJournalId = null
+                    originalJournalContent = ""
+
+                    withContext(Dispatchers.Main) {
+                        _navigationEvent.value = NavigationEvent.NavigateBack
+                        clearSelectedQuestion()
+                        _isFabExpanded.value = false
+                    }
                 }
+            } else {
+                Log.d("apadah", "error intinya")
             }
         }
     }
 
-    fun getJournalById(id:Int?, onResult: (Journal?) -> Unit) {
+    fun getJournalById(id: Int?, onResult: (Journal?) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
-            val entity = id?.let { journalRepository.getJournalById(it) }
+            if (userId == null) {
+                withContext(Dispatchers.Main) {
+                    onResult(null)
+                }
+                return@launch
+            }
+
+            val entity = id?.let { journalRepository.getJournalById(it, userId) }
             val journal = entity?.let {
                 currentJournalId = it.journalId
                 originalJournalContent = it.content
@@ -217,14 +293,37 @@ class JournalViewModel(
                     id = it.journalId,
                     content = it.content,
                     dateTime = it.createdDate,
-                    question = it.question
+                    question = it.question,
+                    userId = userId
                 )
             }
+
             withContext(Dispatchers.Main) {
                 onResult(journal)
             }
         }
     }
+
+
+//    fun getJournalById(id:Int?, onResult: (Journal?) -> Unit) {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            val entity = id?.let { journalRepository.getJournalById(it) }
+//            val journal = entity?.let {
+//                currentJournalId = it.journalId
+//                originalJournalContent = it.content
+//                Journal(
+//                    id = it.journalId,
+//                    content = it.content,
+//                    dateTime = it.createdDate,
+//                    question = it.question,
+//                    userId =
+//                )
+//            }
+//            withContext(Dispatchers.Main) {
+//                onResult(journal)
+//            }
+//        }
+//    }
 }
 
 sealed class NavigationEvent {

@@ -1,5 +1,6 @@
 package com.herehearteam.herehear.ui.screens.profile
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
 import com.herehearteam.herehear.data.remote.GoogleAuthUiClient
@@ -55,6 +56,10 @@ class ProfileViewModel(
     suspend fun signOut() {
         googleAuthUiClient.signOut()
         userPreferencesDataStore.clearUser()
+        _uiState.update {
+            ProfileUiState()
+        }
+        Log.d("ProfileViewModel", "User logged out and state reset")
     }
 }
 

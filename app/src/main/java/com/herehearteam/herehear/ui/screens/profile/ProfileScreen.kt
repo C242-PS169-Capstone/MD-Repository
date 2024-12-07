@@ -401,7 +401,7 @@ fun ProfileScreen(
                                     Toast.LENGTH_SHORT
                                 ).show()
                                 navController.navigate(Screen.Welcome.route) {
-                                    popUpTo(Screen.Home.route) { inclusive = true }
+                                    popUpTo(0) { inclusive = true }
                                 }
                             }
                         },
@@ -409,10 +409,9 @@ fun ProfileScreen(
                         icon = painterResource(R.drawable.ic_logout),
                         textColor = Color.Black,
                         iconColor = Color.Red,
-                        outlineColor = Color.Red,
-                        )
+                        outlineColor = Color.Red
+                    )
                 }
-
             }
     }
 }

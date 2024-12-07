@@ -7,4 +7,5 @@ data class Journal(
     val content: String,
     val dateTime: LocalDateTime,
     val question: String?,
+    val userId: String,
 )

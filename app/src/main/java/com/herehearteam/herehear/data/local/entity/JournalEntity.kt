@@ -20,11 +20,11 @@ data class JournalEntity(
     @ColumnInfo(name = "content")
     val content: String,
 
-//    @ColumnInfo(name = "userId")
-//    val userId: String,
+    @ColumnInfo(name = "userId")
+    val userId: String,
 
 //    @ColumnInfo(name = "journalingClassName")
-//    val journalingClassName: String,
+//    val journalingClassName: Int,
 
     @ColumnInfo(name = "question")
     val question: String?

@@ -9,5 +9,4 @@ object JournalHelper {
     fun getCurrentDate(): LocalDateTime {
         return LocalDateTime.now()
     }
-
 }

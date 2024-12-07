@@ -5,5 +5,4 @@ data class User(
     val email: String,
     val displayName: String? = null,
     val idToken: String? = null,
-//    val loginTimestamp: Long = System.currentTimeMillis()
 )

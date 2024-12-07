@@ -21,15 +21,27 @@ interface JournalDao {
     @Delete
     fun deleteJournal(journal: JournalEntity)
 
-    @Query("SELECT * FROM journaling")
-    fun getAllJournalsFlow(): Flow<List<JournalEntity>>
+//    @Query("SELECT * FROM journaling")
+//    fun getAllJournalsFlow(): Flow<List<JournalEntity>>
+//
+//    @Query("SELECT * FROM journaling WHERE journalId = :journalId")
+//    fun getJournalByJournalId(journalId: Int): JournalEntity?
+//
+//    @Query("DELETE FROM journaling WHERE journalId = :journalId")
+//    fun deleteJournalById(journalId: Int)
+//
+//    @Query("UPDATE journaling SET content = :content WHERE journalId = :journalId")
+//    fun updateJournalContentById(journalId: Int, content: String)
 
-    @Query("SELECT * FROM journaling WHERE journalId = :journalId")
-    fun getJournalByJournalId(journalId: Int): JournalEntity?
+    @Query("SELECT * FROM journaling WHERE userId = :userId")
+    fun getAllJournalsFlow(userId: String): Flow<List<JournalEntity>>
 
-    @Query("DELETE FROM journaling WHERE journalId = :journalId")
-    fun deleteJournalById(journalId: Int)
+    @Query("SELECT * FROM journaling WHERE journalId = :journalId AND userId = :userId")
+    fun getJournalByJournalId(journalId: Int, userId: String): JournalEntity?
 
-    @Query("UPDATE journaling SET content = :content WHERE journalId = :journalId")
-    fun updateJournalContentById(journalId: Int, content: String)
+    @Query("DELETE FROM journaling WHERE journalId = :journalId AND userId = :userId")
+    fun deleteJournalById(journalId: Int, userId: String)
+
+    @Query("UPDATE journaling SET content = :content WHERE journalId = :journalId AND userId = :userId")
+    fun updateJournalContentById(journalId: Int, content: String, userId: String)
 }

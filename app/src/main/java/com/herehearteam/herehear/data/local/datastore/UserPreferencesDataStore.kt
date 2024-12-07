@@ -2,6 +2,7 @@ package com.herehearteam.herehear.data.local.datastore
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -38,6 +39,7 @@ class UserPreferencesDataStore private constructor(private val context: Context)
     suspend fun clearUser() {
         context.dataStore.edit { preferences ->
             preferences.clear()
+            Log.d("UPD", "User data cleared")
         }
     }
 
