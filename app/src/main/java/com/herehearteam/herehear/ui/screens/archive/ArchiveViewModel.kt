@@ -14,6 +14,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.asLiveData
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -40,24 +41,57 @@ class ArchiveViewModel(
     }
 
     private fun fetchData() {
-        viewModelScope.launch {
-            journalRepository.getAllJournals().asLiveData().observeForever { journalEntities ->
-                // Convert JournalEntity to Journal
-                val journals = journalEntities.map { entity ->
-                    Journal(
-                        id = entity.journalId,
-                        content = entity.content,
-                        dateTime = entity.createdDate,
-                        question = entity.question
-                    )
-                }
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val userId = currentUser?.uid
 
-                _uiState.update { currentState ->
-                    currentState.copy(journals = journals)
-                }
+        if (userId != null) {
+            viewModelScope.launch {
+                journalRepository.getAllJournals(userId)
+                    .collect { journalEntities ->
+                        // Convert JournalEntity to Journal
+                        val journals = journalEntities.map { entity ->
+                            Journal(
+                                id = entity.journalId,
+                                content = entity.content,
+                                dateTime = entity.createdDate,
+                                question = entity.question,
+                                userId = entity.userId
+                            )
+                        }
+
+                        _uiState.update { currentState ->
+                            currentState.copy(journals = journals)
+                        }
+                    }
+            }
+        } else {
+            // Handle case when user is not logged in
+            // Optionally clear journals or show login prompt
+            _uiState.update { currentState ->
+                currentState.copy(journals = emptyList())
             }
         }
     }
+
+//    private fun fetchData() {
+//        viewModelScope.launch {
+//            journalRepository.getAllJournals().asLiveData().observeForever { journalEntities ->
+//                // Convert JournalEntity to Journal
+//                val journals = journalEntities.map { entity ->
+//                    Journal(
+//                        id = entity.journalId,
+//                        content = entity.content,
+//                        dateTime = entity.createdDate,
+//                        question = entity.question
+//                    )
+//                }
+//
+//                _uiState.update { currentState ->
+//                    currentState.copy(journals = journals)
+//                }
+//            }
+//        }
+//    }
 
     fun updateSelectedMonth(month: Int) {
         _uiState.update { currentState ->

@@ -88,21 +88,37 @@ class JournalRepository(application: Application) {
         mJournalDao.deleteJournal(journal)
     }
 
-    fun deleteJournalById(id: Int) {
-        mJournalDao.deleteJournalById(id)
+    fun deleteJournalById(id: Int, userId: String) {
+        mJournalDao.deleteJournalById(id, userId)
     }
 
-    fun getAllJournals(): Flow<List<JournalEntity>> {
-      return mJournalDao.getAllJournalsFlow().flowOn(Dispatchers.IO)
+    fun getAllJournals(userId: String): Flow<List<JournalEntity>> {
+        return mJournalDao.getAllJournalsFlow(userId).flowOn(Dispatchers.IO)
     }
 
-    fun getJournalById(id: Int): JournalEntity? {
-       return mJournalDao.getJournalByJournalId(id)
+    fun getJournalById(id: Int, userId: String): JournalEntity? {
+        return mJournalDao.getJournalByJournalId(id, userId)
     }
 
-    fun updateJournalById(id: Int, content: String) {
-        mJournalDao.updateJournalContentById(id, content)
+    fun updateJournalById(id: Int, content: String, userId: String) {
+        mJournalDao.updateJournalContentById(id, content, userId)
     }
+
+//    fun deleteJournalById(id: Int) {
+//        mJournalDao.deleteJournalById(id)
+//    }
+
+//    fun getAllJournals(): Flow<List<JournalEntity>> {
+//      return mJournalDao.getAllJournalsFlow().flowOn(Dispatchers.IO)
+//    }
+
+//    fun getJournalById(id: Int): JournalEntity? {
+//       return mJournalDao.getJournalByJournalId(id)
+//    }
+//
+//    fun updateJournalById(id: Int, content: String) {
+//        mJournalDao.updateJournalContentById(id, content)
+//    }
 
     companion object{
         @Volatile

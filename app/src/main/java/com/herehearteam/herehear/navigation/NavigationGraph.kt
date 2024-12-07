@@ -35,6 +35,7 @@ import com.herehearteam.herehear.ui.screens.auth.OtpLoginScreen
 import com.herehearteam.herehear.ui.screens.auth.OtpRegisterScreen
 import com.herehearteam.herehear.ui.screens.auth.RegisterScreen
 import com.herehearteam.herehear.ui.screens.auth.RegisterViewModel
+import com.herehearteam.herehear.ui.screens.auth.RegisterViewModelFactory
 import com.herehearteam.herehear.ui.screens.auth.TermsAndConditionsScreen
 import com.herehearteam.herehear.ui.screens.auth.WelcomeScreen
 import com.herehearteam.herehear.ui.screens.home.HomeScreen
@@ -67,7 +68,13 @@ fun NavigationGraph(
             googleAuthUiClient
         )
     )
-    val registerViewModel: RegisterViewModel = viewModel()
+
+    val registerViewModel: RegisterViewModel = viewModel(
+        factory = RegisterViewModelFactory(
+            appDependencies.userRepository
+        )
+    )
+
     val scope = rememberCoroutineScope()
 
     val launcher = rememberLauncherForActivityResult(
@@ -182,10 +189,10 @@ fun NavigationGraph(
 
             LaunchedEffect(key1 = state.isSignInSuccessful) {
                 if (state.isSignInSuccessful) {
+                    registerViewModel.resetState()
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Welcome.route) { inclusive = true }
                     }
-                    registerViewModel.resetState()
                 }
             }
 
@@ -214,6 +221,7 @@ fun NavigationGraph(
 
             LaunchedEffect(key1 = state.isSignInSuccessful) {
                 if (state.isSignInSuccessful) {
+                    loginViewModel.resetState()
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Welcome.route) { inclusive = true }
                     }

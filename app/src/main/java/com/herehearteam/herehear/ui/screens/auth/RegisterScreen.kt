@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.herehearteam.herehear.R
+import com.herehearteam.herehear.di.AppDependencies
 import com.herehearteam.herehear.ui.components.CustomButtonFilled
 import com.herehearteam.herehear.ui.components.CustomTopAppBar
 import com.herehearteam.herehear.ui.theme.ColorPrimary
@@ -35,7 +36,11 @@ fun RegisterScreen(
     onRegisterWithGmail: () -> Unit,
     onRegisterWithPhone: () -> Unit,
     onNavigateBack: () -> Unit,
-    viewModel: RegisterViewModel = viewModel()
+    viewModel: RegisterViewModel = viewModel(
+        factory = RegisterViewModelFactory(
+            AppDependencies.getInstance(LocalContext.current).userRepository
+        )
+    )
 ){
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
