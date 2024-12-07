@@ -11,16 +11,20 @@ import com.herehearteam.herehear.data.local.repository.JournalRepository
 import com.herehearteam.herehear.domain.model.Journal
 import com.herehearteam.herehear.domain.model.JournalQuestion
 import com.herehearteam.herehear.domain.model.JournalQuestions
+import com.herehearteam.herehear.domain.model.User
+import com.herehearteam.herehear.domain.repository.UserRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class JournalViewModel(
     application: Application,
+    private val userRepository: UserRepository,
     private val journalRepository: JournalRepository
     ) : AndroidViewModel(application){
     private val mJournalRepository: JournalRepository = JournalRepository(application)
@@ -29,8 +33,14 @@ class JournalViewModel(
     private val viewModelScope = CoroutineScope(Dispatchers.Main + viewModelJob)
     private var currentJournalId: Int? = null
     private var originalJournalContent: String? = ""
-    private val currentUser = FirebaseAuth.getInstance().currentUser
-    private val userId = currentUser?.uid
+
+//    private val currentUser = FirebaseAuth.getInstance().currentUser
+//    private val userId = currentUser?.uid
+
+    private val _currentUser = MutableStateFlow<User?>(null)
+    val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
+
+    private val userId: String? get() = _currentUser.value?.userId
 
     private val _isBottomSheetVisible = MutableStateFlow(false)
     val isBottomSheetVisible = _isBottomSheetVisible.asStateFlow()
@@ -60,11 +70,18 @@ class JournalViewModel(
     val navigationEvent = _navigationEvent.asStateFlow()
 
     init {
-        refreshAllQuestions()
+        refreshQuestions()
+        viewModelScope.launch {
+            userRepository.user.collect { user ->
+                _currentUser.value = user
+                Log.d("JournalViewModel", "Current user updated: ${user?.userId}")
+            }
+        }
     }
 
     fun saveJournal() {
         viewModelScope.launch(Dispatchers.IO) {
+            val userId = _currentUser.value?.userId
             if (userId == null) {
                 withContext(Dispatchers.Main) {
                     _isSaveSuccessful.value = false
@@ -219,10 +236,6 @@ class JournalViewModel(
         _memoText.value = ""
     }
 
-    private fun refreshAllQuestions() {
-        _currentQuestions.value = JournalQuestions.getRandomQuestions()
-    }
-
     fun refreshQuestions() {
         _currentQuestions.value = JournalQuestions.getRandomQuestions()
     }
@@ -277,6 +290,7 @@ class JournalViewModel(
     }
 
     fun getJournalById(id: Int?, onResult: (Journal?) -> Unit) {
+        val userId = _currentUser.value?.userId
         viewModelScope.launch(Dispatchers.IO) {
             if (userId == null) {
                 withContext(Dispatchers.Main) {
