@@ -3,7 +3,12 @@ package com.herehearteam.herehear.utils
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
+import com.herehearteam.herehear.domain.model.RegisterState
 import com.herehearteam.herehear.navigation.Screen
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun shouldShowBottomBar(navController: NavHostController): Boolean {

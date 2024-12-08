@@ -23,9 +23,6 @@ data class JournalEntity(
     @ColumnInfo(name = "userId")
     val userId: String,
 
-//    @ColumnInfo(name = "journalingClassName")
-//    val journalingClassName: Int,
-
     @ColumnInfo(name = "question")
     val question: String?
 ) : Parcelable
