@@ -1,7 +1,10 @@
 package com.herehearteam.herehear.navigation
 
+import RegisterViewModel
+import android.app.Activity
 import android.app.Activity.RESULT_OK
 import android.app.Application
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
@@ -21,8 +24,10 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
 import com.herehearteam.herehear.data.remote.GoogleAuthUiClient
 import com.herehearteam.herehear.di.AppDependencies
+import com.herehearteam.herehear.domain.model.SignInResult
 import com.herehearteam.herehear.ui.screens.archive.ArchiveScreen
 import com.herehearteam.herehear.ui.screens.archive.ArchiveViewModel
 import com.herehearteam.herehear.ui.screens.article.ArticleScreen
@@ -34,7 +39,6 @@ import com.herehearteam.herehear.ui.screens.auth.NameInputScreen
 import com.herehearteam.herehear.ui.screens.auth.OtpLoginScreen
 import com.herehearteam.herehear.ui.screens.auth.OtpRegisterScreen
 import com.herehearteam.herehear.ui.screens.auth.RegisterScreen
-import com.herehearteam.herehear.ui.screens.auth.RegisterViewModel
 import com.herehearteam.herehear.ui.screens.auth.RegisterViewModelFactory
 import com.herehearteam.herehear.ui.screens.auth.TermsAndConditionsScreen
 import com.herehearteam.herehear.ui.screens.auth.WelcomeScreen
@@ -47,7 +51,6 @@ import com.herehearteam.herehear.ui.screens.journal.JournalViewModelFactory
 import com.herehearteam.herehear.ui.screens.profile.ProfileScreen
 import com.herehearteam.herehear.ui.screens.splash.SplashScreen
 import kotlinx.coroutines.launch
-
 
 @Composable
 fun NavigationGraph(
@@ -77,20 +80,21 @@ fun NavigationGraph(
 
     val scope = rememberCoroutineScope()
 
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartIntentSenderForResult(),
-        onResult = { result ->
-            if (result.resultCode == RESULT_OK) {
-                scope.launch {
-                    val signInResult = googleAuthUiClient.signInWithIntent(
-                        intent = result.data ?: return@launch
-                    )
-                    loginViewModel.onSignInResult(signInResult)
-                    registerViewModel.onSignInResult(signInResult)
-                }
-            }
-        }
-    )
+//    val launcher = rememberLauncherForActivityResult(
+//        contract = ActivityResultContracts.StartIntentSenderForResult(),
+//        onResult = { result ->
+//            if (result.resultCode == RESULT_OK) {
+//                scope.launch {
+//                    val signInResult = googleAuthUiClient.signInWithIntent(
+//                        intent = result.data ?: return@launch
+//                    )
+//
+//                    loginViewModel.onSignInResult(signInResult)
+//                    registerViewModel.onSignInResult(signInResult)
+//                }
+//            }
+//        }
+//    )
 
     NavHost(
         navController = navController,
@@ -111,15 +115,6 @@ fun NavigationGraph(
                 }
             )
         }
-//        composable(Screen.Splash.route) {
-//            SplashScreen(
-//                navigateToWelcome = {
-//                    navController.navigate(Screen.Welcome.route) {
-//                        popUpTo(Screen.Splash.route) { inclusive = true }
-//                    }
-//                }
-//            )
-//        }
 
         composable(Screen.Home.route) {
             HomeScreen(navController)
@@ -186,13 +181,40 @@ fun NavigationGraph(
 
         composable(Screen.Register.route) {
             val state by registerViewModel.state.collectAsState()
+            var signInResult by remember { mutableStateOf<SignInResult?>(null) }
 
-            LaunchedEffect(key1 = state.isSignInSuccessful) {
-                if (state.isSignInSuccessful) {
-                    registerViewModel.resetState()
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Welcome.route) { inclusive = true }
+            Log.d("RegisterScreen", "Registration Error: ${state.isRegistrationSuccessful}")
+
+            val launcher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.StartIntentSenderForResult(),
+                onResult = { result ->
+                    if (result.resultCode == RESULT_OK) {
+                        scope.launch {
+                            val result = googleAuthUiClient.signInWithIntent(
+                                intent = result.data ?: return@launch
+                            )
+                            // Update signInResult
+                            signInResult = result
+                            loginViewModel.onSignInResult(result)
+                            registerViewModel.onSignInResult(result)
+                        }
                     }
+                }
+            )
+
+            LaunchedEffect(signInResult) {
+                signInResult?.let { result ->
+                    handleSignInResult(
+                        result = result,
+                        onSuccess = {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Welcome.route) { inclusive = true }
+                            }
+                        },
+                        onError = { errorMessage ->
+                            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                        }
+                    )
                 }
             }
 
@@ -207,24 +229,54 @@ fun NavigationGraph(
                         )
                     }
                 },
-                onRegisterWithPhone = {
-                    navController.navigate(Screen.InputNumber.createRoute(isRegister = true))
-                },
                 onNavigateBack = {
                     navController.popBackStack()
+                },
+                onLoginClick = {
+                    navController.navigate(Screen.Login.route)
+                },
+                onRegisterSuccess = {
+                    navController.navigate(Screen.Login.route)
                 }
             )
         }
 
         composable(Screen.Login.route) {
             val state by loginViewModel.state.collectAsState()
+            var signInResult by remember { mutableStateOf<SignInResult?>(null) }
+            Log.d("LoginScreen", "login status anjing: ${state.isSignInSuccessful}")
+            Log.d("LoginScreen", "User: ${state.currentUser}")
 
-            LaunchedEffect(key1 = state.isSignInSuccessful) {
-                if (state.isSignInSuccessful) {
-                    loginViewModel.resetState()
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Welcome.route) { inclusive = true }
+            val launcher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.StartIntentSenderForResult(),
+                onResult = { result ->
+                    if (result.resultCode == RESULT_OK) {
+                        scope.launch {
+                            val result = googleAuthUiClient.signInWithIntent(
+                                intent = result.data ?: return@launch
+                            )
+                            // Update signInResult
+                            signInResult = result
+                            registerViewModel.onSignInResult(result)
+                            loginViewModel.onSignInResult(result)
+                        }
                     }
+                }
+            )
+
+            LaunchedEffect(signInResult) {
+                signInResult?.let { result ->
+                    handleSignInResult(
+                        result = result,
+                        onSuccess = {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Welcome.route) { inclusive = true }
+                            }
+                        },
+                        onError = { errorMessage ->
+                            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                        }
+                    )
                 }
             }
 
@@ -239,11 +291,11 @@ fun NavigationGraph(
                         )
                     }
                 },
-                onLoginWithPhone = {
-                    navController.navigate(Screen.InputNumber.createRoute(isRegister = false))
-                },
                 onNavigateBack = {
                     navController.popBackStack()
+                },
+                onRegisterClick = {
+                    navController.navigate(Screen.Register.route)
                 }
             )
         }
@@ -336,5 +388,17 @@ fun NavigationGraph(
             )
         }
 
+    }
+}
+
+fun handleSignInResult(
+    result: SignInResult,
+    onSuccess: () -> Unit,
+    onError: (String?) -> Unit
+) {
+    if (result.data != null) {
+        onSuccess()
+    } else {
+        onError(result.errorMessage)
     }
 }
