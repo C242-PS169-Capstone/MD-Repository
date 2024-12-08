@@ -40,38 +40,80 @@ class ArchiveViewModel(
         fetchData()
     }
 
-    private fun fetchData() {
+    fun fetchData() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         val userId = currentUser?.uid
 
         if (userId != null) {
             viewModelScope.launch {
-                journalRepository.getAllJournals(userId)
-                    .collect { journalEntities ->
-                        // Convert JournalEntity to Journal
-                        val journals = journalEntities.map { entity ->
-                            Journal(
-                                id = entity.journalId,
-                                content = entity.content,
-                                dateTime = entity.createdDate,
-                                question = entity.question,
-                                userId = entity.userId
-                            )
-                        }
+                journalRepository.fetchJournals(userId)
+                    .collect { result ->
+                        result.onSuccess { journalEntities ->
+                            // Convert JournalEntity to Journal
+                            val journals = journalEntities.map { entity ->
+                                Journal(
+                                    id = entity.journalId,
+                                    content = entity.content,
+                                    dateTime = entity.createdDate,
+                                    question = entity.question,
+                                    userId = entity.userId
+                                )
+                            }
 
-                        _uiState.update { currentState ->
-                            currentState.copy(journals = journals)
+                            _uiState.update { currentState ->
+                                currentState.copy(
+                                    //loadState = JournalLoadState.Success(journals),
+                                    journals = journals
+                                )
+                            }
+                        }.onFailure { exception ->
+                            // Handle error scenario
+                            _uiState.update { currentState ->
+                                currentState.copy(
+//                                    loadState = JournalLoadState.Error(
+//                                        exception.localizedMessage ?: "Unknown error occurred"
+//                                    ),
+                                    journals = emptyList()
+                                )
+                            }
                         }
                     }
             }
-        } else {
-            // Handle case when user is not logged in
-            // Optionally clear journals or show login prompt
-            _uiState.update { currentState ->
-                currentState.copy(journals = emptyList())
-            }
         }
     }
+
+//    private fun fetchData() {
+//        val currentUser = FirebaseAuth.getInstance().currentUser
+//        val userId = currentUser?.uid
+//
+//        if (userId != null) {
+//            viewModelScope.launch {
+//                journalRepository.getAllJournals(userId)
+//                    .collect { journalEntities ->
+//                        // Convert JournalEntity to Journal
+//                        val journals = journalEntities.map { entity ->
+//                            Journal(
+//                                id = entity.journalId,
+//                                content = entity.content,
+//                                dateTime = entity.createdDate,
+//                                question = entity.question,
+//                                userId = entity.userId
+//                            )
+//                        }
+//
+//                        _uiState.update { currentState ->
+//                            currentState.copy(journals = journals)
+//                        }
+//                    }
+//            }
+//        } else {
+//            // Handle case when user is not logged in
+//            // Optionally clear journals or show login prompt
+//            _uiState.update { currentState ->
+//                currentState.copy(journals = emptyList())
+//            }
+//        }
+//    }
 
 //    private fun fetchData() {
 //        viewModelScope.launch {
