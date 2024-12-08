@@ -12,9 +12,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -26,6 +29,51 @@ class JournalRepository(application: Application) {
         val db = JournalRoomDatabase.getDatabase(application)
         mJournalDao = db.journalDao()
     }
+
+    fun fetchJournals(userId: String): Flow<Result<List<JournalEntity>>> = flow {
+        try {
+            // First, emit local journals
+            val localJournals = mJournalDao.getAllJournalsFlow(userId).collect { localData ->
+                emit(Result.success(localData))
+            }
+
+            // Fetch from remote API
+            val apiResponse = journalApiService.getAllJournals(userId)
+
+            if (apiResponse.status) {
+                // Convert API journals to local entities
+                val formatter = DateTimeFormatter.ISO_DATE_TIME
+                val remoteJournals = apiResponse.data.map { apiJournal ->
+                    JournalEntity(
+                        journalId = apiJournal.journalId!!.toInt(),
+                        content = apiJournal.content ?: "",
+                        userId = userId,
+                        createdDate = apiJournal.createdAt?.let {
+                            LocalDateTime.parse(it, formatter)
+                        } ?: LocalDateTime.now(),
+                        question = null
+                    )
+                }
+
+                // Update local database with API journals
+//                withContext(Dispatchers.IO) {
+//                    // You might want to implement a more sophisticated sync strategy
+//                    // This example replaces local data with API data
+//                    mJournalDao.deleteAllJournalsForUser(userId)
+//                    mJournalDao.insertJournals(remoteJournals)
+//                }
+
+                // Emit updated data
+                emit(Result.success(remoteJournals))
+            } else {
+                // API returned an error, but we still want to show local data
+                emit(Result.failure(Exception(apiResponse.message)))
+            }
+        } catch (e: Exception) {
+            // Network or other error, emit local data with an error
+            emit(Result.failure(e))
+        }
+    }.flowOn(Dispatchers.IO)
 
     private suspend fun syncJournalToServer(journal: JournalEntity) {
         try {

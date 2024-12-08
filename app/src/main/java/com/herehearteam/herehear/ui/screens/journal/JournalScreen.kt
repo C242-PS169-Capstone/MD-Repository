@@ -1,5 +1,6 @@
 package com.herehearteam.herehear.ui.screens.journal
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -46,8 +47,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.herehearteam.herehear.data.local.repository.PredictionRepository
+import com.herehearteam.herehear.data.remote.api.ApiConfig
 import com.herehearteam.herehear.ui.components.CustomMemoEditor
 import com.herehearteam.herehear.ui.components.CustomTopAppBar
+import com.herehearteam.herehear.ui.screens.predict.PredictionViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,6 +69,13 @@ fun JournalScreen(
     val shouldShowBackPressedDialog by viewModel.shouldShowBackPressedDialog.collectAsState()
     val shouldShowDeleteConfirmationDialog by viewModel.shouldShowDeleteConfirmationDialog.collectAsState()
     val navigationEvent by viewModel.navigationEvent.collectAsState()
+
+    val apiService = ApiConfig.getApiService()
+    val predictionRepository = PredictionRepository(apiService)
+    val predictionViewModel = PredictionViewModel(predictionRepository)
+    val predictionResult by predictionViewModel.predictionResult.collectAsState(initial = null)
+    val predictionError by predictionViewModel.error.collectAsState(initial = null)
+
 
     LaunchedEffect(journalId) {
         if (journalId != 0) {
@@ -131,6 +142,7 @@ fun JournalScreen(
                 }
             }
 
+
             CustomMemoEditor(
                 value = memoText,
                 onValueChange = { viewModel.updateMemoText(it) },
@@ -168,7 +180,8 @@ fun JournalScreen(
                     horizontalAlignment = Alignment.End
                 ) {
                     FloatingActionButton(
-                        onClick = { viewModel.saveJournal() },
+                        onClick = { viewModel.saveJournal()
+                                    predictionViewModel.predict(viewModel.memoText.value)},
                         containerColor = MaterialTheme.colorScheme.primary,
                         shape = CircleShape,
                         elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
@@ -182,6 +195,28 @@ fun JournalScreen(
                             tint = Color.White
                         )
                     }
+                    Log.d("PredictionViewModel", "Prediction Result: $predictionResult")
+                    if (predictionResult != null) {
+                        AlertDialog(
+                            onDismissRequest = { /* Reset predictionResult jika perlu */ },
+                            title = { Text("Hasil Prediksi") },
+                            text = {
+                                Column {
+                                    Text("Model 1: ${predictionResult?.model1}")
+                                    Text("Model 2: ${predictionResult?.model2}")
+                                }
+                            },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    // Reset predictionResult jika diperlukan
+                                    // predictionViewModel.clearPredictionResult()
+                                }) {
+                                    Text("Tutup")
+                                }
+                            }
+                        )
+                    }
+
                     FloatingActionButton(
                         onClick = { viewModel.showDeleteConfirmationDialog() },
                         containerColor = MaterialTheme.colorScheme.secondary,

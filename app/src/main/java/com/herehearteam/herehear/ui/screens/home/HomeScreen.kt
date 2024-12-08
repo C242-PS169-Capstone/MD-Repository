@@ -40,6 +40,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.herehearteam.herehear.R
+import com.herehearteam.herehear.data.local.repository.PredictionRepository
+import com.herehearteam.herehear.data.remote.api.ApiConfig
 import com.herehearteam.herehear.domain.model.Article
 import com.herehearteam.herehear.ui.components.ArticleCard
 import com.herehearteam.herehear.ui.components.CustomTopAppBar
@@ -50,6 +52,7 @@ import com.herehearteam.herehear.ui.components.LocalGoogleAuthUiClient
 import com.herehearteam.herehear.ui.components.UserGreetingCard
 import com.herehearteam.herehear.ui.components.WeeklyMoodCard
 import com.herehearteam.herehear.ui.screens.article.ArticleViewModel
+import com.herehearteam.herehear.ui.screens.predict.PredictionViewModel
 import com.herehearteam.herehear.ui.theme.ColorPrimary
 import com.herehearteam.herehear.ui.theme.HereHearTheme
 
