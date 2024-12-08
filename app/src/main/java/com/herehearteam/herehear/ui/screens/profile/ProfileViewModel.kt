@@ -1,9 +1,17 @@
 package com.herehearteam.herehear.ui.screens.profile
 
+import RegisterViewModel
+import android.app.Application
 import android.util.Log
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
 import com.herehearteam.herehear.data.remote.GoogleAuthUiClient
+import com.herehearteam.herehear.di.AppDependencies
+import com.herehearteam.herehear.ui.screens.auth.LoginViewModel
+import com.herehearteam.herehear.ui.screens.auth.LoginViewModelFactory
+import com.herehearteam.herehear.ui.screens.auth.RegisterViewModelFactory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -59,7 +67,6 @@ class ProfileViewModel(
         _uiState.update {
             ProfileUiState()
         }
-        Log.d("ProfileViewModel", "User logged out and state reset")
     }
 }
 

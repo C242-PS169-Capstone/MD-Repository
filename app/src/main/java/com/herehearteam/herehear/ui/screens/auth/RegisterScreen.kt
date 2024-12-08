@@ -1,52 +1,124 @@
 package com.herehearteam.herehear.ui.screens.auth
 
+import RegisterViewModel
+import android.util.Log
+import android.util.Patterns
 import android.widget.Toast
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.herehearteam.herehear.R
 import com.herehearteam.herehear.di.AppDependencies
 import com.herehearteam.herehear.ui.components.CustomButtonFilled
+import com.herehearteam.herehear.ui.components.CustomTextField
 import com.herehearteam.herehear.ui.components.CustomTopAppBar
 import com.herehearteam.herehear.ui.theme.ColorPrimary
-
 
 @Composable
 fun RegisterScreen(
     onRegisterWithGmail: () -> Unit,
-    onRegisterWithPhone: () -> Unit,
     onNavigateBack: () -> Unit,
+    onLoginClick: () -> Unit,
     viewModel: RegisterViewModel = viewModel(
         factory = RegisterViewModelFactory(
             AppDependencies.getInstance(LocalContext.current).userRepository
         )
-    )
-){
+    ),
+    onRegisterSuccess: () -> Unit
+) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
 
-    LaunchedEffect(key1 = state.signInError) {
-        state.signInError?.let { error ->
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+
+    // Validation states
+    var nameError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+    var confirmPasswordError by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        viewModel.resetRegistrationState()
+    }
+
+    fun validateName(): Boolean {
+        nameError = when {
+            name.isBlank() -> "Name cannot be empty"
+            name.length < 2 -> "Name must be at least 2 characters"
+            else -> null
+        }
+        return nameError == null
+    }
+
+    fun validateEmail(): Boolean {
+        emailError = when {
+            email.isBlank() -> "Email cannot be empty"
+            !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Invalid email format"
+            else -> null
+        }
+        return emailError == null
+    }
+
+    fun validatePassword(): Boolean {
+        passwordError = when {
+            password.isBlank() -> "Password cannot be empty"
+            password.length < 6 -> "Password must be at least 6 characters"
+            else -> null
+        }
+        return passwordError == null
+    }
+
+    fun validateConfirmPassword(): Boolean {
+        confirmPasswordError = when {
+            confirmPassword.isBlank() -> "Please confirm your password"
+            password != confirmPassword -> "Passwords do not match"
+            else -> null
+        }
+        return confirmPasswordError == null
+    }
+
+    LaunchedEffect(key1 = state.registrationError) {
+        state.registrationError?.let { error ->
             Toast.makeText(
                 context,
                 error,
@@ -54,64 +126,143 @@ fun RegisterScreen(
             ).show()
         }
     }
+
+    LaunchedEffect(state.isRegistrationSuccessful) {
+        if (state.isRegistrationSuccessful) {
+            onRegisterSuccess()
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White),
-        contentAlignment = Alignment.BottomCenter
-    ){
-        Box (
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
+            .padding(16.dp)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.TopCenter
         ) {
             CustomTopAppBar(
-                pageTitle = "",
-                icon = Icons.Default.ArrowBack,
+                pageTitle = "Register",
+                icon = Icons.AutoMirrored.Filled.ArrowBack,
                 onIconClick = onNavigateBack
             )
         }
-        Canvas(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(450.dp)
-                .align(Alignment.BottomCenter)
-        ) {
-            val path = Path().apply {
 
-                moveTo(0f, size.height * 0f)
-
-                cubicTo(
-                    x1 = size.width * 0.3f,
-                    y1 = size.height * 0.25f,
-                    x2 = size.width * 0.75f,
-                    y2 = size.height * 0.15f,
-                    x3 = size.width,
-                    y3 = size.height * 0.35f
-                )
-
-                lineTo(size.width, size.height)
-
-                lineTo(0f, size.height)
-
-                close()
-            }
-
-            drawPath(
-                path = path,
-                color = ColorPrimary,
-                style = Fill
-            )
-        }
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 85.dp, horizontal = 16.dp)
-
+                .align(Alignment.Center)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Image(
+                painter = painterResource(R.drawable.ic_herehear),
+                contentDescription = "HereHear Logo",
+                modifier = Modifier
+                    .size(100.dp)
+                    .padding(bottom = 16.dp)
+            )
+
+            CustomTextField(
+                value = name,
+                onValueChange = {
+                    name = it
+                    nameError = null
+                },
+                label = "Name",
+                icon = Icons.Default.Person,
+                errorText = nameError,
+                imeAction = ImeAction.Next
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+
+            CustomTextField(
+                value = email,
+                onValueChange = {
+                    email = it
+                    emailError = null
+                },
+                label = "Email",
+                icon = Icons.Default.Email,
+                keyboardType = KeyboardType.Email,
+                errorText = emailError,
+                imeAction = ImeAction.Next
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+
+            CustomTextField(
+                value = password,
+                onValueChange = {
+                    password = it
+                    passwordError = null
+                },
+                label = "Password",
+                icon = Icons.Default.Lock,
+                isPasswordField = true,
+                keyboardType = KeyboardType.Password,
+                errorText = passwordError,
+                imeAction = ImeAction.Next
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+
+            CustomTextField(
+                value = confirmPassword,
+                onValueChange = {
+                    confirmPassword = it
+                    confirmPasswordError = null
+                },
+                label = "Confirm Password",
+                icon = Icons.Default.Lock,
+                isPasswordField = true,
+                keyboardType = KeyboardType.Password,
+                errorText = confirmPasswordError,
+                imeAction = ImeAction.Done
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
             CustomButtonFilled(
-                text = "Daftar Dengan Google",
+                text = "Register",
+                onClick = {
+                    val isNameValid = validateName()
+                    val isEmailValid = validateEmail()
+                    val isPasswordValid = validatePassword()
+                    val isConfirmPasswordValid = validateConfirmPassword()
+
+                    if (isNameValid && isEmailValid && isPasswordValid && isConfirmPasswordValid) {
+                        viewModel.registerWithEmailPassword(name, email, password)
+                    }
+                }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                HorizontalDivider(
+                    modifier = Modifier.weight(1f),
+                    thickness = 1.dp,
+                    color = Color.Gray
+                )
+                Text(
+                    text = "or",
+                    color = Color.Gray,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+                HorizontalDivider(
+                    modifier = Modifier.weight(1f),
+                    thickness = 1.dp,
+                    color = Color.Gray
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            CustomButtonFilled(
+                text = "Register with Google",
                 backgroundColor = Color.White,
                 textColor = Color.Black,
                 fontSize = 14.sp,
@@ -119,42 +270,54 @@ fun RegisterScreen(
                 onClick = onRegisterWithGmail
             )
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.Center
             ) {
-                HorizontalDivider(
-                    modifier = Modifier.weight(1f),
-                    thickness = 1.dp,
-                    color = Color.White
+                Text(
+                    text = "Already have an account? ",
+                    color = Color.Gray
                 )
-
-                Box(
-                    modifier = Modifier.weight(0.2f),
-                    contentAlignment = Alignment.Center
-                ){
-                    Text("or", color = Color.White, fontWeight = FontWeight.Medium)
-                }
-
-                HorizontalDivider(
-                    modifier = Modifier.weight(1f),
-                    thickness = 1.dp,
-                    color = Color.White
+                Text(
+                    text = "Login",
+                    color = ColorPrimary,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable {
+                        onLoginClick()
+                    }
                 )
             }
+        }
+    }
+    if (state.isLoading) {
+        RegisterDialog()
+    }
+}
 
-            Spacer(Modifier.height(12.dp))
-
-            CustomButtonFilled(
-                text = "Daftar Dengan Nomor Telepon",
-                backgroundColor = Color.White,
-                icon = Icons.Default.Phone,
-                textColor = Color.Black,
-                fontSize = 14.sp,
-                iconColor = Color.Black,
-                onClick = onRegisterWithPhone,
-            )
+@Composable
+fun RegisterDialog() {
+    Dialog(onDismissRequest = {}) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(200.dp)
+                .background(Color.White, shape = RoundedCornerShape(16.dp))
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(50.dp),
+                    color = ColorPrimary
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Sedang Daftar...",
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
@@ -164,7 +327,8 @@ fun RegisterScreen(
 fun RegisterPreview(){
     RegisterScreen(
         onRegisterWithGmail = { },
-        onRegisterWithPhone = { },
-        onNavigateBack = { }
+        onNavigateBack = { },
+        onLoginClick = { },
+        onRegisterSuccess = { }
     )
 }

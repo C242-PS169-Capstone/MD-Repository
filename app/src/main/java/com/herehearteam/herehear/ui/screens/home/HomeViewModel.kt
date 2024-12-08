@@ -26,11 +26,11 @@ class HomeViewModel(
         loadUserData()
     }
 
-    private fun loadUserData() {
+    fun loadUserData() {
         val userData = googleAuthUiClient.getSignedInUser()
         _uiState.update { currentState ->
             currentState.copy(
-                userName = userData?.displayName ?: "User",  // Set the user name
+                userName = userData?.displayName ?: "There",  // Set the user name
 //                email = userData?.email ?: "",               // Set the email
 //                userId = userData?.userId ?: ""              // Set the user ID
             )

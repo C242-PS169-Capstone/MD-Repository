@@ -1,6 +1,8 @@
 package com.herehearteam.herehear.domain.model
 
 data class RegisterState(
-    val isSignInSuccessful: Boolean = false,
-    val signInError: String? = null
+    val isRegistrationSuccessful: Boolean = false,
+    val registrationError: String? = null,
+    val currentUser: User? = null,
+    val isLoading: Boolean = false
 )

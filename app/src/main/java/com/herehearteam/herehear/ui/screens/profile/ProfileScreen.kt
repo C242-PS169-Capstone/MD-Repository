@@ -1,6 +1,8 @@
 package com.herehearteam.herehear.ui.screens.profile
 
+import RegisterViewModel
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -10,10 +12,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -70,6 +74,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
+import com.herehearteam.herehear.di.AppDependencies
+import com.herehearteam.herehear.ui.screens.auth.LoginViewModel
+import com.herehearteam.herehear.ui.screens.auth.LoginViewModelFactory
+import com.herehearteam.herehear.ui.screens.auth.RegisterViewModelFactory
 
 @Composable
 fun Container(
@@ -189,14 +197,23 @@ fun PopUpEmergencyContact(
     var number by remember { mutableStateOf(initialContact?.emergencyContact?.emergency_number ?: "") }
     var relationship by remember { mutableStateOf(initialContact?.emergencyContact?.relationship ?: "") }
 
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        modifier = Modifier.fillMaxWidth()
+        sheetState = sheetState,
+        windowInsets = WindowInsets(0, 0, 0, 0),
+        modifier = Modifier
+            .fillMaxWidth()
+            .imePadding(),
     ) {
         Column(
             modifier = Modifier
                 .padding(16.dp)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -272,6 +289,7 @@ fun PopUpEmergencyContact(
                 text = "Simpan",
                 backgroundColor = ColorPrimary
             )
+            Spacer(Modifier.height(16.dp))
         }
     }
 }
@@ -281,7 +299,6 @@ fun ListOfOption(viewModel: ProfileViewModel){
     val uiState by viewModel.uiState.collectAsState()
     val isEmergencyBottomSheetVisible by viewModel.isEmergencyBottomSheetVisible.collectAsState()
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -361,6 +378,19 @@ fun ProfileScreen(
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val registerViewModel: RegisterViewModel = viewModel(
+        factory = RegisterViewModelFactory(
+            AppDependencies.getInstance(LocalContext.current).userRepository
+        )
+    )
+
+
+    val loginViewModel: LoginViewModel = viewModel(
+        factory = LoginViewModelFactory(
+            AppDependencies.getInstance(LocalContext.current).userRepository,
+            AppDependencies.getInstance(LocalContext.current).googleAuthUiClient
+        )
+    )
 
     Scaffold(
         topBar = {
@@ -395,6 +425,10 @@ fun ProfileScreen(
                         onClick = {
                             scope.launch {
                                 viewModel.signOut()
+                                registerViewModel.resetRegistrationState()
+                                loginViewModel.resetLoginState()
+                                Log.d("ProfileViewModel", "Sign out called - Register state reset")
+                                Log.d("ProfileViewModel", "Sign out called - Login state reset")
                                 Toast.makeText(
                                     context,
                                     "Berhasil logout",
