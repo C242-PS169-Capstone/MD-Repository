@@ -32,4 +32,17 @@ interface JournalDao {
 
     @Query("UPDATE journaling SET content = :content WHERE journalId = :journalId AND userId = :userId")
     fun updateJournalContentById(journalId: Int, content: String, userId: String)
+
+    @Query("DELETE FROM journaling WHERE userId = :userId")
+    fun deleteAllJournalsForUser(userId: String)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertJournals(journals: List<JournalEntity>)
+
+    @Query("SELECT * FROM journaling WHERE isSync = 0")
+    fun getUnsyncedJournals(): List<JournalEntity>
+
+    // New method to mark a journal as synced
+    @Query("UPDATE journaling SET isSync = 1 WHERE journalId = :journalId")
+    fun markJournalAsSynced(journalId: Int)
 }

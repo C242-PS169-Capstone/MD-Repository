@@ -24,5 +24,8 @@ data class JournalEntity(
     val userId: String,
 
     @ColumnInfo(name = "question")
-    val question: String?
+    val question: String?,
+
+    @ColumnInfo(name = "isSync")
+    val isSync: Boolean = false
 ) : Parcelable

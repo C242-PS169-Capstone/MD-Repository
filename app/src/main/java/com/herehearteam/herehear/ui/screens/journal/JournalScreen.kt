@@ -41,7 +41,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -69,13 +68,20 @@ fun JournalScreen(
     val shouldShowBackPressedDialog by viewModel.shouldShowBackPressedDialog.collectAsState()
     val shouldShowDeleteConfirmationDialog by viewModel.shouldShowDeleteConfirmationDialog.collectAsState()
     val navigationEvent by viewModel.navigationEvent.collectAsState()
+    val isNetworkAvailable by viewModel.isNetworkAvailable.collectAsState()
 
-    val apiService = ApiConfig.getApiService()
+    val apiService = ApiConfig.getApiModelService()
     val predictionRepository = PredictionRepository(apiService)
     val predictionViewModel = PredictionViewModel(predictionRepository)
     val predictionResult by predictionViewModel.predictionResult.collectAsState(initial = null)
     val predictionError by predictionViewModel.error.collectAsState(initial = null)
 
+
+    LaunchedEffect(isNetworkAvailable) {
+        if (isNetworkAvailable) {
+            viewModel.checkNetworkConnectivity()
+        }
+    }
 
     LaunchedEffect(journalId) {
         if (journalId != 0) {
