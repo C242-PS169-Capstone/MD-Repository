@@ -1,16 +1,23 @@
 package com.herehearteam.herehear.ui.screens.predict
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.herehearteam.herehear.data.local.repository.PredictionRepository
 import com.herehearteam.herehear.data.remote.response.PredictionResponse
+import com.herehearteam.herehear.domain.repository.UserRepository
+import com.herehearteam.herehear.ui.components.showJournalNotification
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class PredictionViewModel(private val predictionRepository: PredictionRepository) : ViewModel() {
+class PredictionViewModel(
+    private val predictionRepository: PredictionRepository,
+    private val userRepository: UserRepository
+) : ViewModel() {
     private val _predictionResult = MutableStateFlow<PredictionResponse?>(null)
     val predictionResult = _predictionResult.asStateFlow()
 
@@ -28,6 +35,12 @@ class PredictionViewModel(private val predictionRepository: PredictionRepository
             }.onFailure { exception ->
                 _error.value = exception.message
             }
+        }
+    }
+
+    fun onTestClick(context: Context) {
+        viewModelScope.launch {
+            showJournalNotification(context, userRepository)
         }
     }
 }

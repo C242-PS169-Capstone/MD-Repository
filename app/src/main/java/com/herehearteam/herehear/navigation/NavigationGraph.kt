@@ -6,6 +6,7 @@ import android.app.Activity.RESULT_OK
 import android.app.Application
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,8 +25,11 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
+import com.herehearteam.herehear.data.local.repository.PredictionRepository
 import com.herehearteam.herehear.data.remote.GoogleAuthUiClient
+import com.herehearteam.herehear.data.remote.api.ApiConfig
 import com.herehearteam.herehear.di.AppDependencies
 import com.herehearteam.herehear.domain.model.SignInResult
 import com.herehearteam.herehear.ui.screens.archive.ArchiveScreen
@@ -48,6 +52,9 @@ import com.herehearteam.herehear.ui.screens.home.HomeViewModelFactory
 import com.herehearteam.herehear.ui.screens.journal.JournalScreen
 import com.herehearteam.herehear.ui.screens.journal.JournalViewModel
 import com.herehearteam.herehear.ui.screens.journal.JournalViewModelFactory
+import com.herehearteam.herehear.ui.screens.predict.PredictScreen
+import com.herehearteam.herehear.ui.screens.predict.PredictionViewModel
+import com.herehearteam.herehear.ui.screens.predict.PredictionViewModelFactory
 import com.herehearteam.herehear.ui.screens.profile.ProfileScreen
 import com.herehearteam.herehear.ui.screens.splash.SplashScreen
 import kotlinx.coroutines.launch
@@ -57,6 +64,7 @@ fun NavigationGraph(
     navController: NavHostController,
     googleAuthUiClient: GoogleAuthUiClient
 ){
+
   
     val application = LocalContext.current.applicationContext as Application
     val viewModel: JournalViewModel = viewModel(
@@ -78,28 +86,35 @@ fun NavigationGraph(
         )
     )
 
-    val scope = rememberCoroutineScope()
+    val apiService = ApiConfig.getApiService()
+    val predictionViewModel: PredictionViewModel = viewModel(
+        factory = PredictionViewModelFactory(
+            PredictionRepository(apiService),
+            appDependencies.userRepository)
+    )
 
-//    val launcher = rememberLauncherForActivityResult(
-//        contract = ActivityResultContracts.StartIntentSenderForResult(),
-//        onResult = { result ->
-//            if (result.resultCode == RESULT_OK) {
-//                scope.launch {
-//                    val signInResult = googleAuthUiClient.signInWithIntent(
-//                        intent = result.data ?: return@launch
-//                    )
-//
-//                    loginViewModel.onSignInResult(signInResult)
-//                    registerViewModel.onSignInResult(signInResult)
-//                }
-//            }
-//        }
-//    )
+    val scope = rememberCoroutineScope()
 
     NavHost(
         navController = navController,
         startDestination = Screen.Splash.route
     ) {
+        composable(
+            route = Screen.Prediction.route,
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern = "herehear://prediction"
+                }
+            )
+        ) {
+            PredictScreen(
+                onBackClick = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
+        }
 
         composable(Screen.Splash.route) {
             SplashScreen(
@@ -296,6 +311,11 @@ fun NavigationGraph(
                 },
                 onRegisterClick = {
                     navController.navigate(Screen.Register.route)
+                },
+                onLoginSuccess = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
                 }
             )
         }
