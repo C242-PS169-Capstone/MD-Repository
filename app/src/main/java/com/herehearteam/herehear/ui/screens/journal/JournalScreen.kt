@@ -55,7 +55,6 @@ import com.herehearteam.herehear.di.AppDependencies
 import com.herehearteam.herehear.ui.components.CustomMemoEditor
 import com.herehearteam.herehear.ui.components.CustomTopAppBar
 import com.herehearteam.herehear.ui.screens.predict.PredictionViewModel
-import com.herehearteam.herehear.ui.screens.predict.PredictionViewModelFactory
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -79,9 +78,10 @@ fun JournalScreen(
 
     val apiService = ApiConfig.getApiService()
     val predictionRepository = PredictionRepository(apiService)
-    val predictionViewModel: PredictionViewModel = viewModel(
-        factory = PredictionViewModelFactory(predictionRepository, appDependencies.userRepository)
-    )
+    val predictionViewModel = PredictionViewModel(predictionRepository)
+//    val predictionViewModel: PredictionViewModel = viewModel(
+//        factory = PredictionViewModelFactory(predictionRepository, appDependencies.userRepository)
+//    )
     val predictionResult by predictionViewModel.predictionResult.collectAsState(initial = null)
     val predictionError by predictionViewModel.error.collectAsState(initial = null)
 
@@ -190,7 +190,7 @@ fun JournalScreen(
                 ) {
                     FloatingActionButton(
                         onClick = { viewModel.saveJournal()
-                                    predictionViewModel.predict(viewModel.memoText.value)},
+                                    predictionViewModel.predict(viewModel.memoText.value, context = context)},
                         containerColor = MaterialTheme.colorScheme.primary,
                         shape = CircleShape,
                         elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),

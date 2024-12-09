@@ -15,8 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class PredictionViewModel(
-    private val predictionRepository: PredictionRepository,
-    private val userRepository: UserRepository
+    private val predictionRepository: PredictionRepository
 ) : ViewModel() {
     private val _predictionResult = MutableStateFlow<PredictionResponse?>(null)
     val predictionResult = _predictionResult.asStateFlow()
@@ -24,7 +23,7 @@ class PredictionViewModel(
     private val _error = MutableStateFlow<String?>(null)
     val error = _error.asStateFlow()
 
-    fun predict(text: String, model: String = "both") {
+    fun predict(text: String, model: String = "both", context: Context) {
         viewModelScope.launch {
             _predictionResult.value = null
             _error.value = null
@@ -32,15 +31,16 @@ class PredictionViewModel(
             val result = predictionRepository.predictText(text, model)
             result.onSuccess { prediction ->
                 _predictionResult.value = prediction
+                onTestClick(context)
             }.onFailure { exception ->
                 _error.value = exception.message
             }
         }
     }
 
-    fun onTestClick(context: Context) {
+    private fun onTestClick(context: Context) {
         viewModelScope.launch {
-            showJournalNotification(context, userRepository)
+            showJournalNotification(context)
         }
     }
 }

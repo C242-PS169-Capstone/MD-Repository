@@ -47,7 +47,6 @@ import com.herehearteam.herehear.ui.screens.archive.ArchiveViewModel
 import com.herehearteam.herehear.ui.screens.archive.ArchiveViewModelFactory
 import com.herehearteam.herehear.ui.screens.journal.JournalViewModelFactory
 import com.herehearteam.herehear.ui.screens.predict.PredictionViewModel
-import com.herehearteam.herehear.ui.screens.predict.PredictionViewModelFactory
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 

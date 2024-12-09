@@ -54,7 +54,6 @@ import com.herehearteam.herehear.ui.screens.journal.JournalViewModel
 import com.herehearteam.herehear.ui.screens.journal.JournalViewModelFactory
 import com.herehearteam.herehear.ui.screens.predict.PredictScreen
 import com.herehearteam.herehear.ui.screens.predict.PredictionViewModel
-import com.herehearteam.herehear.ui.screens.predict.PredictionViewModelFactory
 import com.herehearteam.herehear.ui.screens.profile.ProfileScreen
 import com.herehearteam.herehear.ui.screens.splash.SplashScreen
 import kotlinx.coroutines.launch
@@ -87,11 +86,13 @@ fun NavigationGraph(
     )
 
     val apiService = ApiConfig.getApiService()
-    val predictionViewModel: PredictionViewModel = viewModel(
-        factory = PredictionViewModelFactory(
-            PredictionRepository(apiService),
-            appDependencies.userRepository)
-    )
+    val predictionRepository = PredictionRepository(apiService)
+    val predictionViewModel = PredictionViewModel(predictionRepository)
+//    val predictionViewModel: PredictionViewModel = viewModel(
+//        factory = PredictionViewModelFactory(
+//            PredictionRepository(apiService),
+//            appDependencies.userRepository)
+//    )
 
     val scope = rememberCoroutineScope()
 

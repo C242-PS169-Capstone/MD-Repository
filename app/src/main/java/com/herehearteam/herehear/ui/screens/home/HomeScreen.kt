@@ -55,7 +55,6 @@ import com.herehearteam.herehear.ui.components.UserGreetingCard
 import com.herehearteam.herehear.ui.components.WeeklyMoodCard
 import com.herehearteam.herehear.ui.screens.article.ArticleViewModel
 import com.herehearteam.herehear.ui.screens.predict.PredictionViewModel
-import com.herehearteam.herehear.ui.screens.predict.PredictionViewModelFactory
 import com.herehearteam.herehear.ui.theme.ColorPrimary
 import com.herehearteam.herehear.ui.theme.HereHearTheme
 
@@ -77,10 +76,6 @@ fun HomeScreen(
 
     val apiService = ApiConfig.getApiService()
     val predictionRepository = PredictionRepository(apiService)
-    val appDependencies = AppDependencies.getInstance(context)
-    val predictionViewModel: PredictionViewModel = viewModel(
-    factory = PredictionViewModelFactory(predictionRepository, appDependencies.userRepository)
-    )
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -166,17 +161,6 @@ fun HomeScreen(
                         question = uiState.dailyQuestion,
                         onClick = viewModel::onDailyQuestionClick
                     )
-                }
-            }
-
-            item {
-                Button(
-                    onClick = {
-                        predictionViewModel.onTestClick(
-                            context)
-                    }
-                ) {
-                    Text("Tampilkan Notifikasi")
                 }
             }
 

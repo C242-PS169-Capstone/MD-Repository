@@ -34,8 +34,7 @@ fun createNotificationChannel(context: Context) {
 }
 
 suspend fun showJournalNotification(
-    context: Context,
-    userRepository: UserRepository
+    context: Context
 ) {
     // Cek izin notifikasi untuk Android 13+
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -53,8 +52,8 @@ suspend fun showJournalNotification(
         }
     }
 
-    val user = userRepository.user.first()
-    val userName = user?.displayName ?: "Pengguna"
+//    val user = userRepository.user.first()
+    val userName = "Babi"
 
     createNotificationChannel(context)
 
