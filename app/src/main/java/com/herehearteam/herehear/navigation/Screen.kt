@@ -14,6 +14,7 @@ sealed class Screen(val route: String) {
     data object Welcome : Screen("welcome")
     data object Register : Screen("register")
     data object Login : Screen("login")
+    data object Prediction : Screen("prediction")
     data object InputNumber : Screen("input_number/{isRegister}") {
         fun createRoute(isRegister: Boolean) = "input_number/$isRegister"
     }

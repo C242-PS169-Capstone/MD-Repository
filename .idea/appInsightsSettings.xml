@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.herehearteam.herehear" />
-                  <option name="mobileSdkAppId" value="1:1087364605660:android:c4d47f0d15981d6509f619" />
-                  <option name="projectId" value="hearhere-auth" />
-                  <option name="projectNumber" value="1087364605660" />
+                  <option name="appId" value="PLACEHOLDER" />
+                  <option name="mobileSdkAppId" value="" />
+                  <option name="projectId" value="" />
+                  <option name="projectNumber" value="" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
