@@ -45,10 +45,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.herehearteam.herehear.data.local.repository.PredictionRepository
 import com.herehearteam.herehear.data.remote.api.ApiConfig
+import com.herehearteam.herehear.di.AppDependencies
 import com.herehearteam.herehear.ui.components.CustomMemoEditor
 import com.herehearteam.herehear.ui.components.CustomTopAppBar
 import com.herehearteam.herehear.ui.screens.predict.PredictionViewModel
@@ -70,9 +73,15 @@ fun JournalScreen(
     val shouldShowDeleteConfirmationDialog by viewModel.shouldShowDeleteConfirmationDialog.collectAsState()
     val navigationEvent by viewModel.navigationEvent.collectAsState()
 
+    val context = LocalContext.current
+    val appDependencies = AppDependencies.getInstance(context)
+
     val apiService = ApiConfig.getApiService()
     val predictionRepository = PredictionRepository(apiService)
     val predictionViewModel = PredictionViewModel(predictionRepository)
+//    val predictionViewModel: PredictionViewModel = viewModel(
+//        factory = PredictionViewModelFactory(predictionRepository, appDependencies.userRepository)
+//    )
     val predictionResult by predictionViewModel.predictionResult.collectAsState(initial = null)
     val predictionError by predictionViewModel.error.collectAsState(initial = null)
 
@@ -181,7 +190,7 @@ fun JournalScreen(
                 ) {
                     FloatingActionButton(
                         onClick = { viewModel.saveJournal()
-                                    predictionViewModel.predict(viewModel.memoText.value)},
+                                    predictionViewModel.predict(viewModel.memoText.value, context = context)},
                         containerColor = MaterialTheme.colorScheme.primary,
                         shape = CircleShape,
                         elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),

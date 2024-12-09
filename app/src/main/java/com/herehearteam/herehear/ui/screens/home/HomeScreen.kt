@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,6 +43,7 @@ import androidx.navigation.compose.rememberNavController
 import com.herehearteam.herehear.R
 import com.herehearteam.herehear.data.local.repository.PredictionRepository
 import com.herehearteam.herehear.data.remote.api.ApiConfig
+import com.herehearteam.herehear.di.AppDependencies
 import com.herehearteam.herehear.domain.model.Article
 import com.herehearteam.herehear.ui.components.ArticleCard
 import com.herehearteam.herehear.ui.components.CustomTopAppBar
@@ -63,13 +65,17 @@ fun HomeScreen(
     viewModel: HomeViewModel = viewModel(
         factory = HomeViewModelFactory(LocalGoogleAuthUiClient.current)
     ),
-    articleViewModel: ArticleViewModel = viewModel()
+    articleViewModel: ArticleViewModel = viewModel(),
 ) {
+
     val uiState by viewModel.uiState.collectAsState()
     val articles by articleViewModel.articles.collectAsState()
     val context = LocalContext.current
     var showBottomSheet by remember { mutableStateOf(false) }
     var selectedArticle by remember { mutableStateOf<Article?>(null) }
+
+    val apiService = ApiConfig.getApiService()
+    val predictionRepository = PredictionRepository(apiService)
 
     Box(
         modifier = Modifier.fillMaxSize()

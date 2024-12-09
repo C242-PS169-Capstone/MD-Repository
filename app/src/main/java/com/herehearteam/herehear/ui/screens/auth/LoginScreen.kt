@@ -73,7 +73,8 @@ fun LoginScreen(
             AppDependencies.getInstance(LocalContext.current).userRepository,
             AppDependencies.getInstance(LocalContext.current).googleAuthUiClient
         )
-    )
+    ),
+    onLoginSuccess: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
@@ -90,6 +91,12 @@ fun LoginScreen(
         viewModel.resetLoginState()
         Log.d("LoginScreen", "Login status afer : ${state.isSignInSuccessful}")
 
+    }
+
+    LaunchedEffect(state.isSignInSuccessful) {
+        if (state.isSignInSuccessful) {
+            onLoginSuccess()
+        }
     }
 
     fun validateEmail(): Boolean {
@@ -303,5 +310,6 @@ fun LoginPreview() {
         onLoginWithGmail = { },
         onNavigateBack = { },
         onRegisterClick = { },
+        onLoginSuccess = { }
     )
 }
