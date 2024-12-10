@@ -42,8 +42,6 @@ fun CustomTextField(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
-
     ) {
         OutlinedTextField(
             value = value,
@@ -76,8 +74,7 @@ fun CustomTextField(
             ),
             singleLine = true,
             modifier = Modifier
-                .fillMaxWidth()
-                .height(44.dp),
+                .fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.surface,

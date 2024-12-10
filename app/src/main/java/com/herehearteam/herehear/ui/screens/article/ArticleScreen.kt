@@ -46,7 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.herehearteam.herehear.data.remote.api.ApiConfig
-import com.herehearteam.herehear.data.remote.api.ApiConfig.getApiService
+import com.herehearteam.herehear.data.remote.api.ApiConfig.getArticleService
 import com.herehearteam.herehear.domain.model.Article
 import com.herehearteam.herehear.ui.components.ArticleCard
 import com.herehearteam.herehear.ui.components.CustomTopAppBar
@@ -191,7 +191,7 @@ fun ArticleScreen(
 @Composable
 fun HomeScreenPreview() {
     HereHearTheme {
-        val apiService = getApiService()
+        val apiService = getArticleService()
         ArticleScreen(
             onNavigateBack = {},
         )

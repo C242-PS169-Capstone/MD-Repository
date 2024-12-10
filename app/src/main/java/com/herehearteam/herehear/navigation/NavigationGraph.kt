@@ -90,7 +90,7 @@ fun NavigationGraph(
         )
     )
 
-    val apiService = ApiConfig.getApiService()
+    val apiService = ApiConfig.getApiModelService()
     val predictionRepository = PredictionRepository(apiService)
     val predictionViewModel = PredictionViewModel(predictionRepository)
 //    val predictionViewModel: PredictionViewModel = viewModel(

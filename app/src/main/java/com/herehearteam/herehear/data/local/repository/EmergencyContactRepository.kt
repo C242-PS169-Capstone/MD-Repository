@@ -8,11 +8,11 @@ class EmergencyContactRepository(private val emergencyDao: EmergencyDao) {
         emergencyDao.insertEmergency(emergency)
     }
 
-    suspend fun updateEmergencyContact(emergency: EmergencyEntity) {
-        emergencyDao.updateEmergency(emergency)
+    suspend fun updateEmergencyContact(contact: EmergencyEntity) {
+        emergencyDao.updateEmergency(contact)
     }
 
     suspend fun getEmergencyContact(userId: String): EmergencyEntity? {
-        return emergencyDao.getEmergency()
+        return emergencyDao.getEmergencyByUserId(userId)
     }
 }

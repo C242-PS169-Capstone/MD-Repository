@@ -158,7 +158,7 @@ fun RegisterScreen(
                 .align(Alignment.Center)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
                 text = "Bergabung dengan HereHear",
@@ -170,7 +170,7 @@ fun RegisterScreen(
             Text(
                 text = "Mulai tulis dan temukan rekomendasi terbaik untuk mentalmu.",
                 fontSize = 16.sp,
-                modifier = Modifier.padding(bottom = 32.dp),
+                modifier = Modifier.padding(bottom = 16.dp),
                 fontWeight = FontWeight.Normal,
                 textAlign = TextAlign.Center
             )
@@ -186,7 +186,6 @@ fun RegisterScreen(
                 errorText = nameError,
                 imeAction = ImeAction.Next
             )
-            Spacer(modifier = Modifier.height(4.dp))
 
             CustomTextField(
                 value = email,
@@ -200,7 +199,6 @@ fun RegisterScreen(
                 errorText = emailError,
                 imeAction = ImeAction.Next
             )
-            Spacer(modifier = Modifier.height(4.dp))
 
             CustomTextField(
                 value = password,
@@ -215,7 +213,6 @@ fun RegisterScreen(
                 errorText = passwordError,
                 imeAction = ImeAction.Next
             )
-            Spacer(modifier = Modifier.height(4.dp))
 
             CustomTextField(
                 value = confirmPassword,
@@ -230,7 +227,6 @@ fun RegisterScreen(
                 errorText = confirmPasswordError,
                 imeAction = ImeAction.Done
             )
-            Spacer(modifier = Modifier.height(16.dp))
 
             CustomButtonFilled(
                 text = "Register",
@@ -245,8 +241,6 @@ fun RegisterScreen(
                     }
                 }
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -270,8 +264,6 @@ fun RegisterScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
             CustomButtonFilled(
                 text = "Register with Google",
                 backgroundColor = Color.White,
@@ -280,8 +272,6 @@ fun RegisterScreen(
                 icon = painterResource(R.drawable.ic_logo_google),
                 onClick = onRegisterWithGmail
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
                 horizontalArrangement = Arrangement.Center

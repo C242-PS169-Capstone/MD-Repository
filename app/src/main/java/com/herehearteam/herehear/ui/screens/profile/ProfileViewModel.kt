@@ -11,7 +11,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
 import com.herehearteam.herehear.data.local.entity.EmergencyEntity
 import com.herehearteam.herehear.data.local.repository.EmergencyContactRepository
+import com.herehearteam.herehear.data.model.EmergencyContactRequest
+import com.herehearteam.herehear.data.model.EmergencyContactUpdateRequest
 import com.herehearteam.herehear.data.remote.GoogleAuthUiClient
+import com.herehearteam.herehear.data.remote.api.ApiConfig
 import com.herehearteam.herehear.di.AppDependencies
 import com.herehearteam.herehear.ui.screens.auth.LoginViewModel
 import com.herehearteam.herehear.ui.screens.auth.LoginViewModelFactory
@@ -28,6 +31,8 @@ class ProfileViewModel(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState = _uiState.asStateFlow()
+
+    private val apiService = ApiConfig.getApiService()
 
     init {
         loadUserData()
@@ -48,23 +53,57 @@ class ProfileViewModel(
         val userId = currentUser?.uid
         viewModelScope.launch {
             userId?.let { id ->
-                val emergencyEntity = EmergencyEntity(
-                    userId = id,
-                    namaKontak = contact.emergency_name,
-                    nomorTelepon = contact.emergency_number,
-                    hubungan = contact.relationship
-                )
-                emergencyContactRepository.insertEmergencyContact(emergencyEntity)
-                loadEmergencyContact()
+                try {
+                    val emergencyEntity = EmergencyEntity(
+                        userId = id,
+                        namaKontak = contact.emergency_name,
+                        nomorTelepon = contact.emergency_number,
+                        hubungan = contact.relationship
+                    )
+                    emergencyContactRepository.insertEmergencyContact(emergencyEntity)
+
+                    val apiRequest = EmergencyContactRequest(
+                        emergency_id = 1,
+                        emergency_name = contact.emergency_name,
+                        emergency_number = contact.emergency_number,
+                        relationship = contact.relationship,
+                        user_id = id
+                    )
+                    Log.d("TAI", "Saving emergency contact: $apiRequest")
+                    val apiResponse = apiService.createEmergencyContact(apiRequest)
+
+                    if (apiResponse.status && apiResponse.data != null) {
+                        val updatedEntity = emergencyEntity.copy(
+                            id = apiResponse.data.emergency_id
+                        )
+                        emergencyContactRepository.updateEmergencyContact(updatedEntity)
+
+                        val updateRequest = EmergencyContactUpdateRequest(
+                            emergency_name = contact.emergency_name,
+                            emergency_number = contact.emergency_number,
+                            relationship = contact.relationship,
+                            user_id = id
+                        )
+
+                        Log.d("TAI", "Updating emergency contact: $updateRequest")
+
+                        apiService.updateEmergencyContact(apiResponse.data.emergency_id.toString(), updateRequest)
+                    }
+                    Log.d("ProfileViewModel", "Emergency contact saved successfully")
+                    loadEmergencyContact()
+                } catch (e: Exception) {
+                    Log.e("ProfileViewModel", "Error saving emergency contact", e)
+                    throw e
+                }
             } ?: run {
-                // Handle case when userId is null
                 Log.e("ProfileViewModel", "User ID is null, cannot save emergency contact")
             }
         }
     }
 
-    private fun loadEmergencyContact() {
-        val userId = googleAuthUiClient.getSignedInUser()?.idToken
+    fun loadEmergencyContact() {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val userId = currentUser?.uid
         viewModelScope.launch {
             userId?.let { id ->
                 val emergencyContact = emergencyContactRepository.getEmergencyContact(id)
@@ -81,6 +120,10 @@ class ProfileViewModel(
                 }
             }
         }
+    }
+
+    private suspend fun updateEmergencyContact(entity: EmergencyEntity) {
+        emergencyContactRepository.updateEmergencyContact(entity)
     }
 
     suspend fun signOut() {

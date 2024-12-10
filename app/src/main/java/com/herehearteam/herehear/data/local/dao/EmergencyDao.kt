@@ -16,6 +16,6 @@ interface EmergencyDao {
     @Update
     suspend fun updateEmergency(emergency: EmergencyEntity)
 
-    @Query("SELECT * FROM emergency LIMIT 1")
-    suspend fun getEmergency(): EmergencyEntity?
+    @Query("SELECT * FROM emergency WHERE userId = :userId")
+    suspend fun getEmergencyByUserId(userId: String): EmergencyEntity?
 }
