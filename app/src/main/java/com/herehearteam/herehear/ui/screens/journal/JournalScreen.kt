@@ -46,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -72,19 +73,22 @@ fun JournalScreen(
     val shouldShowBackPressedDialog by viewModel.shouldShowBackPressedDialog.collectAsState()
     val shouldShowDeleteConfirmationDialog by viewModel.shouldShowDeleteConfirmationDialog.collectAsState()
     val navigationEvent by viewModel.navigationEvent.collectAsState()
+    val isNetworkAvailable by viewModel.isNetworkAvailable.collectAsState()
 
     val context = LocalContext.current
     val appDependencies = AppDependencies.getInstance(context)
-
-    val apiService = ApiConfig.getApiService()
+    val apiService = ApiConfig.getApiModelService()
     val predictionRepository = PredictionRepository(apiService)
     val predictionViewModel = PredictionViewModel(predictionRepository)
-//    val predictionViewModel: PredictionViewModel = viewModel(
-//        factory = PredictionViewModelFactory(predictionRepository, appDependencies.userRepository)
-//    )
     val predictionResult by predictionViewModel.predictionResult.collectAsState(initial = null)
     val predictionError by predictionViewModel.error.collectAsState(initial = null)
 
+
+    LaunchedEffect(isNetworkAvailable) {
+        if (isNetworkAvailable) {
+            viewModel.checkNetworkConnectivity()
+        }
+    }
 
     LaunchedEffect(journalId) {
         if (journalId != 0) {
@@ -205,26 +209,26 @@ fun JournalScreen(
                         )
                     }
                     Log.d("PredictionViewModel", "Prediction Result: $predictionResult")
-                    if (predictionResult != null) {
-                        AlertDialog(
-                            onDismissRequest = { /* Reset predictionResult jika perlu */ },
-                            title = { Text("Hasil Prediksi") },
-                            text = {
-                                Column {
-                                    Text("Model 1: ${predictionResult?.model1}")
-                                    Text("Model 2: ${predictionResult?.model2}")
-                                }
-                            },
-                            confirmButton = {
-                                TextButton(onClick = {
-                                    // Reset predictionResult jika diperlukan
-                                    // predictionViewModel.clearPredictionResult()
-                                }) {
-                                    Text("Tutup")
-                                }
-                            }
-                        )
-                    }
+//                    if (predictionResult != null) {
+//                        AlertDialog(
+//                            onDismissRequest = { /* Reset predictionResult jika perlu */ },
+//                            title = { Text("Hasil Prediksi") },
+//                            text = {
+//                                Column {
+//                                    Text("Model 1: ${predictionResult?.model1}")
+//                                    Text("Model 2: ${predictionResult?.model2}")
+//                                }
+//                            },
+//                            confirmButton = {
+//                                TextButton(onClick = {
+//                                    // Reset predictionResult jika diperlukan
+//                                    // predictionViewModel.clearPredictionResult()
+//                                }) {
+//                                    Text("Tutup")
+//                                }
+//                            }
+//                        )
+//                    }
 
                     FloatingActionButton(
                         onClick = { viewModel.showDeleteConfirmationDialog() },

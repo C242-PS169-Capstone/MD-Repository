@@ -1,6 +1,9 @@
 package com.herehearteam.herehear.ui.screens.journal
 
 import android.app.Application
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -8,6 +11,8 @@ import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
 import com.herehearteam.herehear.data.local.entity.JournalEntity
 import com.herehearteam.herehear.data.local.helper.JournalHelper
 import com.herehearteam.herehear.data.local.repository.JournalRepository
+import com.herehearteam.herehear.data.local.repository.PredictionRepository
+import com.herehearteam.herehear.data.remote.api.ApiConfig
 import com.herehearteam.herehear.domain.model.Journal
 import com.herehearteam.herehear.domain.model.JournalQuestion
 import com.herehearteam.herehear.domain.model.JournalQuestions
@@ -16,6 +21,7 @@ import com.herehearteam.herehear.domain.repository.UserRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,15 +33,19 @@ class JournalViewModel(
     private val userRepository: UserRepository,
     private val journalRepository: JournalRepository
     ) : AndroidViewModel(application){
-    private val mJournalRepository: JournalRepository = JournalRepository(application)
-
     private val viewModelJob = SupervisorJob()
     private val viewModelScope = CoroutineScope(Dispatchers.Main + viewModelJob)
     private var currentJournalId: Int? = null
     private var originalJournalContent: String? = ""
+    private val connectivityManager = application.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    private val modelApiService = ApiConfig.getApiModelService()
+    private val predictionRepository = PredictionRepository(modelApiService)
 
 //    private val currentUser = FirebaseAuth.getInstance().currentUser
 //    private val userId = currentUser?.uid
+
+    private val _isNetworkAvailable = MutableStateFlow(false)
+    val isNetworkAvailable: StateFlow<Boolean> = _isNetworkAvailable.asStateFlow()
 
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
@@ -70,6 +80,7 @@ class JournalViewModel(
     val navigationEvent = _navigationEvent.asStateFlow()
 
     init {
+        checkNetworkConnectivity()
         refreshQuestions()
         viewModelScope.launch {
             userRepository.user.collect { user ->
@@ -77,7 +88,29 @@ class JournalViewModel(
                 Log.d("JournalViewModel", "Current user updated: ${user?.userId}")
             }
         }
+
+        val networkCallback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                _isNetworkAvailable.value = true
+                journalRepository.syncPendingJournals()
+            }
+
+            override fun onLost(network: Network) {
+                _isNetworkAvailable.value = false
+            }
+        }
     }
+
+    fun checkNetworkConnectivity() {
+        val activeNetwork = connectivityManager.activeNetworkInfo
+        _isNetworkAvailable.value = activeNetwork?.isConnectedOrConnecting == true
+
+        // Sync pending journals if network is available on init
+        if (_isNetworkAvailable.value) {
+            journalRepository.syncPendingJournals()
+        }
+    }
+
 
     fun saveJournal() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -100,13 +133,28 @@ class JournalViewModel(
                         userId = userId
                     )
                 } else {
+                    val predictionResult = predictionRepository.predictText(content)
                     val journalToSave = JournalEntity(
                         createdDate = JournalHelper.getCurrentDate(),
                         content = content,
                         question = question,
-                        userId = userId
+                        userId = userId,
+                        isPredicted = _isNetworkAvailable.value,
+                        predict1Label = predictionResult.getOrNull()?.model1?.prediction.toString() ?: null,
+                        predict1Confidence = predictionResult.getOrNull()?.model1?.confidence.toString() ?: null,
+                        predict2Label = predictionResult.getOrNull()?.model2?.prediction.toString() ?: null,
+                        predict2Confidence = predictionResult.getOrNull()?.model2?.confidence.toString() ?: null,
                     )
-                    journalRepository.insertJournal(journalToSave)
+                    val savedJournalId = journalRepository.insertJournal(journalToSave)
+                    if (!_isNetworkAvailable.value) {
+                        // Optional: You might want to use a WorkManager job for this in a real app
+                        viewModelScope.launch {
+                            while (!_isNetworkAvailable.value) {
+                                delay(30000) // Check every 30 seconds
+                            }
+                            journalRepository.syncPendingJournals()
+                        }
+                    }
                 }
 
                 currentJournalId = null
@@ -119,54 +167,10 @@ class JournalViewModel(
                     _isFabExpanded.value = false
                 }
             } else {
-
+//              handle
             }
         }
     }
-
-//    fun saveJournal() {
-//        viewModelScope.launch(Dispatchers.IO) {
-//            val question = _selectedQuestion.value?.text ?: ""
-//            val content = _memoText.value.takeIf { it.isNotBlank() }
-//
-//            if (content != null) {
-//                val userPreferences = UserPreferencesDataStore.userPreferencesFlow.firstOrNull()
-//                val userId = userPreferences?.userId
-//
-//                if (userId != null) {
-//                    if (currentJournalId != null) {
-//                        mJournalRepository.updateJournalById(currentJournalId!!, content)
-//                        currentJournalId = null
-//                        originalJournalContent = ""
-//                    } else {
-//                        val journalToSave = JournalEntity(
-//                            createdDate = JournalHelper.getCurrentDate(),
-//                            content = content,
-//                            question = question,
-//                            userId = userId // Use userId from DataStore
-//                        )
-//                        mJournalRepository.insertJournal(journalToSave)
-//                        currentJournalId = null
-//                        originalJournalContent = ""
-//                    }
-//
-//                    withContext(Dispatchers.Main) {
-//                        _isSaveSuccessful.value = true
-//                        _navigationEvent.value = NavigationEvent.NavigateToHome
-//                        clearSelectedQuestion()
-//                        _isFabExpanded.value = false
-//                    }
-//                } else {
-//                    // Handle case where user is not logged in
-//                    // For example, show an error message or redirect to login screen
-//                    withContext(Dispatchers.Main) {
-//                        _isSaveSuccessful.value = false
-//                        // Handle user not logged in error
-//                    }
-//                }
-//            }
-//        }
-//    }
 
     override fun onCleared() {
         super.onCleared()
@@ -335,6 +339,50 @@ class JournalViewModel(
 //            }
 //            withContext(Dispatchers.Main) {
 //                onResult(journal)
+//            }
+//        }
+//    }
+
+//    fun saveJournal() {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            val question = _selectedQuestion.value?.text ?: ""
+//            val content = _memoText.value.takeIf { it.isNotBlank() }
+//
+//            if (content != null) {
+//                val userPreferences = UserPreferencesDataStore.userPreferencesFlow.firstOrNull()
+//                val userId = userPreferences?.userId
+//
+//                if (userId != null) {
+//                    if (currentJournalId != null) {
+//                        mJournalRepository.updateJournalById(currentJournalId!!, content)
+//                        currentJournalId = null
+//                        originalJournalContent = ""
+//                    } else {
+//                        val journalToSave = JournalEntity(
+//                            createdDate = JournalHelper.getCurrentDate(),
+//                            content = content,
+//                            question = question,
+//                            userId = userId // Use userId from DataStore
+//                        )
+//                        mJournalRepository.insertJournal(journalToSave)
+//                        currentJournalId = null
+//                        originalJournalContent = ""
+//                    }
+//
+//                    withContext(Dispatchers.Main) {
+//                        _isSaveSuccessful.value = true
+//                        _navigationEvent.value = NavigationEvent.NavigateToHome
+//                        clearSelectedQuestion()
+//                        _isFabExpanded.value = false
+//                    }
+//                } else {
+//                    // Handle case where user is not logged in
+//                    // For example, show an error message or redirect to login screen
+//                    withContext(Dispatchers.Main) {
+//                        _isSaveSuccessful.value = false
+//                        // Handle user not logged in error
+//                    }
+//                }
 //            }
 //        }
 //    }

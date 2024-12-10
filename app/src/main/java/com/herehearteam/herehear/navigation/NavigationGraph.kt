@@ -27,6 +27,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
+import com.herehearteam.herehear.data.local.repository.JournalRepository
 import com.herehearteam.herehear.data.local.repository.PredictionRepository
 import com.herehearteam.herehear.data.remote.GoogleAuthUiClient
 import com.herehearteam.herehear.data.remote.api.ApiConfig
@@ -71,6 +72,7 @@ fun NavigationGraph(
     )
     val context = LocalContext.current
     val appDependencies = AppDependencies.getInstance(context)
+    val journalRepository = JournalRepository(application)
 
     val apiArticleService = ApiConfig.getArticleService();
     val articleViewModel = ArticleViewModelFactory(apiArticleService)
@@ -116,6 +118,10 @@ fun NavigationGraph(
                     navController.navigate(Screen.Home.route) {
                         popUpTo(0) { inclusive = true }
                     }
+                },
+                journalRepository = journalRepository,
+                onArtikelClick = {
+                    navController.navigate(Screen.Article.route)
                 }
             )
         }

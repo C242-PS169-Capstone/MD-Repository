@@ -1,16 +1,18 @@
 package com.herehearteam.herehear.data.local.repository
 
 import android.app.Application
-import androidx.lifecycle.LiveData
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
+import android.util.Log
 import com.herehearteam.herehear.data.local.dao.JournalDao
 import com.herehearteam.herehear.data.local.database.AppDatabase
 import com.herehearteam.herehear.data.local.entity.JournalEntity
+import com.herehearteam.herehear.data.local.helper.Converters
 import com.herehearteam.herehear.data.model.JournalRequestDto
 import com.herehearteam.herehear.data.remote.api.ApiConfig
-import com.herehearteam.herehear.data.remote.api.ApiService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -18,16 +20,66 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 class JournalRepository(application: Application) {
     private val mJournalDao: JournalDao
     private val journalApiService = ApiConfig.getApiService()
+    private val modelApiService = ApiConfig.getApiModelService()
+    private val connectivityManager = application.getSystemService(ConnectivityManager::class.java)
+    private val predictionRepository = PredictionRepository(modelApiService)
 
     init {
         val db = AppDatabase.getDatabase(application)
         mJournalDao = db.journalDao()
+    }
+
+    private fun isNetworkAvailable(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val network = connectivityManager?.activeNetwork ?: return false
+            val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+            return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                    capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+        } else {
+            @Suppress("DEPRECATION")
+            val networkInfo = connectivityManager?.activeNetworkInfo
+            @Suppress("DEPRECATION")
+            return networkInfo?.isConnected == true
+        }
+    }
+
+    fun syncPendingJournals() {
+        CoroutineScope(Dispatchers.IO).launch {
+            if (isNetworkAvailable()) {
+                val pendingJournals = mJournalDao.getPendingPredictionJournals()
+                pendingJournals.forEach { journal ->
+                    try {
+                        val predictionResult = predictionRepository.predictText(journal.content)
+                        Log.d("JournalRepositorySYNC", "Prediction result: $predictionResult")
+
+                        mJournalDao.updateJournalPredictionsByJournalAndUserId(
+                            journal.journalId,
+                            journal.userId,
+                            predictionResult.getOrNull()?.model1?.prediction.toString(),
+                            predictionResult.getOrNull()?.model1?.confidence.toString(),
+                            predictionResult.getOrNull()?.model2?.prediction.toString(),
+                            predictionResult.getOrNull()?.model2?.confidence.toString(),
+                            true
+                        )
+                    } catch (e: Exception) {
+                        Log.e("JournalRepository", "Prediction sync failed", e)
+                    }
+                }
+
+                val unsyncedJournals = mJournalDao.getUnsyncedJournals()
+                unsyncedJournals.forEach { journal ->
+                    try {
+                        syncJournalToServer(journal)
+                    } catch (e: Exception) {
+                        // Log error or handle sync failure
+                    }
+                }
+            }
+        }
     }
 
     fun fetchJournals(userId: String): Flow<Result<List<JournalEntity>>> = flow {
@@ -44,6 +96,7 @@ class JournalRepository(application: Application) {
                 // Convert API journals to local entities
                 val formatter = DateTimeFormatter.ISO_DATE_TIME
                 val remoteJournals = apiResponse.data.map { apiJournal ->
+                    val predictionResult = predictionRepository.predictText(apiJournal.content!!)
                     JournalEntity(
                         journalId = apiJournal.journalId!!.toInt(),
                         content = apiJournal.content ?: "",
@@ -51,17 +104,21 @@ class JournalRepository(application: Application) {
                         createdDate = apiJournal.createdAt?.let {
                             LocalDateTime.parse(it, formatter)
                         } ?: LocalDateTime.now(),
-                        question = null
+                        question = null,
+                        predict1Label = predictionResult.getOrNull()?.model1?.prediction.toString(),
+                        predict1Confidence = predictionResult.getOrNull()?.model1?.confidence.toString(),
+                        predict2Label = predictionResult.getOrNull()?.model2?.prediction.toString(),
+                        predict2Confidence = predictionResult.getOrNull()?.model2?.confidence.toString(),
                     )
                 }
 
                 // Update local database with API journals
-//                withContext(Dispatchers.IO) {
-//                    // You might want to implement a more sophisticated sync strategy
-//                    // This example replaces local data with API data
-//                    mJournalDao.deleteAllJournalsForUser(userId)
-//                    mJournalDao.insertJournals(remoteJournals)
-//                }
+                withContext(Dispatchers.IO) {
+                    // You might want to implement a more sophisticated sync strategy
+                    // This example replaces local data with API data
+                    mJournalDao.deleteAllJournalsForUser(userId)
+                    mJournalDao.insertJournals(remoteJournals)
+                }
 
                 // Emit updated data
                 emit(Result.success(remoteJournals))
@@ -89,59 +146,67 @@ class JournalRepository(application: Application) {
 
             if (response.status) {
                 // Successfully synced to server
-                val updatedJournal = journal.copy(
-                    // Update fields from server response if needed
-                    // For example, you might want to update the createdAt timestamp
-                    // createdAt = response.data.createdAt
-                )
-
                 withContext(Dispatchers.IO) {
-                    mJournalDao.updateJournal(updatedJournal)
+                    // Mark the journal as synced
+                    mJournalDao.markJournalAsSynced(journal.journalId)
                 }
             } else {
                 // Server returned an error
-                markJournalAsPendingSync(journal)
             }
         } catch (e: Exception) {
             // Network or other error
-            markJournalAsPendingSync(journal)
-            // Optionally log the error
-            // Log.e("JournalRepository", "Sync failed", e)
+           throw e
         }
     }
 
-    fun insertJournal(journal: JournalEntity) {
-        val localId = mJournalDao.insertJournal(journal)
+    suspend fun insertJournal(journal: JournalEntity) {
+        val newJournal = if (isNetworkAvailable()) {
+            // If online, mark as synced
+            journal.copy(isSync = true)
+        } else {
+            // If offline, keep as unsynced
+            journal.copy(isSync = false)
+        }
+
+        val localId = mJournalDao.insertJournal(newJournal)
 
         // Launch a coroutine to sync with server
-        CoroutineScope(Dispatchers.IO).launch {
-            syncJournalToServer(journal)
+        if (isNetworkAvailable()) {
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val predictionResult = predictionRepository.predictText(newJournal.content)
+                    Log.d("JournalRepositoryINSERT", "Prediction result: $predictionResult")
+                    Log.d("JournalRepositoryINSERT", "Raw Prediction Result: $predictionResult")
+                    Log.d("JournalRepositoryINSERT", "Prediction Result Nullable: ${predictionResult.getOrNull()}")
+                    Log.d("JournalRepositoryINSERT", "Model1 Prediction: ${predictionResult.getOrNull()?.model1?.prediction}")
+                    Log.d("JournalRepositoryINSERT", "Model1 Confidence: ${predictionResult.getOrNull()?.model1?.confidence}")
+                    Log.d("JournalRepositoryINSERT", "Model2 Prediction: ${predictionResult.getOrNull()?.model2?.prediction}")
+                    Log.d("JournalRepositoryINSERT", "Model2 Confidence: ${predictionResult.getOrNull()?.model2?.confidence}")
+
+                    mJournalDao.updateJournalPredictionsByJournalAndUserId(
+                        newJournal.journalId,
+                        newJournal.userId,
+                        predictionResult.getOrNull()?.model1?.prediction.toString(),
+                        predictionResult.getOrNull()?.model1?.confidence.toString(),
+                        predictionResult.getOrNull()?.model2?.prediction.toString(),
+                        predictionResult.getOrNull()?.model2?.confidence.toString(),
+                        true
+                    )
+                    syncJournalToServer(newJournal)
+                } catch (e: Exception) {
+                    // If sync fails, it remains unsynced and will be retried later
+                }
+            }
         }
-    }
-
-    private fun markJournalAsPendingSync(journal: JournalEntity) {
-        // You might want to add a 'pending_sync' flag to your JournalEntity
-        val pendingSyncJournal = journal.copy(
-            // Add a field to mark as pending sync
-            // For example: isPendingSync = true
-        )
-        mJournalDao.updateJournal(pendingSyncJournal)
-    }
-
-    fun updateJournal(journal: JournalEntity) {
-        mJournalDao.updateJournal(journal)
-    }
-
-    fun deleteJournal(journal: JournalEntity) {
-        mJournalDao.deleteJournal(journal)
+        return localId
     }
 
     fun deleteJournalById(id: Int, userId: String) {
         mJournalDao.deleteJournalById(id, userId)
     }
 
-    fun getAllJournals(userId: String): Flow<List<JournalEntity>> {
-        return mJournalDao.getAllJournalsFlow(userId).flowOn(Dispatchers.IO)
+    fun getLastPredictedJournal(userId: String): JournalEntity? {
+        return mJournalDao.getLastPredictedJournal(userId)
     }
 
     fun getJournalById(id: Int, userId: String): JournalEntity? {
@@ -151,22 +216,6 @@ class JournalRepository(application: Application) {
     fun updateJournalById(id: Int, content: String, userId: String) {
         mJournalDao.updateJournalContentById(id, content, userId)
     }
-
-//    fun deleteJournalById(id: Int) {
-//        mJournalDao.deleteJournalById(id)
-//    }
-
-//    fun getAllJournals(): Flow<List<JournalEntity>> {
-//      return mJournalDao.getAllJournalsFlow().flowOn(Dispatchers.IO)
-//    }
-
-//    fun getJournalById(id: Int): JournalEntity? {
-//       return mJournalDao.getJournalByJournalId(id)
-//    }
-//
-//    fun updateJournalById(id: Int, content: String) {
-//        mJournalDao.updateJournalContentById(id, content)
-//    }
 
     companion object{
         @Volatile

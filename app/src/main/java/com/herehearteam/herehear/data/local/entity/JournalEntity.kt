@@ -4,6 +4,7 @@ import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.herehearteam.herehear.data.remote.response.PredictionResponse
 import kotlinx.parcelize.Parcelize
 import java.time.LocalDateTime
 
@@ -24,5 +25,23 @@ data class JournalEntity(
     val userId: String,
 
     @ColumnInfo(name = "question")
-    val question: String?
+    val question: String?,
+
+    @ColumnInfo(name = "isSync")
+    val isSync: Boolean = false,
+
+    @ColumnInfo(name = "isPredicted")
+    val isPredicted: Boolean = false,
+
+    @ColumnInfo(name = "predict1Label")
+    val predict1Label: String?,
+
+    @ColumnInfo(name = "predict1Confidence")
+    val predict1Confidence: String?,
+
+    @ColumnInfo(name = "predict2Label")
+    val predict2Label: String?,
+
+    @ColumnInfo(name = "predict2Confidence")
+    val predict2Confidence: String?
 ) : Parcelable

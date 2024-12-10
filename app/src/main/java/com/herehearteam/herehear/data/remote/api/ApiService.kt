@@ -14,7 +14,7 @@ import retrofit2.http.Query
 
 interface ApiService {
 
-    @POST("Journals/")
+    @POST("Journals")
     suspend fun createJournal(
         @Body request: JournalRequestDto
     ): ResponseJournal

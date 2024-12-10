@@ -8,8 +8,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object ApiConfig {
     const val GUARDIAN_API_KEY = "79131a47-8add-4564-8d08-4d82dd49b34c"
-
-    fun getApiService(): ApiService {
+  
+    fun getApiModelService(): ApiService {
         val loggingInterceptor =
             HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
 

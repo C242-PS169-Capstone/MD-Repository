@@ -22,6 +22,7 @@ retrofit = "2.11.0"
 roomRuntime = "2.6.1"
 lifecycleLivedataKtx = "2.8.7"
 appcompat = "1.7.0"
+glide = "1.0.0-beta01"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -53,6 +54,7 @@ play-services-auth = { module = "com.google.android.gms:play-services-auth", ver
 androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycleLivedataKtx" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+glide-compose = { module = "com.github.bumptech.glide:compose", version.ref = "glide" }
 
 
 [plugins]
