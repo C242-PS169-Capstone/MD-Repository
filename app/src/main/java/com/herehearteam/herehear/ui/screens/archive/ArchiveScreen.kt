@@ -1,6 +1,5 @@
 package com.herehearteam.herehear.ui.screens.archive
 
-import android.R
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -128,43 +127,6 @@ fun MonthSelector(
         }
     }
 }
-
-// DummyData.kt
-//object DummyJournals {
-//    val journalList = listOf(
-//        Journal(
-//            id = "1",
-//            content = "Hari ini saya belajar Jetpack Compose. Sangat menyenangkan bisa membuat UI dengan mudah menggunakan Kotlin.",
-//            dateTime = LocalDateTime.now(),
-//            question = "apa kegiatan yang paling kamu ingat di hari ini?"
-//        ),
-//        Journal(
-//            id = "2",
-//            content = "Menikmati Mie ayam sambil melihat pemandangan gunung ditemani gerimis yang membasahi wajah.",
-//            dateTime = LocalDateTime.now(),
-//            question = "ingat-ingat kebelakang apa hal yang bisa kamu syukuri tapi terlewat oleh mu"
-//
-//        ),
-//        Journal(
-//            id = "3",
-//            content = "Mempelajari tentang StateFlow dan SharedFlow di Kotlin Coroutines. Konsepnya cukup menarik!",
-//            dateTime = LocalDateTime.now().minusDays(2),
-//            question = null
-//        ),
-//        Journal(
-//            id = "4",
-//            content = "Hari ini fokus debugging aplikasi dan memperbaiki beberapa UI yang masih belum sempurna.",
-//            dateTime = LocalDateTime.now().minusDays(3),
-//            question = "Siapa yang paling memengaruhiku belakangan ini, dan bagaimana aku merasakannya?"
-//        ),
-//        Journal(
-//            id = "5",
-//            content = "Hari ini begadang sampai mampus jantung aku bahagia hidup bersamaku",
-//            dateTime = LocalDateTime.now().minusDays(3),
-//            question = null
-//        )
-//    )
-//}
 
 @Composable
 fun JournalArchiveContent(

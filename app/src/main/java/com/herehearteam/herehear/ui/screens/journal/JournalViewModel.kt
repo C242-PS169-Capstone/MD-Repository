@@ -11,6 +11,8 @@ import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
 import com.herehearteam.herehear.data.local.entity.JournalEntity
 import com.herehearteam.herehear.data.local.helper.JournalHelper
 import com.herehearteam.herehear.data.local.repository.JournalRepository
+import com.herehearteam.herehear.data.local.repository.PredictionRepository
+import com.herehearteam.herehear.data.remote.api.ApiConfig
 import com.herehearteam.herehear.domain.model.Journal
 import com.herehearteam.herehear.domain.model.JournalQuestion
 import com.herehearteam.herehear.domain.model.JournalQuestions
@@ -19,6 +21,7 @@ import com.herehearteam.herehear.domain.repository.UserRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,6 +38,8 @@ class JournalViewModel(
     private var currentJournalId: Int? = null
     private var originalJournalContent: String? = ""
     private val connectivityManager = application.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    private val modelApiService = ApiConfig.getApiModelService()
+    private val predictionRepository = PredictionRepository(modelApiService)
 
 //    private val currentUser = FirebaseAuth.getInstance().currentUser
 //    private val userId = currentUser?.uid
@@ -128,13 +133,28 @@ class JournalViewModel(
                         userId = userId
                     )
                 } else {
+                    val predictionResult = predictionRepository.predictText(content)
                     val journalToSave = JournalEntity(
                         createdDate = JournalHelper.getCurrentDate(),
                         content = content,
                         question = question,
-                        userId = userId
+                        userId = userId,
+                        isPredicted = _isNetworkAvailable.value,
+                        predict1Label = predictionResult.getOrNull()?.model1?.prediction.toString() ?: null,
+                        predict1Confidence = predictionResult.getOrNull()?.model1?.confidence.toString() ?: null,
+                        predict2Label = predictionResult.getOrNull()?.model2?.prediction.toString() ?: null,
+                        predict2Confidence = predictionResult.getOrNull()?.model2?.confidence.toString() ?: null,
                     )
-                    journalRepository.insertJournal(journalToSave)
+                    val savedJournalId = journalRepository.insertJournal(journalToSave)
+                    if (!_isNetworkAvailable.value) {
+                        // Optional: You might want to use a WorkManager job for this in a real app
+                        viewModelScope.launch {
+                            while (!_isNetworkAvailable.value) {
+                                delay(30000) // Check every 30 seconds
+                            }
+                            journalRepository.syncPendingJournals()
+                        }
+                    }
                 }
 
                 currentJournalId = null
@@ -147,7 +167,7 @@ class JournalViewModel(
                     _isFabExpanded.value = false
                 }
             } else {
-
+//              handle
             }
         }
     }

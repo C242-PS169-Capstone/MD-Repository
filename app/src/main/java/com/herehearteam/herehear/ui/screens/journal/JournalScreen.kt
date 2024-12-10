@@ -209,26 +209,26 @@ fun JournalScreen(
                         )
                     }
                     Log.d("PredictionViewModel", "Prediction Result: $predictionResult")
-                    if (predictionResult != null) {
-                        AlertDialog(
-                            onDismissRequest = { /* Reset predictionResult jika perlu */ },
-                            title = { Text("Hasil Prediksi") },
-                            text = {
-                                Column {
-                                    Text("Model 1: ${predictionResult?.model1}")
-                                    Text("Model 2: ${predictionResult?.model2}")
-                                }
-                            },
-                            confirmButton = {
-                                TextButton(onClick = {
-                                    // Reset predictionResult jika diperlukan
-                                    // predictionViewModel.clearPredictionResult()
-                                }) {
-                                    Text("Tutup")
-                                }
-                            }
-                        )
-                    }
+//                    if (predictionResult != null) {
+//                        AlertDialog(
+//                            onDismissRequest = { /* Reset predictionResult jika perlu */ },
+//                            title = { Text("Hasil Prediksi") },
+//                            text = {
+//                                Column {
+//                                    Text("Model 1: ${predictionResult?.model1}")
+//                                    Text("Model 2: ${predictionResult?.model2}")
+//                                }
+//                            },
+//                            confirmButton = {
+//                                TextButton(onClick = {
+//                                    // Reset predictionResult jika diperlukan
+//                                    // predictionViewModel.clearPredictionResult()
+//                                }) {
+//                                    Text("Tutup")
+//                                }
+//                            }
+//                        )
+//                    }
 
                     FloatingActionButton(
                         onClick = { viewModel.showDeleteConfirmationDialog() },

@@ -42,7 +42,32 @@ interface JournalDao {
     @Query("SELECT * FROM journaling WHERE isSync = 0")
     fun getUnsyncedJournals(): List<JournalEntity>
 
+    @Query("SELECT * FROM journaling WHERE isPredicted = 0")
+    fun getPendingPredictionJournals(): List<JournalEntity>
+
     // New method to mark a journal as synced
     @Query("UPDATE journaling SET isSync = 1 WHERE journalId = :journalId")
     fun markJournalAsSynced(journalId: Int)
+
+    @Query("SELECT * FROM journaling WHERE userId = :userId AND isPredicted = 1 ORDER BY createdDate DESC LIMIT 1")
+    fun getLastPredictedJournal(userId: String): JournalEntity?
+
+    @Query("""
+    UPDATE journaling 
+    SET predict1Label = :predict1Label, 
+        predict1Confidence = :predict1Confidence, 
+        predict2Label = :predict2Label, 
+        predict2Confidence = :predict2Confidence, 
+        isPredicted = :isPredicted 
+    WHERE journalId = :journalId AND userId = :userId
+""")
+    fun updateJournalPredictionsByJournalAndUserId(
+        journalId: Int,
+        userId: String,
+        predict1Label: String?,
+        predict1Confidence: String?,
+        predict2Label: String?,
+        predict2Confidence: String?,
+        isPredicted: Boolean
+    )
 }
