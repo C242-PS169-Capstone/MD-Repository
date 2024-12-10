@@ -1,0 +1,4 @@
+steps:
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: ['-m', 'rsync', '-r', '-x', '^\..*|^app/|^gradle/|.*\.kts$|.*\.properties$|.*\.bat$|gradlew', './', 'gs://hearhere-md-docs']
+timeout: '900s'
