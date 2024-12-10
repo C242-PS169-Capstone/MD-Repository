@@ -49,11 +49,11 @@ class ProfileViewModel(
         }
     }
 
-    fun showEmergencyBottomSheet() {
-        if (!_isEmergencyBottomSheetVisible.value) {
-            _isEmergencyBottomSheetVisible.value = true
-        }
-    }
+//    fun showEmergencyBottomSheet() {
+//        if (!_isEmergencyBottomSheetVisible.value) {
+//            _isEmergencyBottomSheetVisible.value = true
+//        }
+//    }
 
     fun hideEmergencyBottomSheet() {
         if (_isEmergencyBottomSheetVisible.value) {

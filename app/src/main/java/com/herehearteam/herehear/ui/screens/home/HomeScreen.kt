@@ -50,6 +50,7 @@ import com.herehearteam.herehear.ui.components.CustomTopAppBar
 import com.herehearteam.herehear.ui.components.DailyQuestionCard
 import com.herehearteam.herehear.ui.components.ExpandedArticleCard
 import com.herehearteam.herehear.ui.components.FeatureCardComponent
+import com.herehearteam.herehear.ui.components.HotlineAlertDialog
 import com.herehearteam.herehear.ui.components.LocalGoogleAuthUiClient
 import com.herehearteam.herehear.ui.components.UserGreetingCard
 import com.herehearteam.herehear.ui.components.WeeklyMoodCard
@@ -68,13 +69,19 @@ fun HomeScreen(
 ) {
 
     val uiState by viewModel.uiState.collectAsState()
-//    val articles by articleViewModel.articles.collectAsState()
     val context = LocalContext.current
+    var showHotlineAlert by remember { mutableStateOf(false) }
     var showBottomSheet by remember { mutableStateOf(false) }
     var selectedArticle by remember { mutableStateOf<Article?>(null) }
 
     val apiService = ApiConfig.getApiService()
     val predictionRepository = PredictionRepository(apiService)
+
+    if (showHotlineAlert) {
+        HotlineAlertDialog(
+            onDismiss = { showHotlineAlert = false }
+        )
+    }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -141,10 +148,20 @@ fun HomeScreen(
                         columns = 4,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        FeatureCardComponent(title = "Streak", onClick = {})
-                        FeatureCardComponent(title = "Forum", onClick = {})
-                        FeatureCardComponent(title = "Psikolog", onClick = {})
-                        FeatureCardComponent(title = "Hotline", onClick = {})
+                        FeatureCardComponent(
+                            title = "Streak", onClick = {}
+                        )
+                        FeatureCardComponent(
+                            title = "Forum", onClick = {}
+                        )
+                        FeatureCardComponent(
+                            title = "Psikolog", onClick = {}
+                        )
+                        FeatureCardComponent(
+                            title = "Hotline", onClick = {
+                                showHotlineAlert = true
+                            }
+                        )
                     }
                 }
             }
