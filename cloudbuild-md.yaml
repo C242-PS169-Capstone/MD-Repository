@@ -1,7 +1,5 @@
 steps:
-- name: 'gcr.io/cloud-builders/git'
-  args: ['clone', 'https://github.com/C242-PS169-Capstone/MD-Repository.git', '.']
 - name: 'gcr.io/cloud-builders/gsutil'
-  args: ['rsync', '-r', '.', 'gs://hearhere-md-docs']
+  args: ['rsync', '-r', '-x', '\.git.*|\.idea.*|app.*|gradle.*|.*\.kts$|.*\.properties$|.*\.bat$', '.', 'gs://hearhere-md-docs']
 options:
   logging: CLOUD_LOGGING_ONLY
