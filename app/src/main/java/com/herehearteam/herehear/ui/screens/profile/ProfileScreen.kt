@@ -3,6 +3,7 @@ package com.herehearteam.herehear.ui.screens.profile
 import RegisterViewModel
 import android.net.Uri
 import android.util.Log
+import android.view.ViewTreeObserver
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -27,11 +29,14 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -40,6 +45,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -71,9 +77,16 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
+import com.herehearteam.herehear.data.remote.GoogleAuthUiClient
 import com.herehearteam.herehear.di.AppDependencies
 import com.herehearteam.herehear.ui.screens.auth.LoginViewModel
 import com.herehearteam.herehear.ui.screens.auth.LoginViewModelFactory
@@ -143,6 +156,9 @@ fun Container(
                                     fontSize = 16.sp
                                 )
                             )
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
                             if (isComplete) {
                                 Text(
                                     text = "Edit Profilmu Di sini",
@@ -176,7 +192,7 @@ fun Container(
                             onClick = {},
                             backgroundColor = Color.White,
                             textColor = Color.Black,
-                            height = Dp(33.49f),
+                            height = Dp(33.49f)
                         )
                     }
                 }
@@ -190,115 +206,214 @@ fun Container(
 fun PopUpEmergencyContact(
     onDismiss: () -> Unit,
     initialContact: ProfileUiState?,
-    onSaveContact: (ProfileUiState) -> Unit,
     onShowToast: (String) -> Unit
 ){
     var name by remember { mutableStateOf(initialContact?.emergencyContact?.emergency_name ?: "") }
     var number by remember { mutableStateOf(initialContact?.emergencyContact?.emergency_number ?: "") }
     var relationship by remember { mutableStateOf(initialContact?.emergencyContact?.relationship ?: "") }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
 
+
+    val viewModel = ProfileViewModel(
+        googleAuthUiClient = LocalGoogleAuthUiClient.current,
+        userPreferencesDataStore = UserPreferencesDataStore.getInstance(context = LocalContext.current),
+        emergencyContactRepository = AppDependencies.getInstance(LocalContext.current).emergencyContactRepository
+    )
+
+    val uiState by viewModel.uiState.collectAsState()
+    uiState.emergencyContact?.let { contact ->
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .background(Color(0xFFF5F5F5), shape = RoundedCornerShape(8.dp))
+                .padding(16.dp)
+        ) {
+            Column {
+                Text("Nama: ${contact.emergency_name}", style = MaterialTheme.typography.bodyMedium)
+                Text("Nomor: ${contact.emergency_number}", style = MaterialTheme.typography.bodyMedium)
+                Text("Hubungan: ${contact.relationship}", style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    val userId = currentUser?.uid
+
+    val view = LocalView.current
+    var isImeVisible by remember { mutableStateOf(false) }
+
+    DisposableEffect(Unit) {
+        val listener = ViewTreeObserver.OnPreDrawListener {
+            isImeVisible = ViewCompat.getRootWindowInsets(view)
+                ?.isVisible(WindowInsetsCompat.Type.ime()) == true
+            true
+        }
+        view.viewTreeObserver.addOnPreDrawListener(listener)
+        onDispose {
+            view.viewTreeObserver.removeOnPreDrawListener(listener)
+        }
+    }
+
+    // Validasi input
+    val isFormValid = name.isNotBlank() &&
+            number.isNotBlank() &&
+            relationship.isNotBlank()
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        windowInsets = WindowInsets(0, 0, 0, 0),
-        modifier = Modifier
-            .fillMaxWidth()
-            .imePadding(),
+        windowInsets = WindowInsets.ime,
+        modifier = Modifier.then(
+            if (isImeVisible)
+                Modifier.fillMaxHeight(0.85F)
+            else
+                Modifier.fillMaxHeight(0.45F)
+        )
     ) {
         Column(
             modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(horizontal = 16.dp)
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
         ) {
-            Text(
-                text = "Kontak Darurat",
-                style = TextStyle(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                ),
-                modifier = Modifier.padding(bottom = 16.dp),
-                textAlign = TextAlign.Center
-            )
-            Spacer(Modifier.height(8.dp))
-            TextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Nama Kontak") },
-                colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color(0xFFF5F5F5),
-                    focusedIndicatorColor = ColorPrimary,
-                    unfocusedIndicatorColor = Color.Gray
-                ),
-                singleLine = true,
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp)
-            )
-            Spacer(Modifier.height(8.dp))
-            TextField(
-                value = number,
-                onValueChange = { number = it },
-                label = { Text("Nomor Telepon") },
-                colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color(0xFFF5F5F5),
-                    focusedIndicatorColor = ColorPrimary,
-                    unfocusedIndicatorColor = Color.Gray
-                ),
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
-            )
-            Spacer(Modifier.height(8.dp))
-            TextField(
-                value = relationship,
-                onValueChange = { relationship = it },
-                label = { Text("Hubungan") },
-                colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color(0xFFF5F5F5),
-                    focusedIndicatorColor = ColorPrimary,
-                    unfocusedIndicatorColor = Color.Gray
-                ),
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-            )
-            Spacer(Modifier.height(16.dp))
+                    .padding(bottom = 16.dp)
+            ) {
+                Text(
+                    text = "Masukan Kontak Darurat",
+                    style = TextStyle(
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 16.sp
+                    ),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                TextField(
+                    value = name,
+                    onValueChange = {
+                        name = it
+                        errorMessage = null
+                    },
+                    label = { Text("Nama Kontak") },
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFF5F5F5),
+                        focusedIndicatorColor = ColorPrimary,
+                        unfocusedIndicatorColor = Color.Gray
+                    ),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = name.isBlank() && errorMessage != null
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                TextField(
+                    value = number,
+                    onValueChange = {
+                        number = it
+                        errorMessage = null
+                    },
+                    label = { Text("Nomor Telepon") },
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFF5F5F5),
+                        focusedIndicatorColor = ColorPrimary,
+                        unfocusedIndicatorColor = Color.Gray
+                    ),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    isError = number.isBlank() && errorMessage != null
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                TextField(
+                    value = relationship,
+                    onValueChange = {
+                        relationship = it
+                        errorMessage = null
+                    },
+                    label = { Text("Hubungan") },
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFF5F5F5),
+                        focusedIndicatorColor = ColorPrimary,
+                        unfocusedIndicatorColor = Color.Gray
+                    ),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = relationship.isBlank() && errorMessage != null
+                )
+
+                // Tampilkan pesan error jika ada
+                if (errorMessage != null) {
+                    Text(
+                        text = errorMessage ?: "",
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+            }
+
             CustomButtonFilled(
                 onClick = {
-                    val contact = EmergencyContact(
-                        emergency_name = name,
-                        emergency_number = number,
-                        relationship = relationship,
-                    )
-                    val updatedProfileState = initialContact?.copy(emergencyContact = contact)
-                    if (updatedProfileState != null) {
-                        onSaveContact(updatedProfileState) // Kirim seluruh ProfileUiState
+
+                    if (isFormValid) {
+                        isLoading = true
+                        val contact = userId?.let {
+                            EmergencyContact(
+                                userId = it,
+                                emergency_name = name,
+                                emergency_number = number,
+                                relationship = relationship,
+                            )
+                        }
+                        Log.d("TAI 2", "$contact")
+                        try {
+                            if (contact != null) {
+                                viewModel.saveEmergencyContact(contact)
+                            }
+                            onShowToast("Kontak darurat berhasil disimpan.")
+                            onDismiss()
+                        } catch (e: Exception) {
+                            Log.e("EmergencyContact", "Error saving contact", e)
+                            errorMessage = "Gagal menyimpan kontak. Silakan coba lagi."
+                        } finally {
+                            isLoading = false
+                        }
+                    } else {
+                        errorMessage = "Harap isi semua field"
                     }
-                    onShowToast("Kontak darurat berhasil disimpan.")
-                    onDismiss()
                 },
-                text = "Simpan",
-                backgroundColor = ColorPrimary
+                text = if (isLoading) "Menyimpan..." else "Simpan",
+                backgroundColor = ColorPrimary,
+                modifier = Modifier.fillMaxWidth(),
+                isEnabled = isFormValid && !isLoading
             )
-            Spacer(Modifier.height(16.dp))
         }
     }
 }
 
 @Composable
-fun ListOfOption(viewModel: ProfileViewModel){
+fun ListOfOption(
+    viewModel: ProfileViewModel
+){
     val uiState by viewModel.uiState.collectAsState()
-    val isEmergencyBottomSheetVisible by viewModel.isEmergencyBottomSheetVisible.collectAsState()
     val context = LocalContext.current
+    var showBottomSheet by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -311,8 +426,8 @@ fun ListOfOption(viewModel: ProfileViewModel){
             Text(
                 text = "Informasi Akun",
                 style = TextStyle(
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 16.sp
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
                 )
             )
         }
@@ -322,17 +437,17 @@ fun ListOfOption(viewModel: ProfileViewModel){
         ProfileOptionComponent(
             icon = Icons.Outlined.Person,
             title = "Kontak Darurat",
-            onClick = { viewModel.showEmergencyBottomSheet() }
+            onClick = {
+                showBottomSheet = true
+            }
         )
 
-        if (isEmergencyBottomSheetVisible) {
+        if (showBottomSheet) {
             PopUpEmergencyContact(
-                onDismiss = { viewModel.hideEmergencyBottomSheet() },
-                initialContact = uiState,
-                onSaveContact = { updatedState ->
-                    viewModel.saveEmergencyContact(updatedState.emergencyContact!!)
-                    viewModel.hideEmergencyBottomSheet()
+                onDismiss = {
+                    showBottomSheet = false
                 },
+                initialContact = uiState,
                 onShowToast = { message ->
                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                 }
@@ -371,7 +486,8 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = viewModel(
         factory = ProfileViewModelFactory(
             LocalGoogleAuthUiClient.current,
-            userPreferencesDataStore = UserPreferencesDataStore.getInstance(context = LocalContext.current)
+            userPreferencesDataStore = UserPreferencesDataStore.getInstance(context = LocalContext.current),
+            context = LocalContext.current
         )
     )
 ) {
@@ -383,8 +499,6 @@ fun ProfileScreen(
             AppDependencies.getInstance(LocalContext.current).userRepository
         )
     )
-
-
     val loginViewModel: LoginViewModel = viewModel(
         factory = LoginViewModelFactory(
             AppDependencies.getInstance(LocalContext.current).userRepository,
@@ -394,59 +508,63 @@ fun ProfileScreen(
 
     Scaffold(
         topBar = {
+            Box(
+                modifier = Modifier.padding(horizontal = 16.dp)
+            ) {
                 CustomTopAppBar(
                     pageTitle = "Profil",
-                    icon = Icons.Filled.ArrowBack,
+                    icon = Icons.Filled.ArrowBackIosNew
                 )
+            }
         },
     ) { innerPadding ->
         // Konten Halaman Profil
-            Column(modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally) {
-                // First content: Container
-                Container(
-                    photoProfile = uiState.photoUrl?.let { Uri.parse(it) },
-                    userName = uiState.userName ?: "User",
-                    isComplete = false
-                )
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)
+            .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally) {
+            // First content: Container
+            Container(
+                photoProfile = uiState.photoUrl?.let { Uri.parse(it) },
+                userName = uiState.userName ?: "User",
+                isComplete = false
+            )
 
-                // Second content: ListOfOption
-                ListOfOption(viewModel)
+            // Second content: ListOfOption
+            ListOfOption(viewModel)
 
-                // Third content: LogoutButton
-                Box(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                ){
-                    CustomButtonOutlined(
-                        onClick = {
-                            scope.launch {
-                                viewModel.signOut()
-                                registerViewModel.resetRegistrationState()
-                                loginViewModel.resetLoginState()
-                                Log.d("ProfileViewModel", "Sign out called - Register state reset")
-                                Log.d("ProfileViewModel", "Sign out called - Login state reset")
-                                Toast.makeText(
-                                    context,
-                                    "Berhasil logout",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                navController.navigate(Screen.Welcome.route) {
-                                    popUpTo(0) { inclusive = true }
-                                }
+            // Third content: LogoutButton
+            Box(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+            ){
+                CustomButtonOutlined(
+                    onClick = {
+                        scope.launch {
+                            viewModel.signOut()
+                            registerViewModel.resetRegistrationState()
+                            loginViewModel.resetLoginState()
+                            Log.d("ProfileViewModel", "Sign out called - Register state reset")
+                            Log.d("ProfileViewModel", "Sign out called - Login state reset")
+                            Toast.makeText(
+                                context,
+                                "Berhasil logout",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            navController.navigate(Screen.Welcome.route) {
+                                popUpTo(0) { inclusive = true }
                             }
-                        },
-                        text = "Logout",
-                        icon = painterResource(R.drawable.ic_logout),
-                        textColor = Color.Black,
-                        iconColor = Color.Red,
-                        outlineColor = Color.Red
-                    )
-                }
+                        }
+                    },
+                    text = "Logout",
+                    icon = painterResource(R.drawable.ic_logout),
+                    textColor = Color.Black,
+                    iconColor = Color.Red,
+                    outlineColor = Color.Red
+                )
             }
+        }
     }
 }
 

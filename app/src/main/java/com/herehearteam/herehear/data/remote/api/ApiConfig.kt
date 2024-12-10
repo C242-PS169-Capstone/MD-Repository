@@ -1,11 +1,14 @@
 package com.herehearteam.herehear.data.remote.api
 
+import com.herehearteam.herehear.data.remote.response.ArticleResponse
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object ApiConfig {
+    const val GUARDIAN_API_KEY = "79131a47-8add-4564-8d08-4d82dd49b34c"
+  
     fun getApiModelService(): ApiService {
         val loggingInterceptor =
             HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
@@ -23,7 +26,7 @@ object ApiConfig {
         return retrofit.create(ApiService::class.java)
     }
 
-    fun getApiService(): ApiService {
+    fun getArticleService(): ApiService {
         val loggingInterceptor =
             HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
 
@@ -32,11 +35,20 @@ object ApiConfig {
             .build()
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://belum-tau")
+            .baseUrl("https://content.guardianapis.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .client(client)
             .build()
-
         return retrofit.create(ApiService::class.java)
+    }
+
+    fun searchArticles(query: String): suspend () -> ArticleResponse {
+        val apiService = getArticleService()
+        return {
+            apiService.searchArticles(
+                query = query,
+                apiKey = GUARDIAN_API_KEY
+            )
+        }
     }
 }

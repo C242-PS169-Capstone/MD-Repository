@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -28,6 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.herehearteam.herehear.domain.model.JournalQuestion
 import com.herehearteam.herehear.domain.model.JournalQuestions
+import com.herehearteam.herehear.ui.theme.HereHearTheme
 
 @Composable
 fun JournalQuestionCard(
@@ -49,10 +51,12 @@ fun JournalQuestionCard(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(horizontal = 16.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
                 verticalAlignment = Alignment.Top
             ) {
                 Text(
@@ -72,10 +76,13 @@ fun JournalQuestionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Introspeksi",
+                    text = "Topik Cerita",
                     style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray)
                 )
-                IconButton(onClick = { onRefreshClick(index) }) {
+                IconButton(
+                    onClick = { onRefreshClick(index) },
+                    modifier = Modifier.offset(x = 8.dp)
+                ) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
                         contentDescription = "Refresh",
@@ -84,5 +91,21 @@ fun JournalQuestionCard(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun JournalQuestionCardPreview() {
+    HereHearTheme { // Assuming you have a HereHearTheme
+        JournalQuestionCard(
+            question = JournalQuestion(
+                text = "This is a sample journal question.",
+                backgroundColor = Color.LightGray // Or any color you prefer
+            ),
+            index = 0,
+            onClick = { /* Handle click */ },
+            onRefreshClick = { index -> /* Handle refresh click */ }
+        )
     }
 }

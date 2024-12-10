@@ -39,7 +39,12 @@ fun CustomTextField(
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
 
-    Column(modifier = modifier.fillMaxWidth()) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+
+    ) {
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
@@ -70,7 +75,9 @@ fun CustomTextField(
                 imeAction = imeAction
             ),
             singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(44.dp),
             shape = RoundedCornerShape(12.dp),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.surface,

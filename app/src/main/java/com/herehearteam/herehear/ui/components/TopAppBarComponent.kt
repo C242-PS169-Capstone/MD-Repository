@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.herehearteam.herehear.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,12 +49,12 @@ import com.herehearteam.herehear.R
 fun CustomTopAppBar(
     pageTitle: String? = null,
     icon: Any? = null,
-    backgroundColor: Color = Color.White,
+    backgroundColor: Color = Color.Transparent,
     contentColor: Color = Color.Black,
     actions: @Composable RowScope.() -> Unit = {},
     height: Dp = 56.dp,
     scrollable: Boolean = false,
-    onIconClick: (() -> Unit)? = null,
+    onIconClick: (() -> Unit)? = null
 ) {
     val scrollBehavior = if (scrollable) {
         TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -116,7 +117,8 @@ fun CustomTopAppBar(
                         style = TextStyle(
                             fontWeight = FontWeight.Medium,
                             color = contentColor
-                        )
+                        ),
+                        fontSize = 18.sp
                     )
                 }
             }

@@ -36,13 +36,13 @@ import com.herehearteam.herehear.domain.model.SignInResult
 import com.herehearteam.herehear.ui.screens.archive.ArchiveScreen
 import com.herehearteam.herehear.ui.screens.archive.ArchiveViewModel
 import com.herehearteam.herehear.ui.screens.article.ArticleScreen
-import com.herehearteam.herehear.ui.screens.auth.InputNumberScreen
+import com.herehearteam.herehear.ui.screens.article.ArticleViewModel
+import com.herehearteam.herehear.ui.screens.article.ArticleViewModelFactory
+
 import com.herehearteam.herehear.ui.screens.auth.LoginScreen
 import com.herehearteam.herehear.ui.screens.auth.LoginViewModel
 import com.herehearteam.herehear.ui.screens.auth.LoginViewModelFactory
-import com.herehearteam.herehear.ui.screens.auth.NameInputScreen
-import com.herehearteam.herehear.ui.screens.auth.OtpLoginScreen
-import com.herehearteam.herehear.ui.screens.auth.OtpRegisterScreen
+
 import com.herehearteam.herehear.ui.screens.auth.RegisterScreen
 import com.herehearteam.herehear.ui.screens.auth.RegisterViewModelFactory
 import com.herehearteam.herehear.ui.screens.auth.TermsAndConditionsScreen
@@ -73,6 +73,9 @@ fun NavigationGraph(
     val context = LocalContext.current
     val appDependencies = AppDependencies.getInstance(context)
     val journalRepository = JournalRepository(application)
+
+    val apiArticleService = ApiConfig.getArticleService();
+    val articleViewModel = ArticleViewModelFactory(apiArticleService)
 
     val loginViewModel: LoginViewModel = viewModel(
         factory = LoginViewModelFactory(
@@ -323,86 +326,6 @@ fun NavigationGraph(
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
-                }
-            )
-        }
-
-        composable(
-            Screen.InputNumber.route,
-            arguments = listOf(navArgument("isRegister") { type = NavType.BoolType})
-        ) { backStackEntry ->
-            val isRegister = backStackEntry.arguments?.getBoolean("isRegister") ?: false
-            InputNumberScreen(
-                onNavigateToOtpWhatsApp = { phoneNumber ->
-                    if (isRegister) {
-                        navController.navigate(Screen.OtpRegister.createRoute(phoneNumber))
-                    } else {
-                        navController.navigate(Screen.OtpLogin.createRoute(phoneNumber))
-                    }
-                },
-                onNavigateToOtpSms = { phoneNumber ->
-                    if (isRegister) {
-                        navController.navigate(Screen.OtpRegister.createRoute(phoneNumber))
-                    } else {
-                        navController.navigate(Screen.OtpLogin.createRoute(phoneNumber))
-                    }
-                },
-                onNavigateBack = {
-                    navController.popBackStack()
-                }
-            )
-        }
-
-        composable(
-            Screen.OtpRegister.route,
-            arguments = listOf(navArgument("phoneNumber") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val phoneNumber = backStackEntry.arguments?.getString("phoneNumber").orEmpty()
-            OtpRegisterScreen(
-                phoneNumber = phoneNumber,
-                onNavigateToNameInput = {
-                    navController.navigate(Screen.InputName.createRoute(phoneNumber))
-                },
-                onNavigateBack = {
-                    navController.popBackStack()
-                }
-            )
-        }
-
-        composable(
-            Screen.OtpLogin.route,
-            arguments = listOf(navArgument("phoneNumber") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val phoneNumber = backStackEntry.arguments?.getString("phoneNumber").orEmpty()
-            OtpLoginScreen(
-                phoneNumber = phoneNumber,
-                onNavigateToHome = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
-                    }
-                },
-                onNavigateBack = {
-                    navController.popBackStack()
-                }
-            )
-        }
-
-        composable(
-            Screen.InputName.route,
-            arguments = listOf(navArgument("phoneNumber") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val phoneNumber = backStackEntry.arguments?.getString("phoneNumber").orEmpty()
-            NameInputScreen(
-                onNavigateToHome = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Register.route) { inclusive = true }
-                    }
-                },
-                onNavigateToTermsAndConditions = {
-                    navController.navigate(Screen.Term.route)
-                },
-                onNavigateBack = {
-                    navController.popBackStack()
                 }
             )
         }

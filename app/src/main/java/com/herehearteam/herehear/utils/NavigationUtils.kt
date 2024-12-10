@@ -17,10 +17,6 @@ fun shouldShowBottomBar(navController: NavHostController): Boolean {
         Screen.Welcome.route,
         Screen.Login.route,
         Screen.Register.route,
-        Screen.InputNumber.route,
-        Screen.OtpRegister.route,
-        Screen.OtpLogin.route,
-        Screen.InputName.route,
         Screen.Term.route,
         Screen.Journal.route,
         Screen.Prediction.route

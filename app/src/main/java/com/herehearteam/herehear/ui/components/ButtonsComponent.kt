@@ -51,7 +51,8 @@ fun CustomButtonFilled(
     cornerRadius: Dp = 8.dp,
     height: Dp = 48.dp,
     letterSpacing: TextUnit = 1.sp,
-    fontSize: TextUnit = 16.sp
+    fontSize: TextUnit = 16.sp,
+    modifier: Modifier = Modifier
 ){
     Button(
         onClick = onClick,

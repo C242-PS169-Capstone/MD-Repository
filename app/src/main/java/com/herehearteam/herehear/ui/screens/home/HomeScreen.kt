@@ -25,6 +25,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,13 +51,18 @@ import com.herehearteam.herehear.ui.components.CustomTopAppBar
 import com.herehearteam.herehear.ui.components.DailyQuestionCard
 import com.herehearteam.herehear.ui.components.ExpandedArticleCard
 import com.herehearteam.herehear.ui.components.FeatureCardComponent
+import com.herehearteam.herehear.ui.components.HotlineAlertDialog
 import com.herehearteam.herehear.ui.components.LocalGoogleAuthUiClient
 import com.herehearteam.herehear.ui.components.UserGreetingCard
 import com.herehearteam.herehear.ui.components.WeeklyMoodCard
 import com.herehearteam.herehear.ui.screens.article.ArticleViewModel
+import com.herehearteam.herehear.ui.screens.article.ArticleViewModelFactory
 import com.herehearteam.herehear.ui.screens.predict.PredictionViewModel
 import com.herehearteam.herehear.ui.theme.ColorPrimary
 import com.herehearteam.herehear.ui.theme.HereHearTheme
+import com.herehearteam.herehear.ui.components.DailyPositiveQuoteCard
+import com.herehearteam.herehear.ui.components.getDailyPositiveQuote
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,17 +71,29 @@ fun HomeScreen(
     viewModel: HomeViewModel = viewModel(
         factory = HomeViewModelFactory(LocalGoogleAuthUiClient.current)
     ),
-    articleViewModel: ArticleViewModel = viewModel(),
 ) {
 
     val uiState by viewModel.uiState.collectAsState()
-    val articles by articleViewModel.articles.collectAsState()
     val context = LocalContext.current
+    var showHotlineAlert by remember { mutableStateOf(false) }
     var showBottomSheet by remember { mutableStateOf(false) }
     var selectedArticle by remember { mutableStateOf<Article?>(null) }
 
-    val apiService = ApiConfig.getApiService()
-    val predictionRepository = PredictionRepository(apiService)
+    val apiService = ApiConfig.getArticleService()
+    val articleViewModel: ArticleViewModel = viewModel(
+        factory = ArticleViewModelFactory(apiService)
+    )
+
+    if (showHotlineAlert) {
+        HotlineAlertDialog(
+            onDismiss = { showHotlineAlert = false }
+        )
+    }
+
+    LaunchedEffect(Unit) {
+        articleViewModel.fetchArticles("mental health")
+    }
+
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -142,10 +160,20 @@ fun HomeScreen(
                         columns = 4,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        FeatureCardComponent(title = "Streak", onClick = {})
-                        FeatureCardComponent(title = "Forum", onClick = {})
-                        FeatureCardComponent(title = "Psikolog", onClick = {})
-                        FeatureCardComponent(title = "Hotline", onClick = {})
+                        FeatureCardComponent(
+                            title = "Streak", onClick = {}
+                        )
+                        FeatureCardComponent(
+                            title = "Forum", onClick = {}
+                        )
+                        FeatureCardComponent(
+                            title = "Psikolog", onClick = {}
+                        )
+                        FeatureCardComponent(
+                            title = "Hotline", onClick = {
+                                showHotlineAlert = true
+                            }
+                        )
                     }
                 }
             }
@@ -157,9 +185,8 @@ fun HomeScreen(
                         .padding(horizontal = 16.dp)
                         .padding(top = 24.dp)
                 ) {
-                    DailyQuestionCard(
-                        question = uiState.dailyQuestion,
-                        onClick = viewModel::onDailyQuestionClick
+                    DailyPositiveQuoteCard(
+                        quote = getDailyPositiveQuote()
                     )
                 }
             }
@@ -177,12 +204,12 @@ fun HomeScreen(
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
 
-                    articles.take(5).forEach { article ->
+                    // Limit to 5 articles
+                    articleViewModel.articles.take(5).forEach { article ->
                         ArticleCard(
                             title = article.title,
-                            tag = article.tag,
-                            date = article.date,
-                            imagePainter = painterResource(id = article.imageRes),
+                            tag = article.sectionName,
+                            date = article.publicationDate,
                             modifier = Modifier
                                 .padding(vertical = 8.dp)
                                 .clickable {
@@ -193,11 +220,8 @@ fun HomeScreen(
                     }
                 }
             }
-
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-            }
         }
+
         if (showBottomSheet && selectedArticle != null) {
             ModalBottomSheet(
                 onDismissRequest = {
@@ -215,13 +239,13 @@ fun HomeScreen(
                 ) {
                     ExpandedArticleCard(
                         title = selectedArticle!!.title,
-                        tag = selectedArticle!!.tag,
-                        date = selectedArticle!!.date,
-                        description = selectedArticle!!.description,
-                        source = selectedArticle!!.source,
-                        imagePainter = painterResource(id = selectedArticle!!.imageRes),
+                        tag = selectedArticle!!.sectionName,
+                        date = selectedArticle!!.publicationDate,
+                        description = "", // Tambahkan deskripsi jika tersedia dari API
+                        source = "The Guardian",
                         onButtonClick = {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(selectedArticle!!.url))
+                            val intent =
+                                Intent(Intent.ACTION_VIEW, Uri.parse(selectedArticle!!.webUrl))
                             context.startActivity(intent)
                         },
                         modifier = Modifier.fillMaxWidth()

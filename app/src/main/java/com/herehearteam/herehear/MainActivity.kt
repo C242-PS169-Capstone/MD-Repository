@@ -51,7 +51,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
-    lateinit var navController: NavHostController
+    private lateinit var navController: NavHostController
     private val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
             context = applicationContext,

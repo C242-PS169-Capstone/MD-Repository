@@ -6,7 +6,7 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import android.util.Log
 import com.herehearteam.herehear.data.local.dao.JournalDao
-import com.herehearteam.herehear.data.local.database.JournalRoomDatabase
+import com.herehearteam.herehear.data.local.database.AppDatabase
 import com.herehearteam.herehear.data.local.entity.JournalEntity
 import com.herehearteam.herehear.data.local.helper.Converters
 import com.herehearteam.herehear.data.model.JournalRequestDto
@@ -29,7 +29,7 @@ class JournalRepository(application: Application) {
     private val predictionRepository = PredictionRepository(modelApiService)
 
     init {
-        val db = JournalRoomDatabase.getDatabase(application)
+        val db = AppDatabase.getDatabase(application)
         mJournalDao = db.journalDao()
     }
 
