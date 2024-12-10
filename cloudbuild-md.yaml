@@ -1,5 +1,5 @@
 steps:
 - name: 'gcr.io/cloud-builders/gsutil'
-  args: ['rsync', '-r', '-x', '\.git.*|\.idea.*|app.*|gradle.*|.*\.kts$|.*\.properties$|.*\.bat$', '.', 'gs://hearhere-md-docs']
+  args: ['rsync', '-r', '-x', '\.git.*|\.idea.*|app.*|gradle.*|.*\.kts$|.*\.properties$|.*\.bat$|cloudbuild.*\.yaml', '.', 'gs://hearhere-md-docs']
 options:
   logging: CLOUD_LOGGING_ONLY
