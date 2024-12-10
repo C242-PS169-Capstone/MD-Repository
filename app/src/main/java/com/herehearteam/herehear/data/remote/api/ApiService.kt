@@ -2,6 +2,7 @@ package com.herehearteam.herehear.data.remote.api
 
 import com.herehearteam.herehear.data.model.JournalRequestDto
 import com.herehearteam.herehear.data.model.PredictionRequest
+import com.herehearteam.herehear.data.remote.response.ArticleResponse
 import com.herehearteam.herehear.data.remote.response.PredictionResponse
 import com.herehearteam.herehear.data.remote.response.ResponseAllJournal
 import com.herehearteam.herehear.data.remote.response.ResponseJournal
@@ -27,4 +28,12 @@ interface ApiService {
     suspend fun predictText(
         @Body request: PredictionRequest
     ): PredictionResponse
+
+    @GET("search")
+    suspend fun searchArticles(
+        @Query("q") query: String,
+        @Query("api-key") apiKey: String,
+        @Query("page") page: Int = 1,
+        @Query("page-size") pageSize: Int = 10
+    ): ArticleResponse
 }

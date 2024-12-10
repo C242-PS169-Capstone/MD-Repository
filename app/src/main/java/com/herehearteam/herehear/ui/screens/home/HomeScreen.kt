@@ -65,11 +65,10 @@ fun HomeScreen(
     viewModel: HomeViewModel = viewModel(
         factory = HomeViewModelFactory(LocalGoogleAuthUiClient.current)
     ),
-    articleViewModel: ArticleViewModel = viewModel(),
 ) {
 
     val uiState by viewModel.uiState.collectAsState()
-    val articles by articleViewModel.articles.collectAsState()
+//    val articles by articleViewModel.articles.collectAsState()
     val context = LocalContext.current
     var showBottomSheet by remember { mutableStateOf(false) }
     var selectedArticle by remember { mutableStateOf<Article?>(null) }
@@ -164,70 +163,70 @@ fun HomeScreen(
                 }
             }
 
-            item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .padding(top = 24.dp)
-                ) {
-                    Text(
-                        text = "Artikel Terbaru",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-
-                    articles.take(5).forEach { article ->
-                        ArticleCard(
-                            title = article.title,
-                            tag = article.tag,
-                            date = article.date,
-                            imagePainter = painterResource(id = article.imageRes),
-                            modifier = Modifier
-                                .padding(vertical = 8.dp)
-                                .clickable {
-                                    selectedArticle = article
-                                    showBottomSheet = true
-                                }
-                        )
-                    }
-                }
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-        }
-        if (showBottomSheet && selectedArticle != null) {
-            ModalBottomSheet(
-                onDismissRequest = {
-                    showBottomSheet = false
-                    selectedArticle = null
-                },
-                sheetState = rememberModalBottomSheetState(),
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    ExpandedArticleCard(
-                        title = selectedArticle!!.title,
-                        tag = selectedArticle!!.tag,
-                        date = selectedArticle!!.date,
-                        description = selectedArticle!!.description,
-                        source = selectedArticle!!.source,
-                        imagePainter = painterResource(id = selectedArticle!!.imageRes),
-                        onButtonClick = {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(selectedArticle!!.url))
-                            context.startActivity(intent)
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
+//            item {
+//                Column(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(horizontal = 16.dp)
+//                        .padding(top = 24.dp)
+//                ) {
+//                    Text(
+//                        text = "Artikel Terbaru",
+//                        style = MaterialTheme.typography.titleMedium,
+//                        modifier = Modifier.padding(bottom = 8.dp)
+//                    )
+//
+//                    articles.take(5).forEach { article ->
+//                        ArticleCard(
+//                            title = article.title,
+//                            tag = article.tag,
+//                            date = article.date,
+//                            imagePainter = painterResource(id = article.imageRes),
+//                            modifier = Modifier
+//                                .padding(vertical = 8.dp)
+//                                .clickable {
+//                                    selectedArticle = article
+//                                    showBottomSheet = true
+//                                }
+//                        )
+//                    }
+//                }
+//            }
+//
+//            item {
+//                Spacer(modifier = Modifier.height(16.dp))
+//            }
+//        }
+//        if (showBottomSheet && selectedArticle != null) {
+//            ModalBottomSheet(
+//                onDismissRequest = {
+//                    showBottomSheet = false
+//                    selectedArticle = null
+//                },
+//                sheetState = rememberModalBottomSheetState(),
+//                containerColor = MaterialTheme.colorScheme.surface,
+//                contentColor = MaterialTheme.colorScheme.onSurface
+//            ) {
+//                Box(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(16.dp)
+//                ) {
+//                    ExpandedArticleCard(
+//                        title = selectedArticle!!.title,
+//                        tag = selectedArticle!!.tag,
+//                        date = selectedArticle!!.date,
+//                        description = selectedArticle!!.description,
+//                        source = selectedArticle!!.source,
+//                        imagePainter = painterResource(id = selectedArticle!!.imageRes),
+//                        onButtonClick = {
+//                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(selectedArticle!!.url))
+//                            context.startActivity(intent)
+//                        },
+//                        modifier = Modifier.fillMaxWidth()
+//                    )
+//                }
+//            }
         }
     }
 }

@@ -35,6 +35,8 @@ import com.herehearteam.herehear.domain.model.SignInResult
 import com.herehearteam.herehear.ui.screens.archive.ArchiveScreen
 import com.herehearteam.herehear.ui.screens.archive.ArchiveViewModel
 import com.herehearteam.herehear.ui.screens.article.ArticleScreen
+import com.herehearteam.herehear.ui.screens.article.ArticleViewModel
+import com.herehearteam.herehear.ui.screens.article.ArticleViewModelFactory
 import com.herehearteam.herehear.ui.screens.auth.InputNumberScreen
 import com.herehearteam.herehear.ui.screens.auth.LoginScreen
 import com.herehearteam.herehear.ui.screens.auth.LoginViewModel
@@ -71,6 +73,9 @@ fun NavigationGraph(
     )
     val context = LocalContext.current
     val appDependencies = AppDependencies.getInstance(context)
+
+    val apiArticleService = ApiConfig.getArticleService();
+    val articleViewModel = ArticleViewModelFactory(apiArticleService)
 
     val loginViewModel: LoginViewModel = viewModel(
         factory = LoginViewModelFactory(
