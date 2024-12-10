@@ -54,7 +54,7 @@ fun CustomTopAppBar(
     actions: @Composable RowScope.() -> Unit = {},
     height: Dp = 56.dp,
     scrollable: Boolean = false,
-    onIconClick: (() -> Unit)? = null,
+    onIconClick: (() -> Unit)? = null
 ) {
     val scrollBehavior = if (scrollable) {
         TopAppBarDefaults.enterAlwaysScrollBehavior()

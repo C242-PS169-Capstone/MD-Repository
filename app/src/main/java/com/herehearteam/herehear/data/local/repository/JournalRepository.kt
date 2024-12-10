@@ -3,7 +3,7 @@ package com.herehearteam.herehear.data.local.repository
 import android.app.Application
 import androidx.lifecycle.LiveData
 import com.herehearteam.herehear.data.local.dao.JournalDao
-import com.herehearteam.herehear.data.local.database.JournalRoomDatabase
+import com.herehearteam.herehear.data.local.database.AppDatabase
 import com.herehearteam.herehear.data.local.entity.JournalEntity
 import com.herehearteam.herehear.data.model.JournalRequestDto
 import com.herehearteam.herehear.data.remote.api.ApiConfig
@@ -26,7 +26,7 @@ class JournalRepository(application: Application) {
     private val journalApiService = ApiConfig.getApiService()
 
     init {
-        val db = JournalRoomDatabase.getDatabase(application)
+        val db = AppDatabase.getDatabase(application)
         mJournalDao = db.journalDao()
     }
 

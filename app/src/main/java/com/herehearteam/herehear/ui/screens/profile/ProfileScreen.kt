@@ -29,6 +29,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material.icons.outlined.Person
@@ -81,7 +82,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
+import com.herehearteam.herehear.data.remote.GoogleAuthUiClient
 import com.herehearteam.herehear.di.AppDependencies
 import com.herehearteam.herehear.ui.screens.auth.LoginViewModel
 import com.herehearteam.herehear.ui.screens.auth.LoginViewModelFactory
@@ -151,6 +156,9 @@ fun Container(
                                     fontSize = 16.sp
                                 )
                             )
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
                             if (isComplete) {
                                 Text(
                                     text = "Edit Profilmu Di sini",
@@ -184,7 +192,7 @@ fun Container(
                             onClick = {},
                             backgroundColor = Color.White,
                             textColor = Color.Black,
-                            height = Dp(33.49f),
+                            height = Dp(33.49f)
                         )
                     }
                 }
@@ -198,7 +206,6 @@ fun Container(
 fun PopUpEmergencyContact(
     onDismiss: () -> Unit,
     initialContact: ProfileUiState?,
-    onSaveContact: (ProfileUiState) -> Unit,
     onShowToast: (String) -> Unit
 ){
     var name by remember { mutableStateOf(initialContact?.emergencyContact?.emergency_name ?: "") }
@@ -210,6 +217,33 @@ fun PopUpEmergencyContact(
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
+
+
+    val viewModel = ProfileViewModel(
+        googleAuthUiClient = LocalGoogleAuthUiClient.current,
+        userPreferencesDataStore = UserPreferencesDataStore.getInstance(context = LocalContext.current),
+        emergencyContactRepository = AppDependencies.getInstance(LocalContext.current).emergencyContactRepository
+    )
+
+    val uiState by viewModel.uiState.collectAsState()
+    uiState.emergencyContact?.let { contact ->
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .background(Color(0xFFF5F5F5), shape = RoundedCornerShape(8.dp))
+                .padding(16.dp)
+        ) {
+            Column {
+                Text("Nama: ${contact.emergency_name}", style = MaterialTheme.typography.bodyMedium)
+                Text("Nomor: ${contact.emergency_number}", style = MaterialTheme.typography.bodyMedium)
+                Text("Hubungan: ${contact.relationship}", style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    val userId = currentUser?.uid
 
     val view = LocalView.current
     var isImeVisible by remember { mutableStateOf(false) }
@@ -336,30 +370,31 @@ fun PopUpEmergencyContact(
 
             CustomButtonFilled(
                 onClick = {
-                    // Validasi input sebelum menyimpan
+
                     if (isFormValid) {
                         isLoading = true
-                        val contact = EmergencyContact(
-                            emergency_name = name,
-                            emergency_number = number,
-                            relationship = relationship,
-                        )
-                        val updatedProfileState = initialContact?.copy(emergencyContact = contact)
-
-                        // Simulasi proses penyimpanan (ganti dengan proses aktual di ViewModel)
-                        if (updatedProfileState != null) {
-                            try {
-                                onSaveContact(updatedProfileState)
-                                onShowToast("Kontak darurat berhasil disimpan.")
-                                onDismiss()
-                            } catch (e: Exception) {
-                                errorMessage = "Gagal menyimpan kontak. Silakan coba lagi."
-                            } finally {
-                                isLoading = false
+                        val contact = userId?.let {
+                            EmergencyContact(
+                                userId = it,
+                                emergency_name = name,
+                                emergency_number = number,
+                                relationship = relationship,
+                            )
+                        }
+                        Log.d("TAI 2", "$contact")
+                        try {
+                            if (contact != null) {
+                                viewModel.saveEmergencyContact(contact)
                             }
+                            onShowToast("Kontak darurat berhasil disimpan.")
+                            onDismiss()
+                        } catch (e: Exception) {
+                            Log.e("EmergencyContact", "Error saving contact", e)
+                            errorMessage = "Gagal menyimpan kontak. Silakan coba lagi."
+                        } finally {
+                            isLoading = false
                         }
                     } else {
-                        // Tampilkan pesan error jika form tidak valid
                         errorMessage = "Harap isi semua field"
                     }
                 },
@@ -373,7 +408,9 @@ fun PopUpEmergencyContact(
 }
 
 @Composable
-fun ListOfOption(viewModel: ProfileViewModel){
+fun ListOfOption(
+    viewModel: ProfileViewModel
+){
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -389,8 +426,8 @@ fun ListOfOption(viewModel: ProfileViewModel){
             Text(
                 text = "Informasi Akun",
                 style = TextStyle(
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 16.sp
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
                 )
             )
         }
@@ -411,10 +448,6 @@ fun ListOfOption(viewModel: ProfileViewModel){
                     showBottomSheet = false
                 },
                 initialContact = uiState,
-                onSaveContact = { updatedState ->
-                    viewModel.saveEmergencyContact(updatedState.emergencyContact!!)
-                    viewModel.hideEmergencyBottomSheet()
-                },
                 onShowToast = { message ->
                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                 }
@@ -453,7 +486,8 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = viewModel(
         factory = ProfileViewModelFactory(
             LocalGoogleAuthUiClient.current,
-            userPreferencesDataStore = UserPreferencesDataStore.getInstance(context = LocalContext.current)
+            userPreferencesDataStore = UserPreferencesDataStore.getInstance(context = LocalContext.current),
+            context = LocalContext.current
         )
     )
 ) {
@@ -465,7 +499,6 @@ fun ProfileScreen(
             AppDependencies.getInstance(LocalContext.current).userRepository
         )
     )
-
     val loginViewModel: LoginViewModel = viewModel(
         factory = LoginViewModelFactory(
             AppDependencies.getInstance(LocalContext.current).userRepository,
@@ -475,10 +508,14 @@ fun ProfileScreen(
 
     Scaffold(
         topBar = {
-            CustomTopAppBar(
-                pageTitle = "Profil",
-                icon = Icons.Filled.ArrowBack,
-            )
+            Box(
+                modifier = Modifier.padding(horizontal = 16.dp)
+            ) {
+                CustomTopAppBar(
+                    pageTitle = "Profil",
+                    icon = Icons.Filled.ArrowBackIosNew
+                )
+            }
         },
     ) { innerPadding ->
         // Konten Halaman Profil

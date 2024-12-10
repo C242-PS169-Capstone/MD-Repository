@@ -4,7 +4,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
@@ -27,6 +29,7 @@ fun ProfileOptionComponent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .height(56.dp)
             .clickable(
                 onClick = onClick,
                 indication = null,
@@ -43,9 +46,10 @@ fun ProfileOptionComponent(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier.size(28.dp),
                 tint = Color.Black
             )
+
             Spacer(modifier = Modifier.width(16.dp))
 
             Text(
@@ -55,17 +59,21 @@ fun ProfileOptionComponent(
                 modifier = Modifier.weight(1f)
             )
 
-            Icon(
-                imageVector = Icons.Default.ArrowForward,
-                contentDescription = null,
-                tint = Color.Black
-            )
+            IconButton(
+                onClick = { }
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                    contentDescription = null,
+                    tint = Color.Black
+                )
+            }
         }
 
-        Divider(
-            color = Color.LightGray,
+        HorizontalDivider(
+            modifier = Modifier.padding(start = 56.dp, end = 32.dp),
             thickness = 1.dp,
-            modifier = Modifier.padding(start = 56.dp)
+            color = Color.LightGray
         )
     }
 }
@@ -84,8 +92,6 @@ fun ProfileOptionPreview(){
             title = "Kontak Darurat",
             onClick = { }
         )
-
-        Spacer(Modifier.height(10.dp))
 
         ProfileOptionComponent(
             icon = Icons.Default.Call,

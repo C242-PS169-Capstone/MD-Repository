@@ -4,12 +4,15 @@ import android.annotation.SuppressLint
 import android.content.Context
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
+import com.herehearteam.herehear.data.local.database.AppDatabase
 import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
+import com.herehearteam.herehear.data.local.repository.EmergencyContactRepository
 import com.herehearteam.herehear.data.local.repository.UserRepositoryImpl
 import com.herehearteam.herehear.data.remote.GoogleAuthUiClient
 import com.herehearteam.herehear.domain.repository.UserRepository
 
 class AppDependencies(private val context: Context) {
+    private val database = AppDatabase.getDatabase(context)
     private val signInClient: SignInClient by lazy {
         Identity.getSignInClient(context)
     }
@@ -24,6 +27,10 @@ class AppDependencies(private val context: Context) {
 
     val userRepository: UserRepository by lazy {
         UserRepositoryImpl(userPreferencesDataStore)
+    }
+
+    val emergencyContactRepository: EmergencyContactRepository by lazy {
+        EmergencyContactRepository(database.emergencyDao())
     }
 
     companion object {
