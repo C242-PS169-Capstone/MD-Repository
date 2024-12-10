@@ -25,6 +25,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,9 +56,13 @@ import com.herehearteam.herehear.ui.components.LocalGoogleAuthUiClient
 import com.herehearteam.herehear.ui.components.UserGreetingCard
 import com.herehearteam.herehear.ui.components.WeeklyMoodCard
 import com.herehearteam.herehear.ui.screens.article.ArticleViewModel
+import com.herehearteam.herehear.ui.screens.article.ArticleViewModelFactory
 import com.herehearteam.herehear.ui.screens.predict.PredictionViewModel
 import com.herehearteam.herehear.ui.theme.ColorPrimary
 import com.herehearteam.herehear.ui.theme.HereHearTheme
+import com.herehearteam.herehear.ui.components.DailyPositiveQuoteCard
+import com.herehearteam.herehear.ui.components.getDailyPositiveQuote
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,14 +79,21 @@ fun HomeScreen(
     var showBottomSheet by remember { mutableStateOf(false) }
     var selectedArticle by remember { mutableStateOf<Article?>(null) }
 
-    val apiService = ApiConfig.getApiService()
-    val predictionRepository = PredictionRepository(apiService)
+    val apiService = ApiConfig.getArticleService()
+    val articleViewModel: ArticleViewModel = viewModel(
+        factory = ArticleViewModelFactory(apiService)
+    )
 
     if (showHotlineAlert) {
         HotlineAlertDialog(
             onDismiss = { showHotlineAlert = false }
         )
     }
+
+    LaunchedEffect(Unit) {
+        articleViewModel.fetchArticles("mental health")
+    }
+
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -173,77 +185,73 @@ fun HomeScreen(
                         .padding(horizontal = 16.dp)
                         .padding(top = 24.dp)
                 ) {
-                    DailyQuestionCard(
-                        question = uiState.dailyQuestion,
-                        onClick = viewModel::onDailyQuestionClick
+                    DailyPositiveQuoteCard(
+                        quote = getDailyPositiveQuote()
                     )
                 }
             }
 
-//            item {
-//                Column(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(horizontal = 16.dp)
-//                        .padding(top = 24.dp)
-//                ) {
-//                    Text(
-//                        text = "Artikel Terbaru",
-//                        style = MaterialTheme.typography.titleMedium,
-//                        modifier = Modifier.padding(bottom = 8.dp)
-//                    )
-//
-//                    articles.take(5).forEach { article ->
-//                        ArticleCard(
-//                            title = article.title,
-//                            tag = article.tag,
-//                            date = article.date,
-//                            imagePainter = painterResource(id = article.imageRes),
-//                            modifier = Modifier
-//                                .padding(vertical = 8.dp)
-//                                .clickable {
-//                                    selectedArticle = article
-//                                    showBottomSheet = true
-//                                }
-//                        )
-//                    }
-//                }
-//            }
-//
-//            item {
-//                Spacer(modifier = Modifier.height(16.dp))
-//            }
-//        }
-//        if (showBottomSheet && selectedArticle != null) {
-//            ModalBottomSheet(
-//                onDismissRequest = {
-//                    showBottomSheet = false
-//                    selectedArticle = null
-//                },
-//                sheetState = rememberModalBottomSheetState(),
-//                containerColor = MaterialTheme.colorScheme.surface,
-//                contentColor = MaterialTheme.colorScheme.onSurface
-//            ) {
-//                Box(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(16.dp)
-//                ) {
-//                    ExpandedArticleCard(
-//                        title = selectedArticle!!.title,
-//                        tag = selectedArticle!!.tag,
-//                        date = selectedArticle!!.date,
-//                        description = selectedArticle!!.description,
-//                        source = selectedArticle!!.source,
-//                        imagePainter = painterResource(id = selectedArticle!!.imageRes),
-//                        onButtonClick = {
-//                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(selectedArticle!!.url))
-//                            context.startActivity(intent)
-//                        },
-//                        modifier = Modifier.fillMaxWidth()
-//                    )
-//                }
-//            }
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .padding(top = 24.dp)
+                ) {
+                    Text(
+                        text = "Artikel Terbaru",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    // Limit to 5 articles
+                    articleViewModel.articles.take(5).forEach { article ->
+                        ArticleCard(
+                            title = article.title,
+                            tag = article.sectionName,
+                            date = article.publicationDate,
+                            modifier = Modifier
+                                .padding(vertical = 8.dp)
+                                .clickable {
+                                    selectedArticle = article
+                                    showBottomSheet = true
+                                }
+                        )
+                    }
+                }
+            }
+        }
+
+        if (showBottomSheet && selectedArticle != null) {
+            ModalBottomSheet(
+                onDismissRequest = {
+                    showBottomSheet = false
+                    selectedArticle = null
+                },
+                sheetState = rememberModalBottomSheetState(),
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    ExpandedArticleCard(
+                        title = selectedArticle!!.title,
+                        tag = selectedArticle!!.sectionName,
+                        date = selectedArticle!!.publicationDate,
+                        description = "", // Tambahkan deskripsi jika tersedia dari API
+                        source = "The Guardian",
+                        onButtonClick = {
+                            val intent =
+                                Intent(Intent.ACTION_VIEW, Uri.parse(selectedArticle!!.webUrl))
+                            context.startActivity(intent)
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
         }
     }
 }

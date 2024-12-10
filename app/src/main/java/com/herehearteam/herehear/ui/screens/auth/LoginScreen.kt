@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -87,10 +88,7 @@ fun LoginScreen(
     var loginErrorMessage by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
-        Log.d("LoginScreen", "Login status: ${state.isSignInSuccessful}")
         viewModel.resetLoginState()
-        Log.d("LoginScreen", "Login status afer : ${state.isSignInSuccessful}")
-
     }
 
     LaunchedEffect(state.isSignInSuccessful) {
@@ -130,35 +128,45 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(16.dp),
+
     ) {
         Box(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.TopCenter
         ) {
             CustomTopAppBar(
-                pageTitle = "Register",
+                pageTitle = "Login",
                 icon = Icons.AutoMirrored.Filled.ArrowBack,
                 onIconClick = onNavigateBack
             )
         }
+
+        Spacer(Modifier.height(42.dp))
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.Center)
                 .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Image(
-                painter = painterResource(R.drawable.ic_herehear),
-                contentDescription = "HereHear Logo",
-                modifier = Modifier
-                    .size(100.dp)
-                    .padding(vertical = 16.dp)
+
+            Text(
+                text = "Selamat Datang Kembali",
+                fontSize = 20.sp,
+                modifier = Modifier.padding(bottom = 8.dp),
+                fontWeight = FontWeight.Bold
             )
 
-            // Email TextField
+            Text(
+                text = "Jalani hari dengan pikiran yang lebih sehat",
+                fontSize = 16.sp,
+                modifier = Modifier.padding(bottom = 32.dp),
+                fontWeight = FontWeight.Normal
+            )
+
             CustomTextField(
                 value = email,
                 onValueChange = {
