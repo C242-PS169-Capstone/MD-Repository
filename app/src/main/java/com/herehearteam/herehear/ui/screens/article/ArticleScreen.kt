@@ -24,6 +24,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -41,6 +43,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.herehearteam.herehear.data.remote.api.ApiConfig
 import com.herehearteam.herehear.data.remote.api.ApiConfig.getApiService
@@ -57,13 +60,14 @@ fun ArticleScreen(
     onNavigateBack: () -> Unit
 ) {
     val filters = listOf(
-        "Anxiety" to Color(0xFF7E4AE2),
-        "Depression" to Color(0xFF4A90E2),
-        "Suicidal" to Color(0xFFE24A67),
-        "Stress" to Color(0xFF4AE293),
-        "Bi-Polar" to Color(0xFFE2C84A),
-        "Personality Disorder" to Color(0xFFE24A4A)
+        "Anxiety",
+        "Depression",
+        "Suicidal",
+        "Stress",
+        "Bi-Polar",
+        "Personality Disorder"
     )
+
     val apiService = ApiConfig.getArticleService()
 
     val articleViewModel: ArticleViewModel = viewModel(factory = ArticleViewModelFactory(apiService))
@@ -71,6 +75,7 @@ fun ArticleScreen(
     var showBottomSheet by remember { mutableStateOf(false) }
     var selectedArticle by remember { mutableStateOf<Article?>(null) }
     val context = LocalContext.current
+    val (selectedFilter, setSelectedFilter) = remember { mutableStateOf(filters.first()) }
 
     LaunchedEffect(Unit) {
         articleViewModel.fetchArticles("mental health")
@@ -88,19 +93,27 @@ fun ArticleScreen(
             onIconClick = onNavigateBack
         )
 
-        LazyRow(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ScrollableTabRow(
+            modifier = Modifier.padding(),
+            edgePadding = 0.dp,
+            selectedTabIndex = filters.indexOf(selectedFilter)
         ) {
-            items(filters) { (query, color) ->
-                Button(
-                    onClick = { articleViewModel.fetchArticles(query) },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = color
-                    )
-                ) {
-                    Text(query)
-                }
+            filters.forEachIndexed { index, query ->
+                Tab(
+                    selected = selectedFilter == query,
+                    onClick = {
+                        setSelectedFilter(query)
+                        articleViewModel.fetchArticles(query)
+                    },
+                    text = {
+                        Text(
+                            text = query,
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontSize = 14.sp
+                            )
+                        )
+                    }
+                )
             }
         }
 
@@ -123,7 +136,7 @@ fun ArticleScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                    .padding(vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(articleViewModel.articles) { article ->
