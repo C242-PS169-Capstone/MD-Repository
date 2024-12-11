@@ -64,11 +64,11 @@ class ProfileViewModel(
                     emergencyContactRepository.insertEmergencyContact(emergencyEntity)
 
                     val apiRequest = EmergencyContactRequest(
-                        emergency_id = 5,
+                        emergency_id = 100,
                         emergency_name = contact.emergency_name,
                         emergency_number = contact.emergency_number,
                         relationship = contact.relationship,
-                        user_id = id
+                        user_id = 6
                     )
 
                     val apiResponse = if (uiState.value.emergencyContact == null) {

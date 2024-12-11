@@ -5,5 +5,5 @@ data class EmergencyContactRequest(
     val emergency_name: String,
     val emergency_number: String,
     val relationship: String,
-    val user_id: String
+    val user_id: Int
 )
