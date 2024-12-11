@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.herehearteam.herehear.R
+import com.herehearteam.herehear.data.remote.api.ApiService
 import com.herehearteam.herehear.di.AppDependencies
 import com.herehearteam.herehear.ui.components.CustomButtonFilled
 import com.herehearteam.herehear.ui.components.CustomTextField
@@ -60,8 +61,10 @@ fun RegisterScreen(
     onRegisterWithGmail: () -> Unit,
     onNavigateBack: () -> Unit,
     onLoginClick: () -> Unit,
+    apiService: ApiService,
     viewModel: RegisterViewModel = viewModel(
         factory = RegisterViewModelFactory(
+            apiService,
             AppDependencies.getInstance(LocalContext.current).userRepository
         )
     ),
@@ -333,13 +336,13 @@ fun RegisterDialog() {
     }
 }
 
-@Preview
-@Composable
-fun RegisterPreview(){
-    RegisterScreen(
-        onRegisterWithGmail = { },
-        onNavigateBack = { },
-        onLoginClick = { },
-        onRegisterSuccess = { }
-    )
-}
+//@Preview
+//@Composable
+//fun RegisterPreview(){
+//    RegisterScreen(
+//        onRegisterWithGmail = { },
+//        onNavigateBack = { },
+//        onLoginClick = { },
+//        onRegisterSuccess = { }
+//    )
+//}

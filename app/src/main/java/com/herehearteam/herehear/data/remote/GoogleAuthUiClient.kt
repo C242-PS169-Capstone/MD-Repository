@@ -11,6 +11,8 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.herehearteam.herehear.R
+import com.herehearteam.herehear.data.model.UserRequestDto
+import com.herehearteam.herehear.data.remote.api.ApiConfig
 import com.herehearteam.herehear.domain.model.SignInResult
 import com.herehearteam.herehear.domain.model.User
 import kotlinx.coroutines.CancellationException
@@ -21,7 +23,7 @@ class GoogleAuthUiClient(
     private val oneTapClient: SignInClient
 ) {
     private val auth = Firebase.auth
-
+    private val apiService = ApiConfig.getApiService()
 
     suspend fun signIn(): IntentSender? {
         val result = try {
@@ -42,6 +44,17 @@ class GoogleAuthUiClient(
         val googleCredentials = GoogleAuthProvider.getCredential(googleIdToken, null)
         return try {
             val firebaseUser = auth.signInWithCredential(googleCredentials).await().user
+
+            if(firebaseUser != null) {
+            val userRequest = UserRequestDto(
+                user_id = firebaseUser!!.uid, // Use Firebase UID
+                username = firebaseUser.displayName!!,
+                email = firebaseUser.email!!,
+                password = null
+            )
+                apiService.createUser(userRequest)
+            }
+
             SignInResult(
                 data = firebaseUser?.run {
                     User(

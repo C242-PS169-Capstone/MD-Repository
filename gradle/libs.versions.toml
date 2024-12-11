@@ -1,5 +1,6 @@
 [versions]
 agp = "8.7.1"
+bcrypt = "0.10.2"
 converterGson = "2.11.0"
 datastorePreferences = "1.1.1"
 firebaseAuthKtx = "23.1.0"
@@ -32,6 +33,7 @@ androidx-navigation-compose = { module = "androidx.navigation:navigation-compose
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
+bcrypt = { module = "at.favre.lib:bcrypt", version.ref = "bcrypt" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 google-firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx", version.ref = "firebaseAuthKtx" }

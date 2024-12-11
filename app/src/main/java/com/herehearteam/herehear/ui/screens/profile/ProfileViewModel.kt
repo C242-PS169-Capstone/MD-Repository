@@ -12,6 +12,7 @@ import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
 import com.herehearteam.herehear.data.local.entity.EmergencyEntity
 import com.herehearteam.herehear.data.local.repository.EmergencyContactRepository
 import com.herehearteam.herehear.data.remote.GoogleAuthUiClient
+import com.herehearteam.herehear.data.remote.api.ApiConfig
 import com.herehearteam.herehear.di.AppDependencies
 import com.herehearteam.herehear.ui.screens.auth.LoginViewModel
 import com.herehearteam.herehear.ui.screens.auth.LoginViewModelFactory
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class ProfileViewModel(
     private val googleAuthUiClient: GoogleAuthUiClient,
@@ -28,6 +30,8 @@ class ProfileViewModel(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState = _uiState.asStateFlow()
+
+    val apiService = ApiConfig.getApiService()
 
     init {
         loadUserData()
@@ -42,6 +46,20 @@ class ProfileViewModel(
             )
         }
     }
+
+//    fun deleteAccount(id: String){
+//        viewModelScope.launch {
+//            try{
+//                apiService.deleteUser(id)
+//
+//                signOut()
+//                val currentUser = FirebaseAuth.getInstance().currentUser
+//                currentUser?.delete()
+//            }catch (e: Exception){
+//                Log.e("ProfileViewModel", "Error deleting account", e)
+//            }
+//        }
+//    }
 
     fun saveEmergencyContact(contact: EmergencyContact) {
         val currentUser = FirebaseAuth.getInstance().currentUser

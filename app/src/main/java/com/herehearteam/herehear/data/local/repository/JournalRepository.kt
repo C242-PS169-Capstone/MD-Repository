@@ -8,7 +8,6 @@ import android.util.Log
 import com.herehearteam.herehear.data.local.dao.JournalDao
 import com.herehearteam.herehear.data.local.database.AppDatabase
 import com.herehearteam.herehear.data.local.entity.JournalEntity
-import com.herehearteam.herehear.data.local.helper.Converters
 import com.herehearteam.herehear.data.model.JournalRequestDto
 import com.herehearteam.herehear.data.remote.api.ApiConfig
 import kotlinx.coroutines.CoroutineScope
@@ -136,10 +135,11 @@ class JournalRepository(application: Application) {
         try {
             // Ensure you have a journal class ID if required by your API
             val request = JournalRequestDto(
-                journal_id = journal.journalId.toString(),
+                //journal_id = journal.journalId.toString(),
+//                journal_id = "100",
                 content = journal.content,
-                journal_class_id = "1"
-                //journal_class_id = journal.journalClassId?.toString() ?: ""
+                user_id = journal.userId,
+                question = journal.question
             )
 
             val response = journalApiService.createJournal(request)

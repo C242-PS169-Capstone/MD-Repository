@@ -1,12 +1,15 @@
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import at.favre.lib.crypto.bcrypt.BCrypt
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.herehearteam.herehear.data.model.UserRequestDto
+import com.herehearteam.herehear.data.remote.api.ApiService
 import com.herehearteam.herehear.domain.model.LoginState
 import com.herehearteam.herehear.domain.model.RegisterState
 import com.herehearteam.herehear.domain.model.SignInResult
@@ -14,6 +17,7 @@ import com.herehearteam.herehear.domain.model.User
 import com.herehearteam.herehear.domain.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -24,12 +28,20 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class RegisterViewModel(
+    private val apiService: ApiService,
     private val userRepository: UserRepository,
 ) : ViewModel() {
     private val _state = MutableStateFlow(RegisterState())
     val state = _state.asStateFlow()
 
+    private val _registrationState = MutableStateFlow<RegistrationState>(RegistrationState.Idle)
+    val registrationState: StateFlow<RegistrationState> = _registrationState.asStateFlow()
+
     private val firebaseAuth = Firebase.auth
+
+    fun hashPassword(password: String): String {
+        return BCrypt.withDefaults().hashToString(12, password.toCharArray())
+    }
 
     fun registerWithEmailPassword(
         name: String,
@@ -39,13 +51,28 @@ class RegisterViewModel(
         _state.update { it.copy(isLoading = true, registrationError = null) }
 
         viewModelScope.launch {
+           // _registrationState.value = RegistrationState.Loading
             try {
                 val result = withContext(Dispatchers.IO) {
                     try {
                         val authResult = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
                         val currentUser = authResult.user
+                        val existingUsers = apiService.getAllUsers()
+                        val userExists = existingUsers.data.any {
+                            it.email == email
+                        }
+
 
                         if (currentUser != null) {
+                            val hashedPassword = hashPassword(password)
+                            val userRequest = UserRequestDto(
+                                user_id = currentUser.uid,
+                                username = name,
+                                email = email,
+                                password = hashedPassword
+                            )
+                           apiService.createUser(userRequest)
+
                             val profileUpdates = UserProfileChangeRequest.Builder()
                                 .setDisplayName(name)
                                 .build()
@@ -143,4 +170,10 @@ class RegisterViewModel(
             newState
         }
     }
+}
+sealed class RegistrationState {
+    object Idle : RegistrationState()
+    object Loading : RegistrationState()
+    object Success : RegistrationState()
+    data class Error(val message: String) : RegistrationState()
 }

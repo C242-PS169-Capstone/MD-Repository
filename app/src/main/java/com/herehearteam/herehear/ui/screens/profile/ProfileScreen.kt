@@ -10,7 +10,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -19,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -28,13 +26,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Star
-import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -82,11 +78,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
 import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
-import com.herehearteam.herehear.data.remote.GoogleAuthUiClient
+import com.herehearteam.herehear.data.remote.api.ApiConfig
 import com.herehearteam.herehear.di.AppDependencies
 import com.herehearteam.herehear.ui.screens.auth.LoginViewModel
 import com.herehearteam.herehear.ui.screens.auth.LoginViewModelFactory
@@ -407,13 +401,52 @@ fun PopUpEmergencyContact(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun popUpDeleteAccount(
+    onDismiss: () -> Unit,
+    onButtonDeleteClick: () -> Unit,
+    viewModel: ProfileViewModel,
+    navController: NavHostController
+){
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    val userId = currentUser?.uid
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        windowInsets = WindowInsets.ime,
+        modifier = Modifier
+            .fillMaxHeight(0.45F)
+    ){
+
+        CustomButtonFilled(
+            onClick = {
+//                viewModel.deleteAccount(userId.toString())
+//                onButtonDeleteClick
+                      },
+            text = "Hapus Akun",
+            backgroundColor = ColorPrimary,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        )
+    }
+}
+
 @Composable
 fun ListOfOption(
-    viewModel: ProfileViewModel
+    viewModel: ProfileViewModel,
+    navController: NavHostController
 ){
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-    var showBottomSheet by remember { mutableStateOf(false) }
+    var showEmergencyBottomSheet by remember { mutableStateOf(false) }
+    var showDeleteBottomSheet by remember { mutableStateOf(false) }
+    val navController = rememberNavController()
 
     Column(
         modifier = Modifier
@@ -438,14 +471,14 @@ fun ListOfOption(
             icon = Icons.Outlined.Person,
             title = "Kontak Darurat",
             onClick = {
-                showBottomSheet = true
+                showEmergencyBottomSheet = true
             }
         )
 
-        if (showBottomSheet) {
+        if (showEmergencyBottomSheet) {
             PopUpEmergencyContact(
                 onDismiss = {
-                    showBottomSheet = false
+                    showEmergencyBottomSheet = false
                 },
                 initialContact = uiState,
                 onShowToast = { message ->
@@ -475,8 +508,24 @@ fun ListOfOption(
         ProfileOptionComponent(
             icon = Icons.Outlined.Delete,
             title = "Hapus Akun",
-            onClick = { }
+            onClick = {
+                showDeleteBottomSheet = true
+            }
         )
+        if (showDeleteBottomSheet) {
+            popUpDeleteAccount(
+                onDismiss = {
+                    showDeleteBottomSheet = false
+                },
+                viewModel = viewModel,
+                navController = navController,
+                onButtonDeleteClick = {
+                    navController.navigate(Screen.Welcome.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -491,11 +540,13 @@ fun ProfileScreen(
         )
     )
 ) {
+    val apiService = ApiConfig.getApiService()
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val registerViewModel: RegisterViewModel = viewModel(
         factory = RegisterViewModelFactory(
+            apiService,
             AppDependencies.getInstance(LocalContext.current).userRepository
         )
     )
@@ -532,7 +583,9 @@ fun ProfileScreen(
             )
 
             // Second content: ListOfOption
-            ListOfOption(viewModel)
+            ListOfOption(
+                viewModel,
+                navController)
 
             // Third content: LogoutButton
             Box(
