@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class ProfileViewModel(
     private val googleAuthUiClient: GoogleAuthUiClient,
@@ -47,6 +48,20 @@ class ProfileViewModel(
             )
         }
     }
+
+//    fun deleteAccount(id: String){
+//        viewModelScope.launch {
+//            try{
+//                apiService.deleteUser(id)
+//
+//                signOut()
+//                val currentUser = FirebaseAuth.getInstance().currentUser
+//                currentUser?.delete()
+//            }catch (e: Exception){
+//                Log.e("ProfileViewModel", "Error deleting account", e)
+//            }
+//        }
+//    }
 
     fun saveEmergencyContact(contact: EmergencyContact) {
         val currentUser = FirebaseAuth.getInstance().currentUser

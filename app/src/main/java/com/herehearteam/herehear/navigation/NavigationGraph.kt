@@ -1,12 +1,10 @@
 package com.herehearteam.herehear.navigation
 
 import RegisterViewModel
-import android.app.Activity
 import android.app.Activity.RESULT_OK
 import android.app.Application
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -26,7 +24,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
-import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
 import com.herehearteam.herehear.data.local.repository.JournalRepository
 import com.herehearteam.herehear.data.local.repository.PredictionRepository
 import com.herehearteam.herehear.data.remote.GoogleAuthUiClient
@@ -34,9 +31,7 @@ import com.herehearteam.herehear.data.remote.api.ApiConfig
 import com.herehearteam.herehear.di.AppDependencies
 import com.herehearteam.herehear.domain.model.SignInResult
 import com.herehearteam.herehear.ui.screens.archive.ArchiveScreen
-import com.herehearteam.herehear.ui.screens.archive.ArchiveViewModel
 import com.herehearteam.herehear.ui.screens.article.ArticleScreen
-import com.herehearteam.herehear.ui.screens.article.ArticleViewModel
 import com.herehearteam.herehear.ui.screens.article.ArticleViewModelFactory
 
 import com.herehearteam.herehear.ui.screens.auth.LoginScreen
@@ -74,6 +69,13 @@ fun NavigationGraph(
     val appDependencies = AppDependencies.getInstance(context)
     val journalRepository = JournalRepository(application)
 
+
+    val apiService = ApiConfig.getApiService()
+    val predictionRepository = PredictionRepository(apiService)
+    val predictionViewModel = PredictionViewModel(predictionRepository)
+
+    val apiArticleService = ApiConfig.getArticleService();
+    val articleViewModel = ArticleViewModelFactory(apiArticleService)
     val loginViewModel: LoginViewModel = viewModel(
         factory = LoginViewModelFactory(
             appDependencies.userRepository,
@@ -83,6 +85,7 @@ fun NavigationGraph(
 
     val registerViewModel: RegisterViewModel = viewModel(
         factory = RegisterViewModelFactory(
+            apiService,
             appDependencies.userRepository
         )
     )
@@ -245,7 +248,8 @@ fun NavigationGraph(
                 },
                 onRegisterSuccess = {
                     navController.navigate(Screen.Login.route)
-                }
+                },
+                apiService = apiService
             )
         }
 

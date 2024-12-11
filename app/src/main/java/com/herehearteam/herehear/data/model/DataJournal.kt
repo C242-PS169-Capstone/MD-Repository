@@ -8,7 +8,8 @@ class DataJournal {
 }
 
 data class JournalRequestDto(
-    val journal_id: String,
+//    val journal_id: String,
     val content: String,
-    val journal_class_id: String
+    val user_id: String,
+    val question: String?
 )
