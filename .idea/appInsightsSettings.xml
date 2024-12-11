@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.herehearteam.herehear" />
-                  <option name="mobileSdkAppId" value="1:1087364605660:android:6a7c48baa1a8a93e09f619" />
-                  <option name="projectId" value="hearhere-auth" />
-                  <option name="projectNumber" value="1087364605660" />
+                  <option name="mobileSdkAppId" value="1:828292280674:android:95a1a885d561bb87e27c3b" />
+                  <option name="projectId" value="herehear-capstone" />
+                  <option name="projectNumber" value="828292280674" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

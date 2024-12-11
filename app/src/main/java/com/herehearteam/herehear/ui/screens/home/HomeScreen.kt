@@ -153,8 +153,6 @@ fun HomeScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .padding(top = 20.dp)
                 ) {
                     Grid(
                         columns = 4,
@@ -183,7 +181,7 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
-                        .padding(top = 24.dp)
+                        .padding(top = 16.dp)
                 ) {
                     DailyPositiveQuoteCard(
                         quote = getDailyPositiveQuote()

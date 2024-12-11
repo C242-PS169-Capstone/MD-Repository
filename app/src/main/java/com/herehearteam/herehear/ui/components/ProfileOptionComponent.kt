@@ -47,7 +47,7 @@ fun ProfileOptionComponent(
                 imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier.size(28.dp),
-                tint = Color.Black
+                tint = MaterialTheme.colorScheme.onBackground
             )
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -55,7 +55,7 @@ fun ProfileOptionComponent(
             Text(
                 text = title,
                 fontSize = 16.sp,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.weight(1f)
             )
 
@@ -65,7 +65,7 @@ fun ProfileOptionComponent(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                     contentDescription = null,
-                    tint = Color.Black
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
             }
         }
@@ -73,7 +73,7 @@ fun ProfileOptionComponent(
         HorizontalDivider(
             modifier = Modifier.padding(start = 56.dp, end = 32.dp),
             thickness = 1.dp,
-            color = Color.LightGray
+            color = MaterialTheme.colorScheme.onBackground
         )
     }
 }

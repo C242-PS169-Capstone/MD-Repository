@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,8 +46,8 @@ fun CustomButtonFilled(
     text: String,
     icon: Any? = null,
     iconColor: Color = Color.Unspecified,
-    textColor: Color = Color.White,
-    backgroundColor: Color = ColorPrimary,
+    textColor: Color = MaterialTheme.colorScheme.onPrimary,
+    backgroundColor: Color = MaterialTheme.colorScheme.primary,
     isEnabled: Boolean = true,
     cornerRadius: Dp = 8.dp,
     height: Dp = 48.dp,
@@ -118,8 +119,8 @@ fun CustomButtonOutlined(
     text: String,
     icon: Any? = null,
     iconColor: Color = Color.Unspecified,
-    outlineColor: Color = ColorPrimary,
-    textColor: Color = Color.Black,
+    outlineColor: Color = MaterialTheme.colorScheme.primary,
+    textColor: Color = MaterialTheme.colorScheme.primary,
     isEnabled: Boolean = true,
     cornerRadius: Dp = 8.dp,
     height: Dp = 48.dp,

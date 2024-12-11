@@ -10,6 +10,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -66,7 +67,6 @@ fun JournalScreen(
     onNavigateToHome: () -> Unit,
     journalId: Int?
 ) {
-    val isSaveSuccessful by viewModel.isSaveSuccessful.collectAsState()
     val selectedQuestion by viewModel.selectedQuestion.collectAsState()
     val memoText by viewModel.memoText.collectAsState()
     val isFabExpanded by viewModel.isFabExpanded.collectAsState()
@@ -74,15 +74,10 @@ fun JournalScreen(
     val shouldShowDeleteConfirmationDialog by viewModel.shouldShowDeleteConfirmationDialog.collectAsState()
     val navigationEvent by viewModel.navigationEvent.collectAsState()
     val isNetworkAvailable by viewModel.isNetworkAvailable.collectAsState()
-
     val context = LocalContext.current
-    val appDependencies = AppDependencies.getInstance(context)
     val apiService = ApiConfig.getApiModelService()
     val predictionRepository = PredictionRepository(apiService)
     val predictionViewModel = PredictionViewModel(predictionRepository)
-    val predictionResult by predictionViewModel.predictionResult.collectAsState(initial = null)
-    val predictionError by predictionViewModel.error.collectAsState(initial = null)
-
 
     LaunchedEffect(isNetworkAvailable) {
         if (isNetworkAvailable) {
@@ -94,8 +89,8 @@ fun JournalScreen(
         if (journalId != 0) {
             viewModel.getJournalById(journalId) { journal ->
                 journal?.let {
-                    viewModel.updateMemoText(it.content) // Set memo text
-                    viewModel.selectQuestion(questionObject = null, questionText = it.question) // Set selected question
+                    viewModel.updateMemoText(it.content)
+                    viewModel.selectQuestion(questionObject = null, questionText = it.question)
                 }
             }
         }
@@ -120,7 +115,9 @@ fun JournalScreen(
     }
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -148,8 +145,8 @@ fun JournalScreen(
                 ) {
                     Text(
                         text = selectedQuestion?.text ?: "",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
                         modifier = Modifier.padding(16.dp)
                     )
                 }
@@ -208,27 +205,6 @@ fun JournalScreen(
                             tint = Color.White
                         )
                     }
-                    Log.d("PredictionViewModel", "Prediction Result: $predictionResult")
-//                    if (predictionResult != null) {
-//                        AlertDialog(
-//                            onDismissRequest = { /* Reset predictionResult jika perlu */ },
-//                            title = { Text("Hasil Prediksi") },
-//                            text = {
-//                                Column {
-//                                    Text("Model 1: ${predictionResult?.model1}")
-//                                    Text("Model 2: ${predictionResult?.model2}")
-//                                }
-//                            },
-//                            confirmButton = {
-//                                TextButton(onClick = {
-//                                    // Reset predictionResult jika diperlukan
-//                                    // predictionViewModel.clearPredictionResult()
-//                                }) {
-//                                    Text("Tutup")
-//                                }
-//                            }
-//                        )
-//                    }
 
                     FloatingActionButton(
                         onClick = { viewModel.showDeleteConfirmationDialog() },
@@ -310,14 +286,3 @@ fun JournalScreen(
         }
     }
 }
-
-//@Preview(showSystemUi = true, showBackground = true)
-//@Composable
-//fun JournalScreenPreview(){
-//    HereHearTheme {
-//        JournalScreen(
-//            viewModel = JournalViewModel(),
-//            onNavigateBack = {}
-//        )
-//    }
-//}
