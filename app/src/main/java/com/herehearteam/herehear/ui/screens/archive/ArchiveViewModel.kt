@@ -1,6 +1,7 @@
 package com.herehearteam.herehear.ui.screens.archive
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.herehearteam.herehear.data.local.repository.JournalRepository
@@ -43,9 +44,11 @@ class ArchiveViewModel(
     fun fetchData() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         val userId = currentUser?.uid
+        Log.d("ArchiveViewModelGRRAAH", "User ID: $userId")
 
         if (userId != null) {
             viewModelScope.launch {
+                Log.d("ArchiveViewModelBACOT", "Fetching journals for user: $userId")
                 journalRepository.fetchJournals(userId)
                     .collect { result ->
                         result.onSuccess { journalEntities ->
@@ -81,59 +84,6 @@ class ArchiveViewModel(
             }
         }
     }
-
-//    private fun fetchData() {
-//        val currentUser = FirebaseAuth.getInstance().currentUser
-//        val userId = currentUser?.uid
-//
-//        if (userId != null) {
-//            viewModelScope.launch {
-//                journalRepository.getAllJournals(userId)
-//                    .collect { journalEntities ->
-//                        // Convert JournalEntity to Journal
-//                        val journals = journalEntities.map { entity ->
-//                            Journal(
-//                                id = entity.journalId,
-//                                content = entity.content,
-//                                dateTime = entity.createdDate,
-//                                question = entity.question,
-//                                userId = entity.userId
-//                            )
-//                        }
-//
-//                        _uiState.update { currentState ->
-//                            currentState.copy(journals = journals)
-//                        }
-//                    }
-//            }
-//        } else {
-//            // Handle case when user is not logged in
-//            // Optionally clear journals or show login prompt
-//            _uiState.update { currentState ->
-//                currentState.copy(journals = emptyList())
-//            }
-//        }
-//    }
-
-//    private fun fetchData() {
-//        viewModelScope.launch {
-//            journalRepository.getAllJournals().asLiveData().observeForever { journalEntities ->
-//                // Convert JournalEntity to Journal
-//                val journals = journalEntities.map { entity ->
-//                    Journal(
-//                        id = entity.journalId,
-//                        content = entity.content,
-//                        dateTime = entity.createdDate,
-//                        question = entity.question
-//                    )
-//                }
-//
-//                _uiState.update { currentState ->
-//                    currentState.copy(journals = journals)
-//                }
-//            }
-//        }
-//    }
 
     fun updateSelectedMonth(month: Int) {
         _uiState.update { currentState ->
