@@ -1,0 +1,5 @@
+steps:
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: ['rsync', '-r', '-d', '--include=*.md', '--exclude=*', '.', 'gs://hearhere-md-docs']
+options:
+  logging: CLOUD_LOGGING_ONLY

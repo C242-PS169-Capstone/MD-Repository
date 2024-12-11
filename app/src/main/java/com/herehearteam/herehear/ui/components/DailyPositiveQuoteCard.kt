@@ -8,6 +8,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -20,11 +21,10 @@ fun DailyPositiveQuoteCard(
 ) {
     Card(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = Color(0xFFFFEEBF)
         )
     ) {
         Column(
@@ -35,20 +35,28 @@ fun DailyPositiveQuoteCard(
             Text1(
                 text = "Kata Positif Hari Ini",
                 style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier
+                    .padding(bottom = 8.dp),
+                color = Color.Black
             )
             Text1(
                 text = "\"$quote\"",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontStyle = FontStyle.Italic
                 ),
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier
+                    .padding(bottom = 8.dp),
+                color = Color.Black
             )
             Text1(
-                text = "- HereHear Team",
-                style = MaterialTheme.typography.bodySmall,
+                text = "- HereHear",
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontStyle = FontStyle.Italic
+                ),
                 textAlign = TextAlign.End,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth(),
+                color = Color.DarkGray
             )
         }
     }

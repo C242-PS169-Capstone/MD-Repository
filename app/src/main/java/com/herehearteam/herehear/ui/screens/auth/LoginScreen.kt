@@ -128,6 +128,7 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
             .padding(16.dp),
 
     ) {
@@ -157,14 +158,16 @@ fun LoginScreen(
                 text = "Selamat Datang Kembali",
                 fontSize = 20.sp,
                 modifier = Modifier.padding(bottom = 8.dp),
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Text(
                 text = "Jalani hari dengan pikiran yang lebih sehat",
                 fontSize = 16.sp,
                 modifier = Modifier.padding(bottom = 32.dp),
-                fontWeight = FontWeight.Normal
+                fontWeight = FontWeight.Normal,
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             CustomTextField(
@@ -238,24 +241,24 @@ fun LoginScreen(
                 HorizontalDivider(
                     modifier = Modifier.weight(1f),
                     thickness = 1.dp,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
                     text = "atau",
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
                 HorizontalDivider(
                     modifier = Modifier.weight(1f),
                     thickness = 1.dp,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
 
             CustomButtonFilled(
                 text = "Masuk Dengan Google",
-                backgroundColor = Color.White,
-                textColor = Color.Black,
+                backgroundColor = MaterialTheme.colorScheme.tertiary,
+                textColor = MaterialTheme.colorScheme.onBackground,
                 icon = painterResource(R.drawable.ic_logo_google),
                 onClick = onLoginWithGmail
             )
@@ -266,7 +269,7 @@ fun LoginScreen(
             ) {
                 Text(
                     text = "Belum punya akun? ",
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
                     text = "Daftar",

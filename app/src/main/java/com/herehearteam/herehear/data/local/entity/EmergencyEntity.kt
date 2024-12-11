@@ -9,7 +9,10 @@ import kotlinx.parcelize.Parcelize
 @Entity(tableName = "emergency")
 @Parcelize
 data class EmergencyEntity(
-    @PrimaryKey()
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
+    val id: Int? = 0,
+
     @ColumnInfo(name = "userId")
     val userId: String,
 

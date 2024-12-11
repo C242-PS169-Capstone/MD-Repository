@@ -11,6 +11,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
 import com.herehearteam.herehear.data.local.entity.EmergencyEntity
 import com.herehearteam.herehear.data.local.repository.EmergencyContactRepository
+import com.herehearteam.herehear.data.model.EmergencyContactRequest
+import com.herehearteam.herehear.data.model.EmergencyContactUpdateRequest
 import com.herehearteam.herehear.data.remote.GoogleAuthUiClient
 import com.herehearteam.herehear.data.remote.api.ApiConfig
 import com.herehearteam.herehear.di.AppDependencies
@@ -31,7 +33,7 @@ class ProfileViewModel(
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState = _uiState.asStateFlow()
 
-    val apiService = ApiConfig.getApiService()
+    private val apiService = ApiConfig.getApiService()
 
     init {
         loadUserData()
@@ -66,23 +68,72 @@ class ProfileViewModel(
         val userId = currentUser?.uid
         viewModelScope.launch {
             userId?.let { id ->
-                val emergencyEntity = EmergencyEntity(
-                    userId = id,
-                    namaKontak = contact.emergency_name,
-                    nomorTelepon = contact.emergency_number,
-                    hubungan = contact.relationship
-                )
-                emergencyContactRepository.insertEmergencyContact(emergencyEntity)
-                loadEmergencyContact()
+                try {
+                    // Simpan ke lokal terlebih dahulu
+                    val emergencyEntity = EmergencyEntity(
+                        userId = id,
+                        namaKontak = contact.emergency_name,
+                        nomorTelepon = contact.emergency_number,
+                        hubungan = contact.relationship
+                    )
+                    emergencyContactRepository.insertEmergencyContact(emergencyEntity)
+
+                    val apiRequest = EmergencyContactRequest(
+                        emergency_id = 100,
+                        emergency_name = contact.emergency_name,
+                        emergency_number = contact.emergency_number,
+                        relationship = contact.relationship,
+                        user_id = 6
+                    )
+
+                    val apiResponse = if (uiState.value.emergencyContact == null) {
+                        // Jika belum ada contact, lakukan create
+                        apiService.createEmergencyContact(apiRequest)
+                    } else {
+                        // Jika sudah ada contact, lakukan update
+                        val updateRequest = EmergencyContactUpdateRequest(
+                            emergency_name = contact.emergency_name,
+                            emergency_number = contact.emergency_number,
+                            relationship = contact.relationship,
+                            user_id = id
+                        )
+
+                        apiService.updateEmergencyContact(
+                            apiRequest.emergency_id.toString(),
+                            updateRequest
+                        )
+                    }
+
+                    if (apiResponse.status && apiResponse.data != null) {
+                        // Update lokal dengan ID dari server jika create
+                        if (uiState.value.emergencyContact == null) {
+                            val updatedEntity = emergencyEntity.copy(
+                                id = apiResponse.data.emergency_id
+                            )
+                            emergencyContactRepository.updateEmergencyContact(updatedEntity)
+                        }
+                    } else {
+                        throw Exception(apiResponse.message ?: "Gagal menyimpan kontak")
+                    }
+
+                    loadEmergencyContact()
+                } catch (e: Exception) {
+                    Log.e("ProfileViewModel", "Error saving emergency contact", e)
+//                    _uiState.update {
+//                        it.copy(
+//                            error = "Gagal menyimpan kontak: ${e.localizedMessage}"
+//                        )
+//                    }
+                }
             } ?: run {
-                // Handle case when userId is null
                 Log.e("ProfileViewModel", "User ID is null, cannot save emergency contact")
             }
         }
     }
 
-    private fun loadEmergencyContact() {
-        val userId = googleAuthUiClient.getSignedInUser()?.idToken
+    fun loadEmergencyContact() {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val userId = currentUser?.uid
         viewModelScope.launch {
             userId?.let { id ->
                 val emergencyContact = emergencyContactRepository.getEmergencyContact(id)
@@ -99,6 +150,10 @@ class ProfileViewModel(
                 }
             }
         }
+    }
+
+    private suspend fun updateEmergencyContact(entity: EmergencyEntity) {
+        emergencyContactRepository.updateEmergencyContact(entity)
     }
 
     suspend fun signOut() {

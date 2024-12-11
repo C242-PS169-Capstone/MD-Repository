@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.herehearteam.herehear.data.remote.api.ApiConfig
-import com.herehearteam.herehear.data.remote.api.ApiConfig.getApiService
+import com.herehearteam.herehear.data.remote.api.ApiConfig.getArticleService
 import com.herehearteam.herehear.domain.model.Article
 import com.herehearteam.herehear.ui.components.ArticleCard
 import com.herehearteam.herehear.ui.components.CustomTopAppBar
@@ -85,7 +85,8 @@ fun ArticleScreen(
         ScrollableTabRow(
             modifier = Modifier.padding(),
             edgePadding = 0.dp,
-            selectedTabIndex = filters.indexOf(selectedFilter)
+            selectedTabIndex = filters.indexOf(selectedFilter),
+            containerColor = MaterialTheme.colorScheme.background
         ) {
             filters.forEachIndexed { index, query ->
                 Tab(
@@ -161,7 +162,7 @@ fun ArticleScreen(
                         title = selectedArticle!!.title,
                         tag = selectedArticle!!.sectionName,
                         date = selectedArticle!!.publicationDate,
-                        description = "", // Tambahkan deskripsi jika tersedia dari API
+                        description = "",
                         source = "The Guardian",
                         onButtonClick = {
                             val intent =
@@ -180,7 +181,7 @@ fun ArticleScreen(
 @Composable
 fun HomeScreenPreview() {
     HereHearTheme {
-        val apiService = getApiService()
+        val apiService = getArticleService()
         ArticleScreen(
             onNavigateBack = {},
         )

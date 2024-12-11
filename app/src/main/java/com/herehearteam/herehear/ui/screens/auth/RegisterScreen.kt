@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -142,6 +143,7 @@ fun RegisterScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {
         Box(
@@ -161,21 +163,23 @@ fun RegisterScreen(
                 .align(Alignment.Center)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
                 text = "Bergabung dengan HereHear",
                 fontSize = 20.sp,
                 modifier = Modifier.padding(bottom = 8.dp),
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Text(
                 text = "Mulai tulis dan temukan rekomendasi terbaik untuk mentalmu.",
                 fontSize = 16.sp,
-                modifier = Modifier.padding(bottom = 32.dp),
+                modifier = Modifier.padding(bottom = 16.dp),
                 fontWeight = FontWeight.Normal,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             CustomTextField(
@@ -189,7 +193,6 @@ fun RegisterScreen(
                 errorText = nameError,
                 imeAction = ImeAction.Next
             )
-            Spacer(modifier = Modifier.height(4.dp))
 
             CustomTextField(
                 value = email,
@@ -203,7 +206,6 @@ fun RegisterScreen(
                 errorText = emailError,
                 imeAction = ImeAction.Next
             )
-            Spacer(modifier = Modifier.height(4.dp))
 
             CustomTextField(
                 value = password,
@@ -218,7 +220,6 @@ fun RegisterScreen(
                 errorText = passwordError,
                 imeAction = ImeAction.Next
             )
-            Spacer(modifier = Modifier.height(4.dp))
 
             CustomTextField(
                 value = confirmPassword,
@@ -233,7 +234,6 @@ fun RegisterScreen(
                 errorText = confirmPasswordError,
                 imeAction = ImeAction.Done
             )
-            Spacer(modifier = Modifier.height(16.dp))
 
             CustomButtonFilled(
                 text = "Register",
@@ -249,7 +249,7 @@ fun RegisterScreen(
                 }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(6.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -258,40 +258,38 @@ fun RegisterScreen(
                 HorizontalDivider(
                     modifier = Modifier.weight(1f),
                     thickness = 1.dp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
                     text = "atau",
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
                 HorizontalDivider(
                     modifier = Modifier.weight(1f),
                     thickness = 1.dp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(6.dp))
 
             CustomButtonFilled(
                 text = "Register with Google",
-                backgroundColor = Color.White,
-                textColor = Color.Black,
+                backgroundColor = MaterialTheme.colorScheme.tertiary,
+                textColor = MaterialTheme.colorScheme.onBackground,
                 fontSize = 14.sp,
                 icon = painterResource(R.drawable.ic_logo_google),
                 onClick = onRegisterWithGmail
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
                     text = "Already have an account? ",
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
                     text = "Login",

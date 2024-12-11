@@ -42,6 +42,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -69,6 +70,7 @@ import com.herehearteam.herehear.ui.components.CustomButtonFilled
 import com.herehearteam.herehear.ui.components.CustomButtonOutlined
 import com.herehearteam.herehear.ui.components.LocalGoogleAuthUiClient
 import com.herehearteam.herehear.ui.components.ProfileOptionComponent
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -195,6 +197,212 @@ fun Container(
     }
 }
 
+//@OptIn(ExperimentalMaterial3Api::class)
+//@Composable
+//fun PopUpEmergencyContact(
+//    onDismiss: () -> Unit,
+//    initialContact: ProfileUiState?,
+//    onShowToast: (String) -> Unit
+//){
+//    var name by remember { mutableStateOf(initialContact?.emergencyContact?.emergency_name ?: "") }
+//    var number by remember { mutableStateOf(initialContact?.emergencyContact?.emergency_number ?: "") }
+//    var relationship by remember { mutableStateOf(initialContact?.emergencyContact?.relationship ?: "") }
+//    var isLoading by remember { mutableStateOf(false) }
+//    var errorMessage by remember { mutableStateOf<String?>(null) }
+//
+//    val sheetState = rememberModalBottomSheetState(
+//        skipPartiallyExpanded = true
+//    )
+//
+//
+//    val viewModel = ProfileViewModel(
+//        googleAuthUiClient = LocalGoogleAuthUiClient.current,
+//        userPreferencesDataStore = UserPreferencesDataStore.getInstance(context = LocalContext.current),
+//        emergencyContactRepository = AppDependencies.getInstance(LocalContext.current).emergencyContactRepository
+//    )
+//
+//    val uiState by viewModel.uiState.collectAsState()
+//    uiState.emergencyContact?.let { contact ->
+//        Box(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(horizontal = 16.dp)
+//                .background(Color(0xFFF5F5F5), shape = RoundedCornerShape(8.dp))
+//                .padding(16.dp)
+//        ) {
+//            Column {
+//                Text("Nama: ${contact.emergency_name}", style = MaterialTheme.typography.bodyMedium)
+//                Text("Nomor: ${contact.emergency_number}", style = MaterialTheme.typography.bodyMedium)
+//                Text("Hubungan: ${contact.relationship}", style = MaterialTheme.typography.bodyMedium)
+//            }
+//        }
+//    }
+//
+//    val currentUser = FirebaseAuth.getInstance().currentUser
+//    val userId = currentUser?.uid
+//
+//    val view = LocalView.current
+//    var isImeVisible by remember { mutableStateOf(false) }
+//
+//    DisposableEffect(Unit) {
+//        val listener = ViewTreeObserver.OnPreDrawListener {
+//            isImeVisible = ViewCompat.getRootWindowInsets(view)
+//                ?.isVisible(WindowInsetsCompat.Type.ime()) == true
+//            true
+//        }
+//        view.viewTreeObserver.addOnPreDrawListener(listener)
+//        onDispose {
+//            view.viewTreeObserver.removeOnPreDrawListener(listener)
+//        }
+//    }
+//
+//    // Validasi input
+//    val isFormValid = name.isNotBlank() &&
+//            number.isNotBlank() &&
+//            relationship.isNotBlank()
+//
+//    ModalBottomSheet(
+//        onDismissRequest = onDismiss,
+//        sheetState = sheetState,
+//        windowInsets = WindowInsets.ime,
+//        modifier = Modifier.then(
+//            if (isImeVisible)
+//                Modifier.fillMaxHeight(0.85F)
+//            else
+//                Modifier.fillMaxHeight(0.45F)
+//        )
+//    ) {
+//        Column(
+//            modifier = Modifier
+//                .padding(horizontal = 16.dp)
+//                .fillMaxSize(),
+//            horizontalAlignment = Alignment.CenterHorizontally,
+//            verticalArrangement = Arrangement.Top
+//        ) {
+//            Column(
+//                horizontalAlignment = Alignment.CenterHorizontally,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(bottom = 16.dp)
+//            ) {
+//                Text(
+//                    text = "Masukan Kontak Darurat",
+//                    style = TextStyle(
+//                        fontWeight = FontWeight.Normal,
+//                        fontSize = 16.sp
+//                    ),
+//                    textAlign = TextAlign.Center,
+//                    modifier = Modifier.fillMaxWidth()
+//                )
+//
+//                Spacer(Modifier.height(16.dp))
+//
+//                TextField(
+//                    value = name,
+//                    onValueChange = {
+//                        name = it
+//                        errorMessage = null
+//                    },
+//                    label = { Text("Nama Kontak") },
+//                    colors = TextFieldDefaults.textFieldColors(
+//                        containerColor = Color(0xFFF5F5F5),
+//                        focusedIndicatorColor = ColorPrimary,
+//                        unfocusedIndicatorColor = Color.Gray
+//                    ),
+//                    singleLine = true,
+//                    modifier = Modifier.fillMaxWidth(),
+//                    isError = name.isBlank() && errorMessage != null
+//                )
+//
+//                Spacer(Modifier.height(8.dp))
+//
+//                TextField(
+//                    value = number,
+//                    onValueChange = {
+//                        number = it
+//                        errorMessage = null
+//                    },
+//                    label = { Text("Nomor Telepon") },
+//                    colors = TextFieldDefaults.textFieldColors(
+//                        containerColor = Color(0xFFF5F5F5),
+//                        focusedIndicatorColor = ColorPrimary,
+//                        unfocusedIndicatorColor = Color.Gray
+//                    ),
+//                    singleLine = true,
+//                    modifier = Modifier.fillMaxWidth(),
+//                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+//                    isError = number.isBlank() && errorMessage != null
+//                )
+//
+//                Spacer(Modifier.height(8.dp))
+//
+//                TextField(
+//                    value = relationship,
+//                    onValueChange = {
+//                        relationship = it
+//                        errorMessage = null
+//                    },
+//                    label = { Text("Hubungan") },
+//                    colors = TextFieldDefaults.textFieldColors(
+//                        containerColor = Color(0xFFF5F5F5),
+//                        focusedIndicatorColor = ColorPrimary,
+//                        unfocusedIndicatorColor = Color.Gray
+//                    ),
+//                    singleLine = true,
+//                    modifier = Modifier.fillMaxWidth(),
+//                    isError = relationship.isBlank() && errorMessage != null
+//                )
+//
+//                // Tampilkan pesan error jika ada
+//                if (errorMessage != null) {
+//                    Text(
+//                        text = errorMessage ?: "",
+//                        color = Color.Red,
+//                        style = MaterialTheme.typography.bodySmall,
+//                        modifier = Modifier.padding(top = 8.dp)
+//                    )
+//                }
+//            }
+//
+//            CustomButtonFilled(
+//                onClick = {
+//
+//                    if (isFormValid) {
+//                        isLoading = true
+//                        val contact = userId?.let {
+//                            EmergencyContact(
+//                                userId = it,
+//                                emergency_name = name,
+//                                emergency_number = number,
+//                                relationship = relationship,
+//                            )
+//                        }
+//                        Log.d("TAI 2", "$contact")
+//                        try {
+//                            if (contact != null) {
+//                                viewModel.saveEmergencyContact(contact)
+//                            }
+//                            onShowToast("Kontak darurat berhasil disimpan.")
+//                            onDismiss()
+//                        } catch (e: Exception) {
+//                            Log.e("EmergencyContact", "Error saving contact", e)
+//                            errorMessage = "Gagal menyimpan kontak. Silakan coba lagi."
+//                        } finally {
+//                            isLoading = false
+//                        }
+//                    } else {
+//                        errorMessage = "Harap isi semua field"
+//                    }
+//                },
+//                text = if (isLoading) "Menyimpan..." else "Simpan",
+//                backgroundColor = ColorPrimary,
+//                modifier = Modifier.fillMaxWidth(),
+//                isEnabled = isFormValid && !isLoading
+//            )
+//        }
+//    }
+//}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PopUpEmergencyContact(
@@ -202,17 +410,9 @@ fun PopUpEmergencyContact(
     initialContact: ProfileUiState?,
     onShowToast: (String) -> Unit
 ){
-    var name by remember { mutableStateOf(initialContact?.emergencyContact?.emergency_name ?: "") }
-    var number by remember { mutableStateOf(initialContact?.emergencyContact?.emergency_number ?: "") }
-    var relationship by remember { mutableStateOf(initialContact?.emergencyContact?.relationship ?: "") }
-    var isLoading by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
-
-
     val viewModel = ProfileViewModel(
         googleAuthUiClient = LocalGoogleAuthUiClient.current,
         userPreferencesDataStore = UserPreferencesDataStore.getInstance(context = LocalContext.current),
@@ -220,27 +420,21 @@ fun PopUpEmergencyContact(
     )
 
     val uiState by viewModel.uiState.collectAsState()
-    uiState.emergencyContact?.let { contact ->
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .background(Color(0xFFF5F5F5), shape = RoundedCornerShape(8.dp))
-                .padding(16.dp)
-        ) {
-            Column {
-                Text("Nama: ${contact.emergency_name}", style = MaterialTheme.typography.bodyMedium)
-                Text("Nomor: ${contact.emergency_number}", style = MaterialTheme.typography.bodyMedium)
-                Text("Hubungan: ${contact.relationship}", style = MaterialTheme.typography.bodyMedium)
-            }
-        }
-    }
-
     val currentUser = FirebaseAuth.getInstance().currentUser
     val userId = currentUser?.uid
-
     val view = LocalView.current
     var isImeVisible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        viewModel.loadEmergencyContact()
+    }
+
+    var name by remember { mutableStateOf(initialContact?.emergencyContact?.emergency_name ?: uiState.emergencyContact?.emergency_name ?: "") }
+    var number by remember { mutableStateOf(initialContact?.emergencyContact?.emergency_number ?: uiState.emergencyContact?.emergency_number ?: "") }
+    var relationship by remember { mutableStateOf(initialContact?.emergencyContact?.relationship ?: uiState.emergencyContact?.relationship ?: "") }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isEditable by remember { mutableStateOf(false) }
 
     DisposableEffect(Unit) {
         val listener = ViewTreeObserver.OnPreDrawListener {
@@ -254,10 +448,15 @@ fun PopUpEmergencyContact(
         }
     }
 
-    // Validasi input
+    fun isValidPhoneNumber(phone: String): Boolean {
+        val phoneRegex = "^(\\+62|62|0)8[1-9][0-9]{6,10}\$".toRegex()
+        return phoneRegex.matches(phone)
+    }
+
     val isFormValid = name.isNotBlank() &&
             number.isNotBlank() &&
-            relationship.isNotBlank()
+            relationship.isNotBlank() &&
+            isValidPhoneNumber(number)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -284,13 +483,16 @@ fun PopUpEmergencyContact(
                     .padding(bottom = 16.dp)
             ) {
                 Text(
-                    text = "Masukan Kontak Darurat",
+                    text = if (uiState.emergencyContact != null && !isEditable)
+                        "Detail Kontak Darurat"
+                    else "Masukan Kontak Darurat",
                     style = TextStyle(
                         fontWeight = FontWeight.Normal,
                         fontSize = 16.sp
                     ),
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Spacer(Modifier.height(16.dp))
@@ -309,6 +511,7 @@ fun PopUpEmergencyContact(
                     ),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
+                    readOnly = uiState.emergencyContact != null && !isEditable,
                     isError = name.isBlank() && errorMessage != null
                 )
 
@@ -329,8 +532,18 @@ fun PopUpEmergencyContact(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                    isError = number.isBlank() && errorMessage != null
+                    readOnly = uiState.emergencyContact != null && !isEditable,
+                    isError = (!isValidPhoneNumber(number) && number.isNotBlank()) || (number.isBlank() && errorMessage != null)
                 )
+
+                if (!isValidPhoneNumber(number) && number.isNotBlank()) {
+                    Text(
+                        text = "Nomor telepon tidak valid. Gunakan format +62 atau 08.",
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
 
                 Spacer(Modifier.height(8.dp))
 
@@ -348,10 +561,10 @@ fun PopUpEmergencyContact(
                     ),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
+                    readOnly = uiState.emergencyContact != null && !isEditable,
                     isError = relationship.isBlank() && errorMessage != null
                 )
 
-                // Tampilkan pesan error jika ada
                 if (errorMessage != null) {
                     Text(
                         text = errorMessage ?: "",
@@ -364,38 +577,50 @@ fun PopUpEmergencyContact(
 
             CustomButtonFilled(
                 onClick = {
-
-                    if (isFormValid) {
-                        isLoading = true
-                        val contact = userId?.let {
-                            EmergencyContact(
-                                userId = it,
-                                emergency_name = name,
-                                emergency_number = number,
-                                relationship = relationship,
-                            )
-                        }
-                        Log.d("TAI 2", "$contact")
-                        try {
-                            if (contact != null) {
-                                viewModel.saveEmergencyContact(contact)
-                            }
-                            onShowToast("Kontak darurat berhasil disimpan.")
-                            onDismiss()
-                        } catch (e: Exception) {
-                            Log.e("EmergencyContact", "Error saving contact", e)
-                            errorMessage = "Gagal menyimpan kontak. Silakan coba lagi."
-                        } finally {
-                            isLoading = false
-                        }
+                    if (uiState.emergencyContact != null && !isEditable) {
+                        // Aktifkan mode edit
+                        isEditable = true
                     } else {
-                        errorMessage = "Harap isi semua field"
+                        if (isFormValid) {
+                            isLoading = true
+                            val contact = userId?.let {
+                                EmergencyContact(
+                                    userId = it,
+                                    emergency_name = name,
+                                    emergency_number = number,
+                                    relationship = relationship,
+                                )
+                            }
+
+                            Log.d("Tai", "$contact")
+                            try {
+                                if (contact != null) {
+                                    viewModel.saveEmergencyContact(contact)
+                                    onShowToast(if (uiState.emergencyContact != null) "Kontak darurat berhasil diperbarui." else "Kontak darurat berhasil disimpan.")
+                                    isEditable = false
+                                    onDismiss()
+                                }
+                            } catch (e: Exception) {
+                                Log.e("EmergencyContact", "Error saving contact", e)
+                                errorMessage = "Gagal menyimpan kontak. Silakan coba lagi."
+                                onShowToast("Gagal menyimpan kontak. Periksa koneksi internet Anda.")
+                            } finally {
+                                isLoading = false
+                            }
+                        } else {
+                            errorMessage = "Harap isi semua field dengan benar"
+                        }
                     }
                 },
-                text = if (isLoading) "Menyimpan..." else "Simpan",
+                text = when {
+                    isLoading -> "Menyimpan..."
+                    uiState.emergencyContact != null && !isEditable -> "Edit"
+                    uiState.emergencyContact != null && isEditable -> "Update"
+                    else -> "Simpan"
+                },
                 backgroundColor = ColorPrimary,
                 modifier = Modifier.fillMaxWidth(),
-                isEnabled = isFormValid && !isLoading
+                isEnabled = isFormValid || (uiState.emergencyContact != null && !isEditable)
             )
         }
     }
@@ -612,7 +837,7 @@ fun ProfileScreen(
                     },
                     text = "Logout",
                     icon = painterResource(R.drawable.ic_logout),
-                    textColor = Color.Black,
+                    textColor = MaterialTheme.colorScheme.onBackground,
                     iconColor = Color.Red,
                     outlineColor = Color.Red
                 )
