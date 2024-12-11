@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -29,8 +30,10 @@ fun BottomSheetJournal(
     val currentQuestions by viewModel.currentQuestions.collectAsState()
 
     ModalBottomSheet(
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
         onDismissRequest = onDismiss,
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
     ) {
         Column(
             modifier = Modifier
@@ -58,22 +61,3 @@ fun BottomSheetJournal(
         }
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun BottomSheetJournalPreview(){
-//    Column(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .padding(16.dp)
-//    ) {
-//        val navController = rememberNavController()
-//
-//        BottomSheetJournal(
-//            onDismiss = {},
-//            onSelectQuestion = {},
-//            navController = navController,
-//            viewModel = JournalViewModel()
-//        )
-//    }
-//}

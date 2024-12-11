@@ -11,7 +11,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme = darkColorScheme(
+private val LightColorScheme = lightColorScheme(
     primary = ColorPrimary,
     secondary = ColorSecondary,
     error = ColorError,
@@ -20,10 +20,12 @@ private val DarkColorScheme = darkColorScheme(
     onPrimary = ColorOnPrimary,
     onSecondary = ColorOnSecondary,
     onBackground = ColorOnBackground,
-    onSurface = ColorOnSurface
+    onSurface = ColorOnSurface,
+    tertiary = ColorTertiary
 )
 
-private val LightColorScheme = lightColorScheme(
+// Skema warna untuk tema gelap
+private val DarkColorScheme = darkColorScheme(
     primary = ColorPrimary,
     secondary = ColorSecondaryDark,
     error = ColorErrorDark,
@@ -32,7 +34,8 @@ private val LightColorScheme = lightColorScheme(
     onPrimary = ColorOnPrimaryDark,
     onSecondary = ColorOnSecondaryDark,
     onBackground = ColorOnBackgroundDark,
-    onSurface = ColorOnSurfaceDark
+    onSurface = ColorOnSurfaceDark,
+    tertiary = ColorTertiaryDark
 )
 
 @Composable

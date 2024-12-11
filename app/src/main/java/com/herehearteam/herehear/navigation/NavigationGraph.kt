@@ -74,9 +74,6 @@ fun NavigationGraph(
     val appDependencies = AppDependencies.getInstance(context)
     val journalRepository = JournalRepository(application)
 
-    val apiArticleService = ApiConfig.getArticleService();
-    val articleViewModel = ArticleViewModelFactory(apiArticleService)
-
     val loginViewModel: LoginViewModel = viewModel(
         factory = LoginViewModelFactory(
             appDependencies.userRepository,
@@ -89,16 +86,6 @@ fun NavigationGraph(
             appDependencies.userRepository
         )
     )
-
-    val apiService = ApiConfig.getApiModelService()
-    val predictionRepository = PredictionRepository(apiService)
-    val predictionViewModel = PredictionViewModel(predictionRepository)
-//    val predictionViewModel: PredictionViewModel = viewModel(
-//        factory = PredictionViewModelFactory(
-//            PredictionRepository(apiService),
-//            appDependencies.userRepository)
-//    )
-
     val scope = rememberCoroutineScope()
 
     NavHost(
@@ -159,10 +146,6 @@ fun NavigationGraph(
                 }
             )) { backStackEntry ->
             val journalId = backStackEntry.arguments?.getInt("journalId") ?: 0
-            val homeViewModel: HomeViewModel = viewModel(
-                factory = HomeViewModelFactory(googleAuthUiClient)
-            )
-            val context = LocalContext.current
             var showToast by remember { mutableStateOf(false) }
 
             LaunchedEffect(showToast) {

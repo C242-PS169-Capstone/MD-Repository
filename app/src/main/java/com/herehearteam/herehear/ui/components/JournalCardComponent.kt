@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.herehearteam.herehear.domain.model.JournalQuestion
 import com.herehearteam.herehear.domain.model.JournalQuestions
 import com.herehearteam.herehear.ui.theme.HereHearTheme
@@ -64,7 +65,9 @@ fun JournalQuestionCard(
                     style = MaterialTheme.typography.bodyMedium,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Start
+                    textAlign = TextAlign.Start,
+                    color = Color.Black,
+                    fontSize = 16.sp
                 )
             }
 

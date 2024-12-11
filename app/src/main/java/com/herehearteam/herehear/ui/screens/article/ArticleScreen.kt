@@ -96,7 +96,8 @@ fun ArticleScreen(
         ScrollableTabRow(
             modifier = Modifier.padding(),
             edgePadding = 0.dp,
-            selectedTabIndex = filters.indexOf(selectedFilter)
+            selectedTabIndex = filters.indexOf(selectedFilter),
+            containerColor = MaterialTheme.colorScheme.background
         ) {
             filters.forEachIndexed { index, query ->
                 Tab(
@@ -172,7 +173,7 @@ fun ArticleScreen(
                         title = selectedArticle!!.title,
                         tag = selectedArticle!!.sectionName,
                         date = selectedArticle!!.publicationDate,
-                        description = "", // Tambahkan deskripsi jika tersedia dari API
+                        description = "",
                         source = "The Guardian",
                         onButtonClick = {
                             val intent =

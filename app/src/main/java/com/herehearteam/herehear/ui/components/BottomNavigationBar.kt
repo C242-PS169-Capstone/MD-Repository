@@ -1,6 +1,7 @@
 package com.herehearteam.herehear.ui.components
 
 import android.app.Application
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -54,7 +55,8 @@ fun BottomNavigationBar(
     val currentRoute = navBackStackEntry?.destination?.route
 
     Box(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth(),
         contentAlignment = Alignment.BottomCenter
     ) {
         Surface(
@@ -63,7 +65,8 @@ fun BottomNavigationBar(
                 .height(80.dp),
             shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
             shadowElevation = 8.dp,
-            color = Color.White
+            color = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
         ) {
             Row(
                 modifier = Modifier

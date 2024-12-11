@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -139,6 +140,7 @@ fun RegisterScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {
         Box(
@@ -164,7 +166,8 @@ fun RegisterScreen(
                 text = "Bergabung dengan HereHear",
                 fontSize = 20.sp,
                 modifier = Modifier.padding(bottom = 8.dp),
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Text(
@@ -172,7 +175,8 @@ fun RegisterScreen(
                 fontSize = 16.sp,
                 modifier = Modifier.padding(bottom = 16.dp),
                 fontWeight = FontWeight.Normal,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             CustomTextField(
@@ -242,6 +246,8 @@ fun RegisterScreen(
                 }
             )
 
+            Spacer(Modifier.height(6.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -249,25 +255,27 @@ fun RegisterScreen(
                 HorizontalDivider(
                     modifier = Modifier.weight(1f),
                     thickness = 1.dp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
                     text = "atau",
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
                 HorizontalDivider(
                     modifier = Modifier.weight(1f),
                     thickness = 1.dp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
 
+            Spacer(Modifier.height(6.dp))
+
             CustomButtonFilled(
                 text = "Register with Google",
-                backgroundColor = Color.White,
-                textColor = Color.Black,
+                backgroundColor = MaterialTheme.colorScheme.tertiary,
+                textColor = MaterialTheme.colorScheme.onBackground,
                 fontSize = 14.sp,
                 icon = painterResource(R.drawable.ic_logo_google),
                 onClick = onRegisterWithGmail
@@ -278,7 +286,7 @@ fun RegisterScreen(
             ) {
                 Text(
                     text = "Already have an account? ",
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
                     text = "Login",

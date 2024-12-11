@@ -497,7 +497,8 @@ fun PopUpEmergencyContact(
                         fontSize = 16.sp
                     ),
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Spacer(Modifier.height(16.dp))
@@ -783,7 +784,7 @@ fun ProfileScreen(
                     },
                     text = "Logout",
                     icon = painterResource(R.drawable.ic_logout),
-                    textColor = Color.Black,
+                    textColor = MaterialTheme.colorScheme.onBackground,
                     iconColor = Color.Red,
                     outlineColor = Color.Red
                 )
