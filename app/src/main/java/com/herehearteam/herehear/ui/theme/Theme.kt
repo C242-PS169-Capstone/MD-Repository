@@ -13,24 +13,26 @@ import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
     primary = ColorPrimary,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    secondary = ColorSecondary,
+    error = ColorError,
+    background = ColorBackground,
+    surface = ColorSurface,
+    onPrimary = ColorOnPrimary,
+    onSecondary = ColorOnSecondary,
+    onBackground = ColorOnBackground,
+    onSurface = ColorOnSurface
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = ColorPrimary,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    secondary = ColorSecondaryDark,
+    error = ColorErrorDark,
+    background = ColorBackgroundDark,
+    surface = ColorSurfaceDark,
+    onPrimary = ColorOnPrimaryDark,
+    onSecondary = ColorOnSecondaryDark,
+    onBackground = ColorOnBackgroundDark,
+    onSurface = ColorOnSurfaceDark
 )
 
 @Composable
@@ -53,6 +55,6 @@ fun HereHearTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        content = content
+        content = content,
     )
 }
