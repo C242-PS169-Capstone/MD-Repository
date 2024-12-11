@@ -54,6 +54,7 @@ class ProfileViewModel(
         viewModelScope.launch {
             userId?.let { id ->
                 try {
+                    // Simpan ke lokal terlebih dahulu
                     val emergencyEntity = EmergencyEntity(
                         userId = id,
                         namaKontak = contact.emergency_name,
@@ -63,21 +64,18 @@ class ProfileViewModel(
                     emergencyContactRepository.insertEmergencyContact(emergencyEntity)
 
                     val apiRequest = EmergencyContactRequest(
-                        emergency_id = 1,
+                        emergency_id = 5,
                         emergency_name = contact.emergency_name,
                         emergency_number = contact.emergency_number,
                         relationship = contact.relationship,
                         user_id = id
                     )
-                    Log.d("TAI", "Saving emergency contact: $apiRequest")
-                    val apiResponse = apiService.createEmergencyContact(apiRequest)
 
-                    if (apiResponse.status && apiResponse.data != null) {
-                        val updatedEntity = emergencyEntity.copy(
-                            id = apiResponse.data.emergency_id
-                        )
-                        emergencyContactRepository.updateEmergencyContact(updatedEntity)
-
+                    val apiResponse = if (uiState.value.emergencyContact == null) {
+                        // Jika belum ada contact, lakukan create
+                        apiService.createEmergencyContact(apiRequest)
+                    } else {
+                        // Jika sudah ada contact, lakukan update
                         val updateRequest = EmergencyContactUpdateRequest(
                             emergency_name = contact.emergency_name,
                             emergency_number = contact.emergency_number,
@@ -85,15 +83,32 @@ class ProfileViewModel(
                             user_id = id
                         )
 
-                        Log.d("TAI", "Updating emergency contact: $updateRequest")
-
-                        apiService.updateEmergencyContact(apiResponse.data.emergency_id.toString(), updateRequest)
+                        apiService.updateEmergencyContact(
+                            apiRequest.emergency_id.toString(),
+                            updateRequest
+                        )
                     }
-                    Log.d("ProfileViewModel", "Emergency contact saved successfully")
+
+                    if (apiResponse.status && apiResponse.data != null) {
+                        // Update lokal dengan ID dari server jika create
+                        if (uiState.value.emergencyContact == null) {
+                            val updatedEntity = emergencyEntity.copy(
+                                id = apiResponse.data.emergency_id
+                            )
+                            emergencyContactRepository.updateEmergencyContact(updatedEntity)
+                        }
+                    } else {
+                        throw Exception(apiResponse.message ?: "Gagal menyimpan kontak")
+                    }
+
                     loadEmergencyContact()
                 } catch (e: Exception) {
                     Log.e("ProfileViewModel", "Error saving emergency contact", e)
-                    throw e
+//                    _uiState.update {
+//                        it.copy(
+//                            error = "Gagal menyimpan kontak: ${e.localizedMessage}"
+//                        )
+//                    }
                 }
             } ?: run {
                 Log.e("ProfileViewModel", "User ID is null, cannot save emergency contact")
