@@ -2,8 +2,10 @@ package com.herehearteam.herehear.ui.screens.home
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Settings
@@ -33,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -106,10 +110,25 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(136.dp)
-                        .background(ColorPrimary)
                 ) {
-                    Column(
+                    val isDarkTheme = isSystemInDarkTheme()
+                    val backgroundImage = if (isDarkTheme) {
+                        painterResource(R.drawable.image_bg_malem)
+                    } else {
+                        painterResource(R.drawable.image_bg_siang)
+                    }
+
+                    Image(
+                        painter = backgroundImage,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
+                    )
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp)
                     ) {
                         CustomTopAppBar(
                             pageTitle = "",
@@ -133,47 +152,73 @@ fun HomeScreen(
                                 }
                             }
                         )
+
+                        Box(
+                            modifier = Modifier
+                                .offset(y = 40.dp)
+                        ) {
+                            UserGreetingCard(
+                                userName = uiState.userName,
+                            )
+                        }
                     }
                 }
             }
 
             item {
-                Box(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .offset(y = (-40).dp)
-                ) {
-                    UserGreetingCard(
-                        userName = uiState.userName,
-                    )
-                }
+                Spacer(Modifier.height(8.dp))
             }
 
             item {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(top = 50.dp)
                 ) {
                     Grid(
                         columns = 4,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         FeatureCardComponent(
-                            title = "Streak", onClick = {}
-                        )
-                        FeatureCardComponent(
-                            title = "Forum", onClick = {}
-                        )
-                        FeatureCardComponent(
-                            title = "Psikolog", onClick = {}
-                        )
-                        FeatureCardComponent(
-                            title = "Hotline", onClick = {
+                            title = "Hotline",
+                            onClick = {
                                 showHotlineAlert = true
-                            }
+                            },
+                            icon = painterResource(R.drawable.ic_hotline),
+                            backgroundColor = Color(0xFFFFEEBF)
+                        )
+
+                        FeatureCardComponent(
+                            title = "Emergency",
+                            onClick = {
+
+                            },
+                            icon = painterResource(R.drawable.ic_emergency),
+                            backgroundColor = Color(0xFFBCF1F3)
+                        )
+
+                        FeatureCardComponent(
+                            title = "Streak",
+                            onClick = {
+
+                            },
+                            icon = painterResource(R.drawable.ic_streak),
+                            backgroundColor = Color(0xFFD1C4FD)
+                        )
+                        FeatureCardComponent(
+                            title = "Psikolog",
+                            onClick = {
+
+                            },
+                            icon = painterResource(R.drawable.ic_psikolog),
+                            backgroundColor = Color(0xFFF3E5DF)
                         )
                     }
                 }
+            }
+
+            item {
+                Spacer(Modifier.height(16.dp))
             }
 
             item {

@@ -21,44 +21,52 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.herehearteam.herehear.R
 import com.herehearteam.herehear.ui.theme.ColorPrimary
 
 @Composable
 fun FeatureCardComponent(
     title: String,
-//    icon: Painter? = null,
-    onClick: () -> Unit
+    icon: Painter? = null,
+    onClick: () -> Unit,
+    backgroundColor: Color = ColorPrimary
 ) {
     Column(
         modifier = Modifier
-            .size(80.dp)
+            .size(85.dp)
             .clickable(
                 onClick = onClick,
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }
             ),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
         Box(
             modifier = Modifier
-                .size(40.dp)
-                .background(Color.Gray)
-        ){
-
+                .size(60.dp)
+                .background(
+                    color = backgroundColor,
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            if (icon != null) {
+                Icon(
+                    painter = icon,
+                    contentDescription = title,
+                    modifier = Modifier.size(30.dp),
+                    tint = Color.Unspecified
+                )
+            }
         }
-//        Icon(
-//            painter = icon,
-//            contentDescription = title,
-//            modifier = Modifier
-//                .size(40.dp)
-//                .background(Color.Gray, CircleShape)
-//                .padding(8.dp),
-//            tint = ColorPrimary
-//        )
+
         Spacer(modifier = Modifier.height(8.dp))
+
         Text(
             text = title,
             textAlign = TextAlign.Center
@@ -77,7 +85,8 @@ fun FeatureCardPreview(){
     ) {
         FeatureCardComponent(
             title = "Streak",
-            onClick = {}
+            onClick = {},
+            icon = painterResource(R.drawable.ic_hotline)
         )
     }
 

@@ -10,22 +10,29 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.herehearteam.herehear.R
 
 @Composable
 fun UserGreetingCard(
     userName: String,
-    modifier: Modifier = Modifier
 ) {
+    val firstName = getFirstName(userName)
+
     Card(
         modifier = Modifier.height(70.dp),
         colors = CardDefaults.cardColors(
@@ -44,12 +51,17 @@ fun UserGreetingCard(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(50.dp)
-                        .background(Color.Gray),
+                        .size(50.dp),
                     contentAlignment = Alignment.Center
-                ){
-
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_greeting),
+                        contentDescription = "Profile Icon",
+                        modifier = Modifier.size(45.dp),
+                        tint = Color.Unspecified
+                    )
                 }
+
             }
             Column(
                 modifier = Modifier
@@ -58,8 +70,9 @@ fun UserGreetingCard(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "Hi, $userName!",
-                    style = MaterialTheme.typography.titleLarge
+                    text = "Hi, $firstName!",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Color.Black
                 )
                 Spacer(modifier = Modifier.height(1.dp))
                 Text(
@@ -69,8 +82,11 @@ fun UserGreetingCard(
                 )
             }
         }
-
     }
+}
+
+fun getFirstName(name: String): String {
+    return name.split(" ").firstOrNull() ?: name
 }
 
 @Preview(showBackground = true)

@@ -43,13 +43,12 @@ interface ApiService {
     ): EmergencyContactResponse
 
     @GET("emergency-contacts")
-    suspend fun getEmergencyContacts(
-        @Query("user_id") userId: String
+    suspend fun getAllEmergencyContacts(
     ): EmergencyContactResponse
 
     @PUT("emergency-contacts/{id}")
     suspend fun updateEmergencyContact(
-        @Path("id") id: String,
+        @Path("id") id: Int,
         @Body request: EmergencyContactUpdateRequest
     ): EmergencyContactResponse
 

@@ -1,10 +1,17 @@
 package com.herehearteam.herehear.data.remote.response
 
+//data class EmergencyContactResponse(
+//    val status: Boolean,
+//    val code: Int,
+//    val message: String,
+//    val data: EmergencyContactData?
+//)
+
 data class EmergencyContactResponse(
     val status: Boolean,
     val code: Int,
     val message: String,
-    val data: EmergencyContactData?
+    val data: List<EmergencyContactData>
 )
 
 data class EmergencyContactData(

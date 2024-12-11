@@ -11,7 +11,7 @@ import kotlinx.parcelize.Parcelize
 data class EmergencyEntity(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
-    val id: Int? = 0,
+    val id: Int = 0,
 
     @ColumnInfo(name = "userId")
     val userId: String,

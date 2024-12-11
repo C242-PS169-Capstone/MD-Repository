@@ -22,7 +22,7 @@ import java.time.format.DateTimeFormatter
 
 class JournalRepository(application: Application) {
     private val mJournalDao: JournalDao
-    private val journalApiService = ApiConfig.getApiModelService()
+    private val journalApiService = ApiConfig.getApiService()
     private val modelApiService = ApiConfig.getApiModelService()
     private val connectivityManager = application.getSystemService(ConnectivityManager::class.java)
     private val predictionRepository = PredictionRepository(modelApiService)
@@ -155,7 +155,7 @@ class JournalRepository(application: Application) {
             }
         } catch (e: Exception) {
             // Network or other error
-           throw e
+            throw e
         }
     }
 

@@ -782,6 +782,10 @@ fun ProfileScreen(
         )
     )
 
+    LaunchedEffect(Unit) {
+        viewModel.loadEmergencyContact()
+    }
+
     Scaffold(
         topBar = {
             Box(
