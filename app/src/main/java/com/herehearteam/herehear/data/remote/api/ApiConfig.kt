@@ -19,7 +19,7 @@ object ApiConfig {
             .build()
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://hearhere-app-828292280674.asia-southeast2.run.app/")
+            .baseUrl("https://hearhere-app-828292280674.asia-southeast2.run.app")
             .addConverterFactory(GsonConverterFactory.create())
             .client(client)
             .build()
