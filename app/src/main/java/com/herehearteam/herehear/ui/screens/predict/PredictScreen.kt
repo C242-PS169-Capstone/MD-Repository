@@ -47,9 +47,6 @@ fun PredictScreen(
     onBackClick: () -> Unit,
     journalRepository: JournalRepository,
     onArtikelClick: () -> Unit,
-//    onHotlineClick: () -> Unit,
-//    onEmergencyClick: () -> Unit
-//    predictionViewModel: PredictionViewModel
 ) {
     val currentUser = FirebaseAuth.getInstance().currentUser
     val userId = currentUser?.uid

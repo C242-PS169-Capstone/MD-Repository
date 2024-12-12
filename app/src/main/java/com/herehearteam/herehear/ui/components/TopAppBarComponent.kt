@@ -53,7 +53,7 @@ import com.herehearteam.herehear.R
 fun CustomTopAppBar(
     pageTitle: String? = null,
     icon: Any? = null,
-    backgroundColor: Color = Color.Transparent,
+    backgroundColor: Color = Color.Unspecified,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     actions: @Composable RowScope.() -> Unit = {},
     height: Dp = 56.dp,
@@ -148,7 +148,7 @@ fun CustomTopAppBar(
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
+@Preview()
 @Composable
 fun MyScreen() {
     Box(
