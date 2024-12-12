@@ -71,14 +71,13 @@ class JournalRepository(application: Application) {
     fun fetchJournals(userId: String): Flow<Result<List<JournalEntity>>> = flow {
         Log.d("JournalRepositoAUAHAAHAHA", "Fetching journals for user: $userId")
         try {
+            Log.d("JournalRepositoryANGGUR", "Local Journals: $userId")
             // Fetch from remote API
-            val apiResponse = journalApiService.getAllJournals()
+            val apiResponse = journalApiService.getAllJournalingByUserId(userId)
             Log.d("JournalRepositoryANGGUR", "API Response: $apiResponse")
 
             if (apiResponse.status) {
-                val userJournals = apiResponse.data.filter { journal ->
-                    journal.userId == userId
-                }
+                val userJournals = apiResponse.data
                 Log.d("JournalRepositoryANJINGGG", "API Response: $userJournals")
 
                 // Convert API journals to local entities

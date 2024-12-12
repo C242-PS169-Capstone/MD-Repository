@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.google.firebase.auth.FirebaseAuth
@@ -38,6 +39,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.herehearteam.herehear.R
+import com.herehearteam.herehear.navigation.Screen
+import com.herehearteam.herehear.navigation.Screen.Article.createRoute
 import com.herehearteam.herehear.ui.components.CustomButtonFilled
 import com.herehearteam.herehear.ui.components.PredictionLabelComponent
 
@@ -46,10 +49,7 @@ import com.herehearteam.herehear.ui.components.PredictionLabelComponent
 fun PredictScreen(
     onBackClick: () -> Unit,
     journalRepository: JournalRepository,
-    onArtikelClick: () -> Unit,
-//    onHotlineClick: () -> Unit,
-//    onEmergencyClick: () -> Unit
-//    predictionViewModel: PredictionViewModel
+    navController: NavController
 ) {
     val currentUser = FirebaseAuth.getInstance().currentUser
     val userId = currentUser?.uid
@@ -164,7 +164,9 @@ fun PredictScreen(
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 CustomButtonFilled(
-                                    onClick = onArtikelClick,
+                                    onClick = {
+                                        navController.navigate(Screen.Article.createRoute(filter = model2Prediction))
+                                    },
                                     text = "Lihat artikel",
                                     backgroundColor = MaterialTheme.colorScheme.primary
                                 )
@@ -172,7 +174,9 @@ fun PredictScreen(
                         }
                         else -> {
                             CustomButtonFilled(
-                                onClick = onArtikelClick,
+                                onClick = {
+                                    navController.navigate(Screen.Article.createRoute(filter = model2Prediction))
+                                },
                                 text = "Lihat artikel",
                                 backgroundColor = MaterialTheme.colorScheme.primary
                             )

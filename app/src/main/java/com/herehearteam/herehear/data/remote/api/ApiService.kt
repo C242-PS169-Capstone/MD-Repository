@@ -32,6 +32,11 @@ interface ApiService {
     suspend fun getAllJournals(
     ): ResponseAllJournal
 
+    @GET("journaling/user/{user_id}")
+    suspend fun getAllJournalingByUserId(
+        @Path("user_id") userId: String
+    ): ResponseAllJournal
+
     @GET("journals/{id}")
     suspend fun getJournalById(
         @Path("id") journalId: Int
@@ -84,6 +89,11 @@ interface ApiService {
 
     @GET("users")
     suspend fun getAllUsers(): AllUsersResponse
+
+    @GET("users/{id}")
+    suspend fun getUserById(
+        @Path("id") userId: String
+    ): UserResponse
 
     @DELETE("users/{id}")
     suspend fun deleteUser(
