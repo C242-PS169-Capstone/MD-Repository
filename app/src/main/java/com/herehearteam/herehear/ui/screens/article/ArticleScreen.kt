@@ -47,7 +47,7 @@ import com.herehearteam.herehear.ui.theme.HereHearTheme
 @Composable
 fun ArticleScreen(
     onNavigateBack: () -> Unit,
-    initialFilter: String
+    initialFilter: String = "Anxiety"
 ) {
     val filters = listOf(
         "Anxiety",

@@ -13,7 +13,7 @@ import androidx.compose.ui.platform.LocalContext
 
 private val LightColorScheme = lightColorScheme(
     primary = ColorPrimary,
-    secondary = ColorSecondary,
+//    secondary = ColorSecondary,
     error = ColorError,
     background = ColorBackground,
     surface = ColorSurface,
@@ -27,7 +27,7 @@ private val LightColorScheme = lightColorScheme(
 // Skema warna untuk tema gelap
 private val DarkColorScheme = darkColorScheme(
     primary = ColorPrimary,
-    secondary = ColorSecondaryDark,
+//    secondary = ColorSecondaryDark,
     error = ColorErrorDark,
     background = ColorBackgroundDark,
     surface = ColorSurfaceDark,

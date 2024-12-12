@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
@@ -78,6 +79,8 @@ fun JournalScreen(
     val apiService = ApiConfig.getApiModelService()
     val predictionRepository = PredictionRepository(apiService)
     val predictionViewModel = PredictionViewModel(predictionRepository)
+    val isLoading by viewModel.isLoading.collectAsState()
+    val saveError by viewModel.saveError.collectAsState()
 
     LaunchedEffect(isNetworkAvailable) {
         if (isNetworkAvailable) {
@@ -93,6 +96,12 @@ fun JournalScreen(
                     viewModel.selectQuestion(questionObject = null, questionText = it.question)
                 }
             }
+        }
+    }
+
+    LaunchedEffect(saveError) {
+        saveError?.let { error ->
+            Log.e("JournalScreen", "Save Error: $error")
         }
     }
 
@@ -283,6 +292,20 @@ fun JournalScreen(
                     }
                 }
             )
+        }
+
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(50.dp)
+                )
+            }
         }
     }
 }

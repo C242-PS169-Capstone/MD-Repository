@@ -1,5 +1,6 @@
 package com.herehearteam.herehear.data.remote
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
@@ -17,6 +18,7 @@ import com.herehearteam.herehear.domain.model.SignInResult
 import com.herehearteam.herehear.domain.model.User
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.tasks.await
+import retrofit2.HttpException
 
 class GoogleAuthUiClient(
     private val context: Context,
@@ -38,26 +40,53 @@ class GoogleAuthUiClient(
         return result?.pendingIntent?.intentSender
     }
 
+    @SuppressLint("SuspiciousIndentation")
     suspend fun signInWithIntent(intent: Intent): SignInResult {
         val credential = oneTapClient.getSignInCredentialFromIntent(intent)
         val googleIdToken = credential.googleIdToken
         val googleCredentials = GoogleAuthProvider.getCredential(googleIdToken, null)
         return try {
             val firebaseUser = auth.signInWithCredential(googleCredentials).await().user
-
             if(firebaseUser != null) {
-                val currentUser = apiService.getUserById(firebaseUser.uid)
-                if(!currentUser.status){
-                val userRequest = UserRequestDto(
-                    user_id = firebaseUser!!.uid, // Use Firebase UID
-                    username = firebaseUser.displayName!!,
-                    email = firebaseUser.email!!,
-                    password = "Tidak ada Password"
-                )
-                    apiService.createUser(userRequest)
+                try {
+                    // Try to get the user first
+                    apiService.getUserById(firebaseUser.uid)
+                } catch (e: HttpException) {
+                    // Check if the error is specifically a 404 Not Found
+                    if (e.code() == 404) {
+                        // User doesn't exist, so create a new user
+                        val userRequest = UserRequestDto(
+                            user_id = firebaseUser.uid,
+                            username = firebaseUser.displayName ?: "User",
+                            email = firebaseUser.email ?: "",
+                            password = "Tidak ada Password"
+                        )
+                        apiService.createUser(userRequest)
+                    } else {
+                        // For other HTTP errors, rethrow
+                        throw e
+                    }
+                } catch (e: Exception) {
+                    // Handle other types of exceptions
+                    e.printStackTrace()
                 }
+//                try {
+//                    val currentUser = apiService.getUserById(firebaseUser.uid)
+//                    if(!currentUser.status){
+//                        val userRequest = UserRequestDto(
+//                            user_id = firebaseUser.uid,
+//                            username = firebaseUser.displayName!!,
+//                            email = firebaseUser.email!!,
+//                            password = "Tidak ada Password"
+//                        )
+//                        apiService.createUser(userRequest)
+//                    }
+//                } catch (e: Exception) {
+//                    e.printStackTrace()
+//                }
             }
 
+            Log.d("AuthClient", "User signed in successfully")
             SignInResult(
                 data = firebaseUser?.run {
                     User(
