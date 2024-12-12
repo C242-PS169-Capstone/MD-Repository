@@ -141,7 +141,7 @@ class JournalRepository(application: Application) {
             }
         } catch (e: Exception) {
             // Network or other error
-           throw e
+            throw e
         }
     }
 

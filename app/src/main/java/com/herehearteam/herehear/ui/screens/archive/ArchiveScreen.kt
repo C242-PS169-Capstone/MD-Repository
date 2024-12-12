@@ -72,8 +72,15 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import com.herehearteam.herehear.domain.model.Journal
 import androidx.activity.viewModels
+import androidx.compose.foundation.Image
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.IconButton
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
+import com.herehearteam.herehear.R
 import com.herehearteam.herehear.navigation.Screen
 
 @Composable
@@ -182,30 +189,58 @@ fun JournalArchiveContent(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(ColorPrimary)
-                    .height(80.dp)
+                    .height(136.dp)
             ) {
-                Column(modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .offset(y = 50.dp)){
-                    CustomSearchBar(
-                        value = searchQuery,
-                        onValueChange = { newQuery ->
-                            onSearchQueryChange(newQuery)
-                        },
-                        placeholder = "Cari Jurnalmu",
-                        iconColor = ColorPrimary,
-                        backgroundColor = Color(0xFFD1C4FD),
-                        trailingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.DateRange,
-                                contentDescription = "Date Filter",
-                                modifier = Modifier.clickable {
-                                    showDatePicker = true
-                                }
-                            )
-                        }
+
+                val isDarkTheme = isSystemInDarkTheme()
+                val backgroundImage = if (isDarkTheme) {
+                    painterResource(R.drawable.image_bg_malem)
+                } else {
+                    painterResource(R.drawable.image_bg_siang)
+                }
+
+                Image(
+                    painter = backgroundImage,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    CustomTopAppBar(
+                        pageTitle = "JurnalKu",
+                        backgroundColor = Color.Transparent,
+                        contentColor = Color.White,
+                        icon = Icons.Default.ArrowBack
                     )
+
+                    Box(
+                        modifier = Modifier
+                            .offset(y = 48.dp)
+                    ) {
+                        CustomSearchBar(
+                            value = searchQuery,
+                            onValueChange = { newQuery ->
+                                onSearchQueryChange(newQuery)
+                            },
+                            placeholder = "Cari Jurnalmu",
+                            iconColor = ColorPrimary,
+                            backgroundColor = Color(0xFFD1C4FD),
+                            trailingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.DateRange,
+                                    contentDescription = "Date Filter",
+                                    modifier = Modifier.clickable {
+                                        showDatePicker = true
+                                    }
+                                )
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -398,56 +433,25 @@ fun ArchiveScreen(
         factory = ArchiveViewModelFactory.getInstance(context)
     )
     val uiState by viewModel.uiState.collectAsState()
-
-    Scaffold(
-        topBar = {
-            Box(modifier = Modifier
-                .background(ColorPrimary)){
-                Column(modifier = Modifier
-                    .padding(horizontal = 16.dp)){
-                    CustomTopAppBar(
-                        pageTitle = "JurnalKu",
-                        backgroundColor = ColorPrimary,
-                        contentColor = Color.White,
-                        icon = Icons.Default.ArrowBack
-                    )
-                }
-            }
-        }
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = innerPadding.calculateTopPadding())
-        ) {
-            JournalArchiveContent(
-                journals = uiState.journals,
-                selectedMonth = uiState.selectedMonth,
-                onMonthSelected = { month ->
-                    viewModel.updateSelectedMonth(month)
-                },
-                selectedDate = uiState.selectedDate,
-                onDateSelected = { date ->
-                    viewModel.updateSelectedDate(date)
-                },
-                searchQuery = uiState.searchQuery,
-                onSearchQueryChange = { query ->
-                    viewModel.updateSearchQuery(query)
-                },
-                navController = navController
-            )
-        }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        JournalArchiveContent(
+            journals = uiState.journals,
+            selectedMonth = uiState.selectedMonth,
+            onMonthSelected = { month ->
+                viewModel.updateSelectedMonth(month)
+            },
+            selectedDate = uiState.selectedDate,
+            onDateSelected = { date ->
+                viewModel.updateSelectedDate(date)
+            },
+            searchQuery = uiState.searchQuery,
+            onSearchQueryChange = { query ->
+                viewModel.updateSearchQuery(query)
+            },
+            navController = navController
+        )
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun ArchiveScreenPreview(){
-//    val navController = rememberNavController()
-//    val viewModel = ArchiveViewModel()
-//    HereHearTheme {
-//        ArchiveScreen(
-//            navController = navController,
-//            viewModel = viewModel)
-//    }
-//}

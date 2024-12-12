@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
@@ -29,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,7 +53,7 @@ import com.herehearteam.herehear.R
 fun CustomTopAppBar(
     pageTitle: String? = null,
     icon: Any? = null,
-    backgroundColor: Color = Color.Transparent,
+    backgroundColor: Color = Color.Unspecified,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     actions: @Composable RowScope.() -> Unit = {},
     height: Dp = 56.dp,
@@ -93,7 +96,11 @@ fun CustomTopAppBar(
                         contentDescription = null,
                         modifier = Modifier
                             .size(28.dp)
-                            .clickable { onIconClick?.invoke() },
+                            .clickable(
+                                onClick = { onIconClick?.invoke() },
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() }
+                            )
                     )
                     is ImageVector -> IconButton(
                         onClick = { onIconClick?.invoke() },
@@ -123,6 +130,7 @@ fun CustomTopAppBar(
                     )
                 }
             }
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -140,7 +148,7 @@ fun CustomTopAppBar(
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
+@Preview()
 @Composable
 fun MyScreen() {
     Box(
