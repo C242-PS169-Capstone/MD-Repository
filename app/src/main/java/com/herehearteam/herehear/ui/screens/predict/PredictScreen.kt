@@ -1,5 +1,9 @@
 package com.herehearteam.herehear.ui.screens.predict
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,9 +23,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -39,10 +46,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.herehearteam.herehear.R
+import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
+import com.herehearteam.herehear.di.AppDependencies
 import com.herehearteam.herehear.navigation.Screen
 import com.herehearteam.herehear.navigation.Screen.Article.createRoute
 import com.herehearteam.herehear.ui.components.CustomButtonFilled
+import com.herehearteam.herehear.ui.components.HotlineAlertDialog
+import com.herehearteam.herehear.ui.components.LocalGoogleAuthUiClient
 import com.herehearteam.herehear.ui.components.PredictionLabelComponent
+import com.herehearteam.herehear.ui.screens.profile.ProfileViewModel
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
@@ -54,11 +66,20 @@ fun PredictScreen(
     val currentUser = FirebaseAuth.getInstance().currentUser
     val userId = currentUser?.uid
     val context = LocalContext.current
+    var showHotlineAlert by remember { mutableStateOf(false) }
     val lastPredictedJournalState = remember { mutableStateOf<JournalEntity?>(null) }
     var lastPredictedJournal = lastPredictedJournalState.value
     // Coroutine scope for launching background operations
     val coroutineScope = rememberCoroutineScope()
-    //val predictionResult by predictionViewModel.predictionResult.collectAsState()
+
+    val profileViewModel = ProfileViewModel(
+        googleAuthUiClient = LocalGoogleAuthUiClient.current,
+        userPreferencesDataStore = UserPreferencesDataStore.getInstance(context = LocalContext.current),
+        emergencyContactRepository = AppDependencies.getInstance(LocalContext.current).emergencyContactRepository
+    )
+    val profileState by profileViewModel.uiState.collectAsState()
+    val emergencyPhoneNumber = profileState.emergencyContact?.emergency_number ?: ""
+
 
     LaunchedEffect(key1 = true) {
         coroutineScope.launch {
@@ -73,6 +94,13 @@ fun PredictScreen(
             lastPredictedJournalState.value = predictedJournals
         }
     }
+
+    if (showHotlineAlert) {
+        HotlineAlertDialog(
+            onDismiss = { showHotlineAlert = false }
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -152,13 +180,25 @@ fun PredictScreen(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 CustomButtonFilled(
-                                    onClick = {  },
+                                    onClick = { showHotlineAlert = true },
                                     text = "Hubungi Layanan",
                                     backgroundColor = MaterialTheme.colorScheme.primary
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 CustomButtonFilled(
-                                    onClick = {  },
+                                    onClick = {
+                                        val phoneNumber = emergencyPhoneNumber
+                                        val message = "Pesan darurat!"
+
+                                        val uri = Uri.parse("https://api.whatsapp.com/send?phone=$phoneNumber&text=${Uri.encode(message)}")
+                                        val intent = Intent(Intent.ACTION_VIEW, uri)
+
+                                        try {
+                                            context.startActivity(intent)
+                                        } catch (e: ActivityNotFoundException) {
+                                            Toast.makeText(context, "WhatsApp tidak terinstal", Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
                                     text = "Hubungi Kerabat",
                                     backgroundColor = MaterialTheme.colorScheme.primary
                                 )

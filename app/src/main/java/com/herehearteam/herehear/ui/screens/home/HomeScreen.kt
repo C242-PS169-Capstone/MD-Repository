@@ -203,7 +203,7 @@ fun HomeScreen(
                         FeatureCardComponent(
                             title = "Emergency",
                             onClick = {
-                                val phoneNumber = "+6288225342861"
+                                val phoneNumber = emergencyPhoneNumber
                                 val message = "Pesan darurat!"
 
                                 val uri = Uri.parse("https://api.whatsapp.com/send?phone=$phoneNumber&text=${Uri.encode(message)}")
