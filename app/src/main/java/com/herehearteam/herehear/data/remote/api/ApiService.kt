@@ -3,6 +3,7 @@ package com.herehearteam.herehear.data.remote.api
 import com.herehearteam.herehear.data.model.EmergencyContactRequest
 import com.herehearteam.herehear.data.model.EmergencyContactUpdateRequest
 import com.herehearteam.herehear.data.model.JournalRequestDto
+import com.herehearteam.herehear.data.model.JournalUpdateRequestDto
 import com.herehearteam.herehear.data.model.PredictionRequest
 import com.herehearteam.herehear.data.model.UserRequestDto
 import com.herehearteam.herehear.data.remote.response.AllUsersResponse
@@ -29,8 +30,28 @@ interface ApiService {
 
     @GET("Journals")
     suspend fun getAllJournals(
-        @Query("user_id") userId: String
     ): ResponseAllJournal
+
+    @GET("journaling/user/{user_id}")
+    suspend fun getAllJournalingByUserId(
+        @Path("user_id") userId: String
+    ): ResponseAllJournal
+
+    @GET("journals/{id}")
+    suspend fun getJournalById(
+        @Path("id") journalId: Int
+    ): ResponseJournal
+
+    @PUT("journals/{id}")
+    suspend fun updateJournalById(
+        @Path("id") journalId: Int,
+        @Body request: JournalUpdateRequestDto
+    ): ResponseJournal
+
+    @DELETE("journals/{id}")
+    suspend fun deleteJournalById(
+        @Path("id") journalId: Int
+    ): ResponseJournal
 
     @POST("predict")
     suspend fun predictText(
@@ -67,6 +88,11 @@ interface ApiService {
 
     @GET("users")
     suspend fun getAllUsers(): AllUsersResponse
+
+    @GET("users/{id}")
+    suspend fun getUserById(
+        @Path("id") userId: String
+    ): UserResponse
 
     @DELETE("users/{id}")
     suspend fun deleteUser(

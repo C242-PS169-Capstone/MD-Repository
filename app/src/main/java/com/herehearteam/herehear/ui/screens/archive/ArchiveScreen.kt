@@ -1,5 +1,6 @@
 package com.herehearteam.herehear.ui.screens.archive
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -365,7 +366,9 @@ fun JournalArchiveContent(
                                 text = journal.content,
                                 color = journalColors[journal.id] ?: colors[0],
                                 journalId = journal.id,
-                                onClick = { navController.navigate(Screen.Journal.createRoute(journalId = journal.id)) }
+                                onClick = {
+                                    Log.d("ArchivSSSSSSSeScreen", "Journal clicked: ${journal.id}")
+                                    navController.navigate(Screen.Journal.createRoute(journalId = journal.id)) }
                             )
                         }
                     }

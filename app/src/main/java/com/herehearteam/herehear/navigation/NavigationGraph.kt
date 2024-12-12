@@ -110,9 +110,7 @@ fun NavigationGraph(
                     }
                 },
                 journalRepository = journalRepository,
-                onArtikelClick = {
-                    navController.navigate(Screen.Article.route)
-                }
+                navController = navController
             )
         }
 
@@ -135,9 +133,31 @@ fun NavigationGraph(
             HomeScreen(navController)
         }
 
-        composable(Screen.Article.route) {
+        composable(
+            Screen.Article.route,
+            arguments = listOf(
+                navArgument("filter") {
+                    type = NavType.StringType
+                    defaultValue = "Anxiety"
+                })
+            ) {
+                backStackEntry ->
+            val filters = listOf(
+                "Anxiety",
+                "Depression",
+                "Suicidal",
+                "Stress",
+                "Bipolar",
+                "Personality disorder"
+            )
+            val initialFilter = backStackEntry.arguments?.getString("filter") ?: filters.first()
+            Log.d("GUAA", "ini adalah $initialFilter")
+            val selectedInitialFilter = filters.find { it.equals(initialFilter, ignoreCase = true) }
+                ?: filters.first()
+            Log.d("GUAA", "ini adalakhgouh $selectedInitialFilter")
             ArticleScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                initialFilter = selectedInitialFilter
             )
         }
 

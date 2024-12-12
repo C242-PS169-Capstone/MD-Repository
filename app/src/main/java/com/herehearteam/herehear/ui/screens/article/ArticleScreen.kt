@@ -46,15 +46,16 @@ import com.herehearteam.herehear.ui.theme.HereHearTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ArticleScreen(
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    initialFilter: String
 ) {
     val filters = listOf(
         "Anxiety",
         "Depression",
         "Suicidal",
         "Stress",
-        "Bi-Polar",
-        "Personality Disorder"
+        "Bipolar",
+        "Personality disorder"
     )
 
     val apiService = ApiConfig.getArticleService()
@@ -64,7 +65,9 @@ fun ArticleScreen(
     var showBottomSheet by remember { mutableStateOf(false) }
     var selectedArticle by remember { mutableStateOf<Article?>(null) }
     val context = LocalContext.current
-    val (selectedFilter, setSelectedFilter) = remember { mutableStateOf(filters.first()) }
+    val (selectedFilter, setSelectedFilter) = remember {
+        mutableStateOf(initialFilter)
+    }
 
     LaunchedEffect(Unit) {
         articleViewModel.fetchArticles("mental health")
@@ -177,13 +180,13 @@ fun ArticleScreen(
     }
 }
 
-@Preview(showSystemUi = true, showBackground = true)
-@Composable
-fun HomeScreenPreview() {
-    HereHearTheme {
-        val apiService = getArticleService()
-        ArticleScreen(
-            onNavigateBack = {},
-        )
-    }
-}
+//@Preview(showSystemUi = true, showBackground = true)
+//@Composable
+//fun HomeScreenPreview() {
+//    HereHearTheme {
+//        val apiService = getArticleService()
+//        ArticleScreen(
+//            onNavigateBack = {},
+//        )
+//    }
+//}

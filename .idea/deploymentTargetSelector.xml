@@ -2,7 +2,7 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="app">
+      <SelectionState runConfigName="HereHear.app">
         <option name="selectionMode" value="DROPDOWN" />
         <DropdownSelection timestamp="2024-12-12T11:42:00.337871Z">
           <Target type="DEFAULT_BOOT">
