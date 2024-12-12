@@ -5,6 +5,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 object ApiConfig {
     const val GUARDIAN_API_KEY = "79131a47-8add-4564-8d08-4d82dd49b34c"
@@ -32,10 +33,13 @@ object ApiConfig {
 
         val client = OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
+            .connectTimeout(30, TimeUnit.SECONDS) // Waktu untuk mencoba koneksi
+            .readTimeout(30, TimeUnit.SECONDS)    // Waktu untuk membaca data
+            .writeTimeout(30, TimeUnit.SECONDS)
             .build()
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://ml-predict-1087364605660.us-central1.run.app")
+            .baseUrl("https://hearhere-ml-api-828292280674.asia-southeast2.run.app/")
             .addConverterFactory(GsonConverterFactory.create())
             .client(client)
             .build()

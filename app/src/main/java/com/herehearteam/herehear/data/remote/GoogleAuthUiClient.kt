@@ -46,13 +46,16 @@ class GoogleAuthUiClient(
             val firebaseUser = auth.signInWithCredential(googleCredentials).await().user
 
             if(firebaseUser != null) {
-            val userRequest = UserRequestDto(
-                user_id = firebaseUser!!.uid, // Use Firebase UID
-                username = firebaseUser.displayName!!,
-                email = firebaseUser.email!!,
-                password = null
-            )
-                apiService.createUser(userRequest)
+                val currentUser = apiService.getUserById(firebaseUser.uid)
+                if(!currentUser.status){
+                val userRequest = UserRequestDto(
+                    user_id = firebaseUser!!.uid, // Use Firebase UID
+                    username = firebaseUser.displayName!!,
+                    email = firebaseUser.email!!,
+                    password = "Tidak ada Password"
+                )
+                    apiService.createUser(userRequest)
+                }
             }
 
             SignInResult(
