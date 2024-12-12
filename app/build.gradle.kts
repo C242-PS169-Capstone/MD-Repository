@@ -76,4 +76,5 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.glide.compose)
     implementation(libs.bcrypt)
+    implementation(libs.accompanist.systemuicontroller)
 }

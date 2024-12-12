@@ -111,7 +111,6 @@ fun HomeScreen(
         articleViewModel.fetchArticles("mental health")
     }
 
-
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -204,10 +203,10 @@ fun HomeScreen(
                         FeatureCardComponent(
                             title = "Emergency",
                             onClick = {
-//                                val phoneNumber = emergencyPhoneNumber
+                                val phoneNumber = "+6288225342861"
                                 val message = "Pesan darurat!"
 
-                                val uri = Uri.parse("https://api.whatsapp.com/send?phone=$emergencyPhoneNumber&text=${Uri.encode(message)}")
+                                val uri = Uri.parse("https://api.whatsapp.com/send?phone=$phoneNumber&text=${Uri.encode(message)}")
                                 val intent = Intent(Intent.ACTION_VIEW, uri)
 
                                 try {

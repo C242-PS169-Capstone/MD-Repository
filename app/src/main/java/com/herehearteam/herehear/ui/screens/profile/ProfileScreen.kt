@@ -451,7 +451,7 @@ fun PopUpEmergencyContact(
     }
 
     fun isValidPhoneNumber(phone: String): Boolean {
-        val phoneRegex = "^(\\+62|62|0)8[1-9][0-9]{6,10}\$".toRegex()
+        val phoneRegex = "^(\\+62)8[1-9][0-9]{6,10}\$".toRegex()
         return phoneRegex.matches(phone)
     }
 
@@ -540,7 +540,7 @@ fun PopUpEmergencyContact(
 
                 if (!isValidPhoneNumber(number) && number.isNotBlank()) {
                     Text(
-                        text = "Nomor telepon tidak valid. Gunakan format +62 atau 08.",
+                        text = "Nomor telepon tidak valid. Gunakan format +62.",
                         color = Color.Red,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(top = 8.dp)
