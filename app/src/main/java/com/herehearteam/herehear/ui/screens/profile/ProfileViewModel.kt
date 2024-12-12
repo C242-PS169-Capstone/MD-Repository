@@ -15,11 +15,13 @@ import com.herehearteam.herehear.data.model.EmergencyContactRequest
 import com.herehearteam.herehear.data.model.EmergencyContactUpdateRequest
 import com.herehearteam.herehear.data.remote.GoogleAuthUiClient
 import com.herehearteam.herehear.data.remote.api.ApiConfig
+import com.herehearteam.herehear.data.remote.api.ApiService
 import com.herehearteam.herehear.di.AppDependencies
 import com.herehearteam.herehear.ui.screens.auth.LoginViewModel
 import com.herehearteam.herehear.ui.screens.auth.LoginViewModelFactory
 import com.herehearteam.herehear.ui.screens.auth.RegisterViewModelFactory
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -28,12 +30,14 @@ import kotlinx.coroutines.tasks.await
 class ProfileViewModel(
     private val googleAuthUiClient: GoogleAuthUiClient,
     private val userPreferencesDataStore: UserPreferencesDataStore,
-    private val emergencyContactRepository: EmergencyContactRepository
+    private val emergencyContactRepository: EmergencyContactRepository,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState = _uiState.asStateFlow()
-
     private val apiService = ApiConfig.getApiService()
+
+//    private val _uiState = MutableStateFlow(ProfileUiState())
+//    val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
     init {
         loadUserData()
@@ -127,28 +131,36 @@ class ProfileViewModel(
     }
 
     fun loadEmergencyContact() {
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        val userId = currentUser?.uid
         viewModelScope.launch {
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            val userId = currentUser?.uid
+
             userId?.let { id ->
-                val emergencyContact = emergencyContactRepository.getEmergencyContact(id)
-                _uiState.update { currentState ->
-                    currentState.copy(
-                        emergencyContact = emergencyContact?.let {
-                            EmergencyContact(
-                                emergency_name = it.namaKontak ?: "",
-                                emergency_number = it.nomorTelepon ?: "",
-                                relationship = it.hubungan ?: ""
+                try {
+                    // Pertama, coba fetch dari API jika lokal kosong
+                    emergencyContactRepository.fetchAndSaveEmergencyContact(id)
+
+                    // Kemudian ambil dari lokal
+                    val localContact = emergencyContactRepository.getEmergencyContact(id)
+
+                    localContact?.let { contact ->
+                        _uiState.update { currentState ->
+                            currentState.copy(
+                                emergencyContact = EmergencyContact(
+                                    userId = contact.userId,
+                                    emergency_name = contact.namaKontak ?: "",
+                                    emergency_number = contact.nomorTelepon ?: "",
+                                    relationship = contact.hubungan ?: ""
+                                )
                             )
                         }
-                    )
+                    }
+                } catch (e: Exception) {
+                    Log.e("ProfileViewModel", "Error loading emergency contact", e)
+                    // Optional: Set error state if needed
                 }
             }
         }
-    }
-
-    private suspend fun updateEmergencyContact(entity: EmergencyEntity) {
-        emergencyContactRepository.updateEmergencyContact(entity)
     }
 
     suspend fun signOut() {

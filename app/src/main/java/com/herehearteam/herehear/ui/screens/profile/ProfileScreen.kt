@@ -425,8 +425,10 @@ fun PopUpEmergencyContact(
     val view = LocalView.current
     var isImeVisible by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        viewModel.loadEmergencyContact()
+    LaunchedEffect(userId) {
+        userId?.let {
+            viewModel.loadEmergencyContact()
+        }
     }
 
     var name by remember { mutableStateOf(initialContact?.emergencyContact?.emergency_name ?: uiState.emergencyContact?.emergency_name ?: "") }

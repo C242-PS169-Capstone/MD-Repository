@@ -35,7 +35,7 @@ object ApiConfig {
             .build()
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://ml-predict-1087364605660.us-central1.run.app")
+            .baseUrl("https://hearhere-ml-api-828292280674.asia-southeast2.run.app/")
             .addConverterFactory(GsonConverterFactory.create())
             .client(client)
             .build()

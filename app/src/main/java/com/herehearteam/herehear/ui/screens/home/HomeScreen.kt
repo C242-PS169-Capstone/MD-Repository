@@ -1,7 +1,9 @@
 package com.herehearteam.herehear.ui.screens.home
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,6 +48,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.herehearteam.herehear.R
+import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
 import com.herehearteam.herehear.data.local.repository.PredictionRepository
 import com.herehearteam.herehear.data.remote.api.ApiConfig
 import com.herehearteam.herehear.di.AppDependencies
@@ -66,6 +69,7 @@ import com.herehearteam.herehear.ui.theme.ColorPrimary
 import com.herehearteam.herehear.ui.theme.HereHearTheme
 import com.herehearteam.herehear.ui.components.DailyPositiveQuoteCard
 import com.herehearteam.herehear.ui.components.getDailyPositiveQuote
+import com.herehearteam.herehear.ui.screens.profile.ProfileViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,6 +91,15 @@ fun HomeScreen(
     val articleViewModel: ArticleViewModel = viewModel(
         factory = ArticleViewModelFactory(apiService)
     )
+
+    val profileViewModel = ProfileViewModel(
+        googleAuthUiClient = LocalGoogleAuthUiClient.current,
+        userPreferencesDataStore = UserPreferencesDataStore.getInstance(context = LocalContext.current),
+        emergencyContactRepository = AppDependencies.getInstance(LocalContext.current).emergencyContactRepository
+    )
+    val profileState by profileViewModel.uiState.collectAsState()
+    val emergencyPhoneNumber = profileState.emergencyContact?.emergency_number ?: ""
+
 
     if (showHotlineAlert) {
         HotlineAlertDialog(
@@ -191,12 +204,21 @@ fun HomeScreen(
                         FeatureCardComponent(
                             title = "Emergency",
                             onClick = {
+//                                val phoneNumber = emergencyPhoneNumber
+                                val message = "Pesan darurat!"
 
+                                val uri = Uri.parse("https://api.whatsapp.com/send?phone=$emergencyPhoneNumber&text=${Uri.encode(message)}")
+                                val intent = Intent(Intent.ACTION_VIEW, uri)
+
+                                try {
+                                    context.startActivity(intent)
+                                } catch (e: ActivityNotFoundException) {
+                                    Toast.makeText(context, "WhatsApp tidak terinstal", Toast.LENGTH_SHORT).show()
+                                }
                             },
                             icon = painterResource(R.drawable.ic_emergency),
                             backgroundColor = Color(0xFFBCF1F3)
                         )
-
                         FeatureCardComponent(
                             title = "Streak",
                             onClick = {
