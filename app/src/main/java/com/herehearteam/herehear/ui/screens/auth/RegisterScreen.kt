@@ -333,14 +333,3 @@ fun RegisterDialog() {
         }
     }
 }
-
-//@Preview
-//@Composable
-//fun RegisterPreview(){
-//    RegisterScreen(
-//        onRegisterWithGmail = { },
-//        onNavigateBack = { },
-//        onLoginClick = { },
-//        onRegisterSuccess = { }
-//    )
-//}

@@ -119,70 +119,6 @@ class JournalViewModel(
     }
 
 
-//    fun saveJournal() {
-//        viewModelScope.launch(Dispatchers.IO) {
-//            val userId = _currentUser.value?.userId
-//            if (userId == null) {
-//                withContext(Dispatchers.Main) {
-//                    _isSaveSuccessful.value = false
-//                }
-//                return@launch
-//            }
-//
-//            val question = _selectedQuestion.value?.text ?: ""
-//            val content = _memoText.value.takeIf { it.isNotBlank() }
-//
-//            if (content != null) {
-//                if (currentJournalId != null) {
-//                    journalRepository.updateJournalById(
-//                        id = currentJournalId!!,
-//                        content = content,
-//                        userId = userId
-//                    )
-//                    val reqBody = JournalUpdateRequestDto(
-//                        content = content,
-//                        question = question
-//                    )
-//                    apiService.updateJournalById(currentJournalId!!, reqBody)
-//                } else {
-//                    val remoteJournal = JournalRequestDto(
-//                        content = content,
-//                        question = question,
-//                        user_id = userId
-//                    )
-//                    val response = apiService.createJournal(remoteJournal)
-//
-//                    val predictionResult = predictionRepository.predictText(content)
-//                    val journalToSave = JournalEntity(
-//                        journalId = response.data.journalId,
-//                        createdDate = JournalHelper.getCurrentDate(),
-//                        content = content,
-//                        question = question,
-//                        userId = userId,
-//                        isPredicted = _isNetworkAvailable.value,
-//                        predict1Label = predictionResult.getOrNull()?.model1?.prediction.toString() ?: null,
-//                        predict1Confidence = predictionResult.getOrNull()?.model1?.confidence.toString() ?: null,
-//                        predict2Label = predictionResult.getOrNull()?.model2?.prediction.toString() ?: null,
-//                        predict2Confidence = predictionResult.getOrNull()?.model2?.confidence.toString() ?: null,
-//                    )
-//                    journalRepository.insertJournal(journalToSave)
-//                }
-//
-//                currentJournalId = null
-//                originalJournalContent = ""
-//
-//                withContext(Dispatchers.Main) {
-//                    _isSaveSuccessful.value = true
-//                    _navigationEvent.value = NavigationEvent.NavigateToHome
-//                    clearSelectedQuestion()
-//                    _isFabExpanded.value = false
-//                }
-//            } else {
-////              handle
-//            }
-//        }
-//    }
-
     fun saveJournal() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -275,6 +211,7 @@ class JournalViewModel(
                     _isSaveSuccessful.value = false
                     _saveError.value = e.localizedMessage ?: "Terjadi kesalahan tidak dikenal"
                     showErrorToast(_saveError.value ?: "Gagal menyimpan jurnal")
+                    _navigationEvent.value = NavigationEvent.NavigateToHome
                 }
             } finally {
                 // Ensure loading is set to false
@@ -390,14 +327,25 @@ class JournalViewModel(
         currentJournalId?.let { id ->
             if (userId != null) {
                 viewModelScope.launch(Dispatchers.IO) {
-                    journalRepository.deleteJournalById(id, userId)
-                    currentJournalId = null
-                    originalJournalContent = ""
+                    try {
+                        // Panggil repository untuk delete
+                        journalRepository.deleteJournalById(id, userId)
 
-                    withContext(Dispatchers.Main) {
-                        _navigationEvent.value = NavigationEvent.NavigateBack
-                        clearSelectedQuestion()
-                        _isFabExpanded.value = false
+                        currentJournalId = null
+                        originalJournalContent = ""
+
+                        withContext(Dispatchers.Main) {
+                            _navigationEvent.value = NavigationEvent.NavigateBack
+                            clearSelectedQuestion()
+                            _isFabExpanded.value = false
+                        }
+                    } catch (e: Exception) {
+                        Log.e("deleteJournal", "Failed to delete journal: ${e.message}")
+
+                        withContext(Dispatchers.Main) {
+                            // Opsional: Tampilkan pesan error ke user
+                            showErrorToast("Failed to delete journal.")
+                        }
                     }
                 }
             } else {

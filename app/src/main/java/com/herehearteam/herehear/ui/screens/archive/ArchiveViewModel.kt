@@ -48,39 +48,46 @@ class ArchiveViewModel(
 
         if (userId != null) {
             viewModelScope.launch {
-                Log.d("ArchiveViewModelBACOT", "Fetching journals for user: $userId")
-                journalRepository.fetchJournals(userId)
-                    .collect { result ->
-                        result.onSuccess { journalEntities ->
-                            // Convert JournalEntity to Journal
-                            val journals = journalEntities.map { entity ->
-                                Journal(
-                                    id = entity.journalId,
-                                    content = entity.content,
-                                    dateTime = entity.createdDate,
-                                    question = entity.question,
-                                    userId = entity.userId
-                                )
-                            }
+                try {
+                    Log.d("ArchiveViewModelBACOT", "Fetching journals for user: $userId")
+                    journalRepository.fetchJournals(userId)
+                        .collect { result ->
+                            result.onSuccess { journalEntities ->
+                                // Convert JournalEntity to Journal
+                                val journals = journalEntities.map { entity ->
+                                    Journal(
+                                        id = entity.journalId,
+                                        content = entity.content ?: "",
+                                        dateTime = entity.createdDate ?: LocalDateTime.now(),
+                                        question = entity.question ?: "No Question",
+                                        userId = entity.userId
+                                    )
+                                }
 
-                            _uiState.update { currentState ->
-                                currentState.copy(
-                                    //loadState = JournalLoadState.Success(journals),
-                                    journals = journals
-                                )
-                            }
-                        }.onFailure { exception ->
-                            // Handle error scenario
-                            _uiState.update { currentState ->
-                                currentState.copy(
-//                                    loadState = JournalLoadState.Error(
-//                                        exception.localizedMessage ?: "Unknown error occurred"
-//                                    ),
-                                    journals = emptyList()
-                                )
+                                _uiState.update { currentState ->
+                                    currentState.copy(
+                                        journals = journals
+                                    )
+                                }
+                            }.onFailure { exception ->
+                                // Handle error scenario
+                                Log.e("fetchData", "Error: ${exception.message}")
+                                _uiState.update { currentState ->
+                                    currentState.copy(
+                                        journals = emptyList()
+                                    )
+                                }
                             }
                         }
+                } catch (e: Exception) {
+                    // Menangani exception yang terjadi di luar fetchJournals
+                    Log.e("fetchData", "Unexpected error: ${e.message}")
+                    _uiState.update { currentState ->
+                        currentState.copy(
+                            journals = emptyList()
+                        )
                     }
+                }
             }
         }
     }

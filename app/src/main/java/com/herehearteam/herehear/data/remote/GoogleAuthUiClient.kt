@@ -70,20 +70,6 @@ class GoogleAuthUiClient(
                     // Handle other types of exceptions
                     e.printStackTrace()
                 }
-//                try {
-//                    val currentUser = apiService.getUserById(firebaseUser.uid)
-//                    if(!currentUser.status){
-//                        val userRequest = UserRequestDto(
-//                            user_id = firebaseUser.uid,
-//                            username = firebaseUser.displayName!!,
-//                            email = firebaseUser.email!!,
-//                            password = "Tidak ada Password"
-//                        )
-//                        apiService.createUser(userRequest)
-//                    }
-//                } catch (e: Exception) {
-//                    e.printStackTrace()
-//                }
             }
 
             Log.d("AuthClient", "User signed in successfully")

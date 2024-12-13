@@ -180,8 +180,13 @@ class JournalRepository(application: Application) {
     }
 
     suspend fun deleteJournalById(id: Int, userId: String) {
-        mJournalDao.deleteJournalById(id, userId)
-        journalApiService.deleteJournalById(id)
+        try {
+            mJournalDao.deleteJournalById(id, userId)
+
+            journalApiService.deleteJournalById(id)
+        } catch (e: Exception) {
+            Log.e("deleteJournalById", "Error deleting journal: ${e.message}")
+        }
     }
 
     fun getLastPredictedJournal(userId: String): JournalEntity? {
