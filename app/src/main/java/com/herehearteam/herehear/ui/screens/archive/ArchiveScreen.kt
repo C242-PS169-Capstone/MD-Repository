@@ -59,6 +59,7 @@ import androidx.compose.ui.window.Dialog
 import java.time.LocalDate
 import java.util.Calendar
 import android.widget.CalendarView
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.size
@@ -367,8 +368,22 @@ fun JournalArchiveContent(
                                 color = journalColors[journal.id] ?: colors[0],
                                 journalId = journal.id,
                                 onClick = {
-                                    Log.d("ArchivSSSSSSSeScreen", "Journal clicked: ${journal.id}")
-                                    navController.navigate(Screen.Journal.createRoute(journalId = journal.id)) }
+                                    try {
+                                        Log.d("ArchiveScreen", "Journal clicked: ${journal.id}")
+                                        navController.navigate(Screen.Journal.createRoute(journalId = journal.id))
+                                    } catch (e: Exception) {
+                                        Log.e("ArchiveScreen", "Error navigating to journal: ${e.message}")
+                                        // Kembali ke halaman arsip atau halaman utama
+                                        navController.popBackStack()
+
+                                        // Opsional: Tampilkan pesan kesalahan kepada pengguna
+                                        Toast.makeText(
+                                            navController.context,
+                                            "Jurnal tidak dapat dibuka. Silakan coba lagi.",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
                             )
                         }
                     }

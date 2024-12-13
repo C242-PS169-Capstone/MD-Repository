@@ -336,6 +336,7 @@ class JournalViewModel(
 
                         withContext(Dispatchers.Main) {
                             _navigationEvent.value = NavigationEvent.NavigateBack
+
                             clearSelectedQuestion()
                             _isFabExpanded.value = false
                         }
