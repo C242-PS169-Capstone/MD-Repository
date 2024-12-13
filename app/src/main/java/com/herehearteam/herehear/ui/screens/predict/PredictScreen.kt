@@ -66,7 +66,6 @@ fun PredictScreen(
     val currentUser = FirebaseAuth.getInstance().currentUser
     val userId = currentUser?.uid
     val context = LocalContext.current
-    var showHotlineAlert by remember { mutableStateOf(false) }
     val lastPredictedJournalState = remember { mutableStateOf<JournalEntity?>(null) }
     var lastPredictedJournal = lastPredictedJournalState.value
     var showHotlineAlert by remember { mutableStateOf(false) }
@@ -81,14 +80,6 @@ fun PredictScreen(
     val profileState by profileViewModel.uiState.collectAsState()
     val emergencyPhoneNumber = profileState.emergencyContact?.emergency_number ?: ""
 
-
-    val profileViewModel = ProfileViewModel(
-        googleAuthUiClient = LocalGoogleAuthUiClient.current,
-        userPreferencesDataStore = UserPreferencesDataStore.getInstance(context = LocalContext.current),
-        emergencyContactRepository = AppDependencies.getInstance(LocalContext.current).emergencyContactRepository
-    )
-    val profileState by profileViewModel.uiState.collectAsState()
-    val emergencyPhoneNumber = profileState.emergencyContact?.emergency_number ?: ""
 
     LaunchedEffect(key1 = true) {
         coroutineScope.launch {
