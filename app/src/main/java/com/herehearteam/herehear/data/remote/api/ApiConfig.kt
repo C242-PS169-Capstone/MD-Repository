@@ -33,8 +33,8 @@ object ApiConfig {
 
         val client = OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
-            .connectTimeout(30, TimeUnit.SECONDS) // Waktu untuk mencoba koneksi
-            .readTimeout(30, TimeUnit.SECONDS)    // Waktu untuk membaca data
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
             .build()
 
