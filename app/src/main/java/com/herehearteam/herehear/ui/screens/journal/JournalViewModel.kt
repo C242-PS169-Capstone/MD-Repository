@@ -1,10 +1,13 @@
 package com.herehearteam.herehear.ui.screens.journal
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.util.Log
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.AndroidViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.herehearteam.herehear.data.local.datastore.UserPreferencesDataStore
@@ -46,6 +49,8 @@ class JournalViewModel(
     private val predictionRepository = PredictionRepository(modelApiService)
 
     private val apiService = ApiConfig.getApiService()
+    @SuppressLint("StaticFieldLeak")
+    val context: Context = application.applicationContext
 
 //    private val currentUser = FirebaseAuth.getInstance().currentUser
 //    private val userId = currentUser?.uid
@@ -85,6 +90,12 @@ class JournalViewModel(
     private val _navigationEvent = MutableStateFlow<NavigationEvent?>(null)
     val navigationEvent = _navigationEvent.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _saveError = MutableStateFlow<String?>(null)
+    val saveError: StateFlow<String?> = _saveError.asStateFlow()
+
     init {
         checkNetworkConnectivity()
         refreshQuestions()
@@ -96,11 +107,6 @@ class JournalViewModel(
         }
 
         val networkCallback = object : ConnectivityManager.NetworkCallback() {
-//            override fun onAvailable(network: Network) {
-//                _isNetworkAvailable.value = true
-//                journalRepository.syncPendingJournals()
-//            }
-
             override fun onLost(network: Network) {
                 _isNetworkAvailable.value = false
             }
@@ -110,85 +116,171 @@ class JournalViewModel(
     fun checkNetworkConnectivity() {
         val activeNetwork = connectivityManager.activeNetworkInfo
         _isNetworkAvailable.value = activeNetwork?.isConnectedOrConnecting == true
-
-        // Sync pending journals if network is available on init
-//        if (_isNetworkAvailable.value) {
-//            journalRepository.syncPendingJournals()
-//        }
     }
 
 
+//    fun saveJournal() {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            val userId = _currentUser.value?.userId
+//            if (userId == null) {
+//                withContext(Dispatchers.Main) {
+//                    _isSaveSuccessful.value = false
+//                }
+//                return@launch
+//            }
+//
+//            val question = _selectedQuestion.value?.text ?: ""
+//            val content = _memoText.value.takeIf { it.isNotBlank() }
+//
+//            if (content != null) {
+//                if (currentJournalId != null) {
+//                    journalRepository.updateJournalById(
+//                        id = currentJournalId!!,
+//                        content = content,
+//                        userId = userId
+//                    )
+//                    val reqBody = JournalUpdateRequestDto(
+//                        content = content,
+//                        question = question
+//                    )
+//                    apiService.updateJournalById(currentJournalId!!, reqBody)
+//                } else {
+//                    val remoteJournal = JournalRequestDto(
+//                        content = content,
+//                        question = question,
+//                        user_id = userId
+//                    )
+//                    val response = apiService.createJournal(remoteJournal)
+//
+//                    val predictionResult = predictionRepository.predictText(content)
+//                    val journalToSave = JournalEntity(
+//                        journalId = response.data.journalId,
+//                        createdDate = JournalHelper.getCurrentDate(),
+//                        content = content,
+//                        question = question,
+//                        userId = userId,
+//                        isPredicted = _isNetworkAvailable.value,
+//                        predict1Label = predictionResult.getOrNull()?.model1?.prediction.toString() ?: null,
+//                        predict1Confidence = predictionResult.getOrNull()?.model1?.confidence.toString() ?: null,
+//                        predict2Label = predictionResult.getOrNull()?.model2?.prediction.toString() ?: null,
+//                        predict2Confidence = predictionResult.getOrNull()?.model2?.confidence.toString() ?: null,
+//                    )
+//                    journalRepository.insertJournal(journalToSave)
+//                }
+//
+//                currentJournalId = null
+//                originalJournalContent = ""
+//
+//                withContext(Dispatchers.Main) {
+//                    _isSaveSuccessful.value = true
+//                    _navigationEvent.value = NavigationEvent.NavigateToHome
+//                    clearSelectedQuestion()
+//                    _isFabExpanded.value = false
+//                }
+//            } else {
+////              handle
+//            }
+//        }
+//    }
+
     fun saveJournal() {
         viewModelScope.launch(Dispatchers.IO) {
-            val userId = _currentUser.value?.userId
-            if (userId == null) {
+            try {
+                // Set loading to true before starting save operation
+                withContext(Dispatchers.Main) {
+                    _isLoading.value = true
+                    _saveError.value = null
+                }
+
+                val userId = _currentUser.value?.userId
+                if (userId == null) {
+                    withContext(Dispatchers.Main) {
+                        _isSaveSuccessful.value = false
+                        _isLoading.value = false
+                        showErrorToast("Pengguna tidak terautentikasi")
+                    }
+                    return@launch
+                }
+
+                val question = _selectedQuestion.value?.text ?: ""
+                val content = _memoText.value.takeIf { it.isNotBlank() }
+
+                if (content != null) {
+                    if (currentJournalId != null) {
+                        try {
+                            journalRepository.updateJournalById(
+                                id = currentJournalId!!,
+                                content = content,
+                                userId = userId
+                            )
+                            val reqBody = JournalUpdateRequestDto(
+                                content = content,
+                                question = question
+                            )
+                            apiService.updateJournalById(currentJournalId!!, reqBody)
+                        } catch (e: Exception) {
+                            withContext(Dispatchers.Main) {
+                                showErrorToast("Gagal memperbarui jurnal: ${e.localizedMessage}")
+                                throw e
+                            }
+                        }
+                    } else {
+                        try {
+                            val remoteJournal = JournalRequestDto(
+                                content = content,
+                                question = question,
+                                user_id = userId
+                            )
+                            val response = apiService.createJournal(remoteJournal)
+
+                            val predictionResult = predictionRepository.predictText(content)
+                            val journalToSave = JournalEntity(
+                                journalId = response.data.journalId,
+                                createdDate = JournalHelper.getCurrentDate(),
+                                content = content,
+                                question = question,
+                                userId = userId,
+                                isPredicted = _isNetworkAvailable.value,
+                                predict1Label = predictionResult.getOrNull()?.model1?.prediction.toString() ?: null,
+                                predict1Confidence = predictionResult.getOrNull()?.model1?.confidence.toString() ?: null,
+                                predict2Label = predictionResult.getOrNull()?.model2?.prediction.toString() ?: null,
+                                predict2Confidence = predictionResult.getOrNull()?.model2?.confidence.toString() ?: null,
+                            )
+                            journalRepository.insertJournal(journalToSave)
+                        } catch (e: Exception) {
+                            withContext(Dispatchers.Main) {
+                                showErrorToast("Gagal membuat jurnal: ${e.localizedMessage}")
+                                throw e
+                            }
+                        }
+                    }
+
+                    currentJournalId = null
+                    originalJournalContent = ""
+
+                    withContext(Dispatchers.Main) {
+                        _isSaveSuccessful.value = true
+                        _navigationEvent.value = NavigationEvent.NavigateToHome
+                        clearSelectedQuestion()
+                        _isFabExpanded.value = false
+                        Toast.makeText(context, "Jurnal berhasil disimpan", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        showErrorToast("Konten jurnal tidak boleh kosong")
+                    }
+                }
+            } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     _isSaveSuccessful.value = false
+                    _saveError.value = e.localizedMessage ?: "Terjadi kesalahan tidak dikenal"
+                    showErrorToast(_saveError.value ?: "Gagal menyimpan jurnal")
                 }
-                return@launch
-            }
-
-            val question = _selectedQuestion.value?.text ?: ""
-            val content = _memoText.value.takeIf { it.isNotBlank() }
-
-            if (content != null) {
-                if (currentJournalId != null) {
-                    journalRepository.updateJournalById(
-                        id = currentJournalId!!,
-                        content = content,
-                        userId = userId
-                    )
-                    val reqBody = JournalUpdateRequestDto(
-                        content = content,
-                        question = question
-                    )
-                    apiService.updateJournalById(currentJournalId!!, reqBody)
-                } else {
-                    val remoteJournal = JournalRequestDto(
-                        content = content,
-                        question = question,
-                        user_id = userId
-                    )
-                    val response = apiService.createJournal(remoteJournal)
-
-                    val predictionResult = predictionRepository.predictText(content)
-                    val journalToSave = JournalEntity(
-                        journalId = response.data.journalId,
-                        createdDate = JournalHelper.getCurrentDate(),
-                        content = content,
-                        question = question,
-                        userId = userId,
-                        isPredicted = _isNetworkAvailable.value,
-                        predict1Label = predictionResult.getOrNull()?.model1?.prediction.toString() ?: null,
-                        predict1Confidence = predictionResult.getOrNull()?.model1?.confidence.toString() ?: null,
-                        predict2Label = predictionResult.getOrNull()?.model2?.prediction.toString() ?: null,
-                        predict2Confidence = predictionResult.getOrNull()?.model2?.confidence.toString() ?: null,
-                    )
-                    journalRepository.insertJournal(journalToSave)
-
-
-//                    if (!_isNetworkAvailable.value) {
-//                        // Optional: You might want to use a WorkManager job for this in a real app
-//                        viewModelScope.launch {
-//                            while (!_isNetworkAvailable.value) {
-//                                delay(30000) // Check every 30 seconds
-//                            }
-//                            journalRepository.syncPendingJournals()
-//                        }
-//                    }
-                }
-
-                currentJournalId = null
-                originalJournalContent = ""
-
+            } finally {
+                // Ensure loading is set to false
                 withContext(Dispatchers.Main) {
-                    _isSaveSuccessful.value = true
-                    _navigationEvent.value = NavigationEvent.NavigateToHome
-                    clearSelectedQuestion()
-                    _isFabExpanded.value = false
+                    _isLoading.value = false
                 }
-            } else {
-//              handle
             }
         }
     }
@@ -342,6 +434,10 @@ class JournalViewModel(
                 onResult(journal)
             }
         }
+    }
+
+    private fun showErrorToast(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 }
 

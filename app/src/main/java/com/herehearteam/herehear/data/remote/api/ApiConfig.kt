@@ -19,7 +19,7 @@ object ApiConfig {
             .build()
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://hearhere-app-828292280674.asia-southeast2.run.app/")
+            .baseUrl("https://hearhere-app-828292280674.asia-southeast2.run.app")
             .addConverterFactory(GsonConverterFactory.create())
             .client(client)
             .build()
@@ -33,8 +33,8 @@ object ApiConfig {
 
         val client = OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
-            .connectTimeout(30, TimeUnit.SECONDS) // Waktu untuk mencoba koneksi
-            .readTimeout(30, TimeUnit.SECONDS)    // Waktu untuk membaca data
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
             .build()
 

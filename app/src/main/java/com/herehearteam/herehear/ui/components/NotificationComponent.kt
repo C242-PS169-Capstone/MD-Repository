@@ -14,7 +14,9 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import com.google.firebase.auth.FirebaseAuth
 import com.herehearteam.herehear.MainActivity
+import com.herehearteam.herehear.data.remote.api.ApiConfig
 import com.herehearteam.herehear.domain.repository.UserRepository
 import kotlinx.coroutines.flow.first
 
@@ -26,7 +28,6 @@ fun createNotificationChannel(context: Context) {
         val channel = NotificationChannel("JOURNAL_CHANNEL_ID", name, importance).apply {
             description = descriptionText
         }
-
         val notificationManager: NotificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
@@ -53,7 +54,7 @@ suspend fun showJournalNotification(
     }
 
 //    val user = userRepository.user.first()
-    val userName = "Babi"
+    val userName = "There!"
 
     createNotificationChannel(context)
 
