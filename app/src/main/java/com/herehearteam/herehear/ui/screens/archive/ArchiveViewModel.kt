@@ -41,6 +41,11 @@ class ArchiveViewModel(
         fetchData()
     }
 
+    fun convertToLocalDateTime(dateString: String): LocalDateTime {
+        val date = LocalDate.parse(dateString)
+        return date.atStartOfDay()
+    }
+
     fun fetchData() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         val userId = currentUser?.uid

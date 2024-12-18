@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -81,7 +82,6 @@ class JournalRepository(application: Application) {
                 Log.d("JournalRepositoryANJINGGG", "API Response: $userJournals")
 
                 // Convert API journals to local entities
-                val formatter = DateTimeFormatter.ISO_DATE_TIME
                 val remoteJournals = userJournals.map { apiJournal ->
 //                    val predictionResult = predictionRepository.predictText(apiJournal.content!!)
                     JournalEntity(
@@ -89,7 +89,8 @@ class JournalRepository(application: Application) {
                         content = apiJournal.content,
                         userId = userId,
                         createdDate = apiJournal.createdDate?.let {
-                            LocalDateTime.parse(it, formatter)
+                           LocalDate.parse(apiJournal.createdDate)
+                                .atStartOfDay()
                         } ?: LocalDateTime.now(),
                         question = apiJournal.question,
                         predict1Label = "Tidak ada prediksi",
