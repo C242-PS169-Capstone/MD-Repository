@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -162,12 +163,21 @@ class JournalViewModel(
                         }
                     } else {
                         try {
-                            val remoteJournal = JournalRequestDto(
-                                content = content,
-                                question = question,
-                                user_id = userId
-                            )
-                            val response = apiService.createJournal(remoteJournal)
+                            val response = if (question.isNotBlank()) {
+                                val remoteJournal = JournalRequestDto(
+                                    content = content,
+                                    question = question,
+                                    user_id = userId
+                                )
+                                apiService.createJournal(remoteJournal)
+                            } else {
+                                val remoteJournalNoQuestion = JournalRequestDto(
+                                    content = content,
+                                    user_id = userId,
+                                    question = "Perasaanmu hari ini"
+                                )
+                                apiService.createJournal(remoteJournalNoQuestion)
+                            }
 
                             val predictionResult = predictionRepository.predictText(content)
                             val journalToSave = JournalEntity(
@@ -199,7 +209,7 @@ class JournalViewModel(
                         _navigationEvent.value = NavigationEvent.NavigateToHome
                         clearSelectedQuestion()
                         _isFabExpanded.value = false
-                        Toast.makeText(context, "Jurnal berhasil disimpan", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "berhasil", Toast.LENGTH_SHORT).show()
                     }
                 } else {
                     withContext(Dispatchers.Main) {
@@ -335,7 +345,7 @@ class JournalViewModel(
                         originalJournalContent = ""
 
                         withContext(Dispatchers.Main) {
-                            _navigationEvent.value = NavigationEvent.NavigateBack
+                            _navigationEvent.value = NavigationEvent.NavigateToHome
 
                             clearSelectedQuestion()
                             _isFabExpanded.value = false
@@ -365,7 +375,6 @@ class JournalViewModel(
                 return@launch
             }
 
-            val formatter = DateTimeFormatter.ISO_DATE_TIME
             val entity = id?.let { journalRepository.getJournalById(it) }
             val journal = entity?.let {
                 currentJournalId = it.data.journalId
@@ -373,7 +382,7 @@ class JournalViewModel(
                 Journal(
                     id = it.data.journalId,
                     content = it.data.content,
-                    dateTime = LocalDateTime.parse(it.data.createdDate, formatter),
+                    dateTime = LocalDate.parse(it.data.createdDate).atStartOfDay(),
                     question = it.data.question,
                     userId = userId
                 )

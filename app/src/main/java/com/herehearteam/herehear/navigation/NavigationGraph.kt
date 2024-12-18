@@ -173,7 +173,7 @@ fun NavigationGraph(
 
             LaunchedEffect(showToast) {
                 if (showToast) {
-                    Toast.makeText(context, "Jurnal berhasil disimpan!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "berhasil", Toast.LENGTH_SHORT).show()
                     showToast = false
                 }
             }
